@@ -1,0 +1,18 @@
+:root {
+    --white: #FDFFFC;
+    --bg: #795548;
+    --text-color: #424242;
+    --headline: #097BB3;
+    --blue: #1167A1;
+    --light-blue: #A9CCE3;
+    --brown: #6D4618;
+    --light-brown: #926122;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-family: "Poppins", Arial, sans-serif;
+  }
+  
+  body, p, span, li, a, button, input, textarea {
+    font-family: "Lato", Arial, sans-serif;
+  }
