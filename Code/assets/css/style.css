@@ -1,4 +1,5 @@
 :root {
+    /* Initialisation de ma charte graphique via des variables */
     --white: #FDFFFC;
     --bg: #795548;
     --text-color: #424242;
@@ -7,12 +8,82 @@
     --light-blue: #A9CCE3;
     --brown: #6D4618;
     --light-brown: #926122;
+    /* Initialisation de mes styles de texte via des variables */
+    --font-family-heading: "Poppins", Arial, sans-serif;
+    --font-family-text: "Lato", Arial, sans-serif;
+    --font-size-heading: 1.5rem;
+    --font-size-text: 1.25rem;
+    --font-size-forms: 1.12rem;
+    --font-weight-normal: 400;
+    --font-weight-medium: 500;
+    --font-weight-semibold: 600;
+    --font-weight-bold: 700;
+    --font-weight-extrabold: 900;
 }
 
 h1, h2, h3, h4, h5, h6 {
-    font-family: "Poppins", Arial, sans-serif;
-  }
-  
-  body, p, span, li, a, button, input, textarea {
-    font-family: "Lato", Arial, sans-serif;
-  }
+    font-family: var(--font-family-heading);
+}
+
+h1 {
+    font-size: var(--font-size-heading);
+}
+
+body, p, span, li, a, textarea {
+    font-family: var(--font-family-text);
+    font-size: var(--font-size-text);
+}
+
+
+.navbar {
+    min-height: 64px;
+    background-color: var(--white);
+    border-bottom: 1px solid var(--light-blue);
+}
+
+.navbar span{
+    color: var(--headline);
+    font-weight: var(--font-weight-extrabold);
+    font-size: var(--font-size-heading)
+}
+
+.navbar-brand {
+    display: flex;
+    align-items: center;
+}
+
+
+.navbar-brand img {
+    max-height: 55px; 
+    width: auto;
+}
+
+.navbar-nav .nav-link {
+    color: var(--headline);
+    font-weight: var(--font-weight-normal);
+    text-decoration: none;
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+    margin-left: 0.5rem;
+    margin-right: 0.5rem;
+    transition: color 0.15s ease-in-out, font-weight 0.15s ease-in-out;
+}
+
+/* Interactivité:  Ajouter les styles :hover, :focus pour sélecteurs d'écrans  */
+.navbar-nav .nav-link:hover,
+.navbar-nav .nav-link:focus {
+    color: var(--light-blue); /* Couleur de survol */
+    text-decoration: underline;
+}
+
+/* Epaicissement du lien si actif */
+.navbar-nav .nav-link.active {
+    color: var(--headline);
+    font-weight: var(--font-weight-bold);
+    text-decoration: none;
+}
+
+/* Personnalisation Toggler : Utilise ma couleur --headline via stroke SVG */
+.navbar-toggler-icon {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='%23097BB3' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+}

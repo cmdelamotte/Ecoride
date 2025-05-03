@@ -1,0 +1,96 @@
+-- Création des tables principales
+CREATE TABLE role (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  nom VARCHAR(50) NOT NULL
+);
+
+CREATE TABLE utilisateur (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  nom VARCHAR(100) NOT NULL,
+  prenom VARCHAR(100) NOT NULL,
+  email VARCHAR(100) NOT NULL UNIQUE,
+  mot_de_passe VARCHAR(255) NOT NULL,
+  telephone VARCHAR(20),
+  role_id INT,
+  FOREIGN KEY (role_id) REFERENCES role(id)
+);
+
+CREATE TABLE voiture (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  marque VARCHAR(50) NOT NULL,
+  modele VARCHAR(50) NOT NULL,
+  couleur VARCHAR(30),
+  nombre_places INT NOT NULL
+);
+
+CREATE TABLE covoiturage (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  id_voiture INT,
+  id_utilisateur_createur INT,
+  lieu_depart VARCHAR(255) NOT NULL,
+  lieu_arrivee VARCHAR(255) NOT NULL,
+  date_depart DATE NOT NULL,
+  heure_depart TIME NOT NULL,
+  nombre_places_disponibles INT NOT NULL,
+  FOREIGN KEY (id_voiture) REFERENCES voiture(id),
+  FOREIGN KEY (id_utilisateur_createur) REFERENCES utilisateur(id)
+);
+
+CREATE TABLE reservation (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  id_utilisateur INT,
+  id_covoiturage INT,
+  statut ENUM('en attente', 'confirmée', 'refusée') DEFAULT 'en attente',
+  date_reservation DATETIME DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (id_utilisateur) REFERENCES utilisateur(id),
+  FOREIGN KEY (id_covoiturage) REFERENCES covoiturage(id)
+);
+
+CREATE TABLE utilisateur_role (
+  id_utilisateur INT,
+  id_role INT,
+  PRIMARY KEY (id_utilisateur, id_role),
+  FOREIGN KEY (id_utilisateur) REFERENCES utilisateur(id),
+  FOREIGN KEY (id_role) REFERENCES role(id)
+);
+
+CREATE TABLE voiture_utilisateur (
+  id_voiture INT,
+  id_utilisateur INT,
+  PRIMARY KEY (id_voiture, id_utilisateur),
+  FOREIGN KEY (id_voiture) REFERENCES voiture(id),
+  FOREIGN KEY (id_utilisateur) REFERENCES utilisateur(id)
+);
+
+CREATE TABLE covoiturage_utilisateur (
+  id_covoiturage INT,
+  id_utilisateur INT,
+  PRIMARY KEY (id_covoiturage, id_utilisateur),
+  FOREIGN KEY (id_covoiturage) REFERENCES covoiturage(id),
+  FOREIGN KEY (id_utilisateur) REFERENCES utilisateur(id)
+);
+
+CREATE TABLE parametre (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  nom VARCHAR(100) NOT NULL,
+  description TEXT,
+  valeur_par_defaut VARCHAR(255)
+);
+
+CREATE TABLE configuration (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  id_utilisateur INT,
+  id_parametre INT,
+  valeur VARCHAR(255),
+  FOREIGN KEY (id_utilisateur) REFERENCES utilisateur(id),
+  FOREIGN KEY (id_parametre) REFERENCES parametre(id)
+);
+
+-- Données de test minimales (tu peux les commenter si tu veux)
+INSERT INTO role (nom) VALUES ('admin'), ('utilisateur');
+INSERT INTO utilisateur (nom, prenom, email, mot_de_passe, telephone, role_id) VALUES
+('Doe', 'John', 'john@example.com', 'password', '0102030405', 2),
+('Smith', 'Anna', 'anna@example.com', 'password', '0607080910', 2);
+INSERT INTO voiture (marque, modele, couleur, nombre_places) VALUES
+('Renault', 'Clio', 'Rouge', 4),
+('Peugeot', '208', 'Bleu', 5);
