@@ -21,6 +21,10 @@
     --font-weight-extrabold: 900;
 }
 
+html {
+    height: 100%;
+}
+
 h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-family-heading);
 }
@@ -32,6 +36,17 @@ h1 {
 body, p, span, li, a, textarea {
     font-family: var(--font-family-text);
     font-size: var(--font-size-text);
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    background-color: var(--bg);
+}
+
+main {
+    flex-grow: 1;
 }
 
 /* Classe utilitaire pour la stylisation de mes liens et leur interactivité */
@@ -103,6 +118,10 @@ body, p, span, li, a, textarea {
 footer {
     background-color: var(--white);
     border-top: 1px solid var(--light-blue);
+}
+
+footer a[href^="mailto:"] {
+    white-space: nowrap;
 }
 
 .social-link:hover,
