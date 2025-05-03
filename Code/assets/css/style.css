@@ -34,6 +34,18 @@ body, p, span, li, a, textarea {
     font-size: var(--font-size-text);
 }
 
+/* Classe utilitaire pour la stylisation de mes liens et leur interactivité */
+.link {
+    color: var(--brown); 
+    text-decoration: none;
+    transition: color 0.15s ease-in-out, text-decoration 0.15s ease-in-out;
+}
+
+.link:hover,
+.link:focus {
+    color: var(--light-brown);
+    text-decoration: underline;
+}
 
 .navbar {
     min-height: 64px;
@@ -86,4 +98,16 @@ body, p, span, li, a, textarea {
 /* Personnalisation Toggler : Utilise ma couleur --headline via stroke SVG */
 .navbar-toggler-icon {
     background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='%23097BB3' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+}
+
+footer {
+    background-color: var(--white);
+    border-top: 1px solid var(--light-blue);
+}
+
+.social-link:hover,
+.social-link:focus {
+    color: var(--light-brown); 
+    text-decoration: none;
+    opacity: 0.8;
 }
