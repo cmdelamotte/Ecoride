@@ -43,6 +43,25 @@ body {
     flex-direction: column;
     min-height: 100vh;
     background-color: var(--bg);
+
+    /* Stylisation du body pour le filigrane du background */
+    position: relative;
+    z-index: 0;
+    overflow-x: hidden;
+}
+
+body::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 100%;
+    z-index: -1;
+
+    background-image: url(../../img/pattern-tile.svg);
+    background-repeat: repeat;
+    opacity: 0.2;
 }
 
 main {
