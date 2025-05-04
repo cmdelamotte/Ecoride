@@ -149,3 +149,41 @@ footer a[href^="mailto:"] {
     text-decoration: none;
     opacity: 0.8;
 }
+
+/* Stylisation home */
+
+/* Stylisation bannière */
+.banner-container {
+    min-height: 40vh;
+    color: var(--white);
+
+    /* === Superposition Filtre + Image === */
+    background-image:
+        /* 1. Le filtre noir semi-transparent (30% opacité) */
+        linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.3)), url('../../img/banner-forest-road.jpg');
+
+    /* === Gestion de l'image de fond (Crop/Responsive) === */
+    background-size: cover;
+    background-position: center 70%;
+    background-repeat: no-repeat;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+.banner-title {
+    font-family: var(--font-family-heading);
+    font-weight: var(--font-weight-bold);
+    /* display-4 de Bootstrap gère la taille, sinon : */
+    /* font-size: 2.8rem; */
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
+}
+
+.banner-subtitle {
+    font-family: var(--font-family-text);
+    /* lead de Bootstrap gère style, sinon : */
+    /* font-size: 1.25rem; */
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
+}
