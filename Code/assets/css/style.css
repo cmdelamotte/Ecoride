@@ -188,15 +188,18 @@ footer a[href^="mailto:"] {
     text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
 }
 
-/* Stylisation de la barre de recherche */
-
-.search-bar-section {
+.form-section {
     background-color: transparent;
+}
+
+.homepage-search {
     border-bottom: 1px solid var(--light-blue);
 }
 
+/* Stylisation des champs de formulaires */
+
 /* Style pour chaque bloc input */
-.search-input-custom {
+.form-input-custom {
     background-color: var(--white);
     border-radius: 50px;
     padding: 0.6rem 1rem;
@@ -204,7 +207,7 @@ footer a[href^="mailto:"] {
 }
 
 /* Couleur de l'icône dans le bloc */
-.search-input-custom i {
+.form-input-custom i {
     color: var(--brown);
 }
 
@@ -232,7 +235,7 @@ footer a[href^="mailto:"] {
 }
 
 /* Style du bouton (ajuste le padding/arrondi) */
-.search-btn {
+.primary-btn {
     background-color: var(--light-blue);
     border-color: var(--blue);
     color: var(--text-color);
@@ -240,7 +243,7 @@ footer a[href^="mailto:"] {
     padding: 0.6rem 1.5rem;
     font-weight: var(--font-weight-semibold);
 }
-.search-btn:hover {
+.primary-btn:hover {
     background-color: var(--headline);
     border-color: var(--headline);
     color: var(--white)
@@ -272,4 +275,17 @@ footer a[href^="mailto:"] {
     color: var(--text-color);
     font-size: var(--font-size-text);
     line-height: 1.6;
+}
+
+/* Stylisation du formulaire d'inscription */
+
+.registration-form{
+    border-top: 1px solid var(--light-blue);
+    margin-top: 1.5rem;
+}
+
+.login-link-bar {
+    background-color: var(--white);
+    padding: 0.75rem 1.25rem;
+    margin-bottom: 2rem;
 }
