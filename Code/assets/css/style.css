@@ -187,3 +187,89 @@ footer a[href^="mailto:"] {
     /* font-size: 1.25rem; */
     text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
 }
+
+/* Stylisation de la barre de recherche */
+
+.search-bar-section {
+    background-color: transparent;
+    border-bottom: 1px solid var(--light-blue);
+}
+
+/* Style pour chaque bloc input */
+.search-input-custom {
+    background-color: var(--white);
+    border-radius: 50px;
+    padding: 0.6rem 1rem;
+    border: 1px solid var(--light-blue);
+}
+
+/* Couleur de l'icône dans le bloc */
+.search-input-custom i {
+    color: var(--brown);
+}
+
+/* Style de l'input LUI-MÊME */
+.form-control-custom {
+    border: none; 
+    background-color: transparent;
+    padding: 0;
+    margin: 0;
+    box-shadow: none;
+    outline: none;
+    width: 100%;
+    color: var(--brown);
+}
+/* Empêche le navigateur d'ajouter son propre style au focus */
+.form-control-custom:focus {
+    border-color: transparent;
+    box-shadow: none;
+    outline: none;
+}
+/* Style du placeholder */
+.form-control-custom::placeholder {
+    color: var(--light-brown);
+    opacity: 1;
+}
+
+/* Style du bouton (ajuste le padding/arrondi) */
+.search-btn {
+    background-color: var(--light-blue);
+    border-color: var(--blue);
+    color: var(--text-color);
+    border-radius: 50px;
+    padding: 0.6rem 1.5rem;
+    font-weight: var(--font-weight-semibold);
+}
+.search-btn:hover {
+    background-color: var(--headline);
+    border-color: var(--headline);
+    color: var(--white)
+}
+
+/* Stylisation cartes home page */
+
+/* Ajustement des cartes si nécessaire */
+.presentation-section .card {
+    background-color: var(--white);
+}
+
+/* Style de l'icône */
+.presentation-icon {
+    height: 60px;
+    width: auto;
+    object-fit: contain;
+}
+
+.presentation-section .card {
+    border-radius: 3%;
+    border: 2px solid var(--light-blue);
+    box-shadow: offset-x offset-y blur-radius spread-radius couleur;
+    box-shadow: 0 0.125rem 0.25rem rgba(169, 204, 227, 1);
+}
+
+/* Style du texte de carte */
+.presentation-section .card-text {
+    color: var(--text-color);
+    font-size: var(--font-size-text);
+    line-height: 1.6;
+}
