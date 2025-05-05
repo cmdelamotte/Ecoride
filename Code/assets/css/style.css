@@ -242,6 +242,7 @@ footer a[href^="mailto:"] {
     border-radius: 50px;
     padding: 0.6rem 1.5rem;
     font-weight: var(--font-weight-semibold);
+    font-size: var(--font-size-forms)
 }
 .primary-btn:hover {
     background-color: var(--headline);
@@ -279,12 +280,12 @@ footer a[href^="mailto:"] {
 
 /* Stylisation du formulaire d'inscription */
 
-.registration-form{
+.auth-form{
     border-top: 1px solid var(--light-blue);
     margin-top: 1.5rem;
 }
 
-.login-link-bar {
+.auth-link-bar {
     background-color: var(--white);
     padding: 0.75rem 1.25rem;
     margin-bottom: 2rem;
