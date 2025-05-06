@@ -328,4 +328,14 @@ footer a[href^="mailto:"] {
         background-color: var(--light-blue);
         color: var(--headline);
     }
-    
+
+.form-select-custom {
+    border: none;
+    box-shadow: none;
+    outline: none;
+    width: 100%;
+    color: var(--brown);
+    font-family: var(--font-family-text);
+    font-size: var(--font-size-forms);
+    cursor: pointer;
+}

@@ -1,0 +1,95 @@
+<section class="banner-container position-relative text-white text-center">
+    <div class="container">
+        <h1 class="banner-title display-4 mb-3">Publier un Trajet</h1>
+        <p class="banner-subtitle lead">Proposez votre itinéraire à la communauté EcoRide</p>
+    </div>
+</section>
+
+<section class="form-section publish-ride-section py-4">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-12 col-md-10 col-lg-8">
+                <form id="publish-ride-form">
+                    <div class="row g-3">
+
+                        <div class="col-12">
+                            <div class="form-input-custom d-flex align-items-center">
+                                <i class="bi bi-geo-alt me-2"></i>
+                                <input type="text" class="form-control-custom flex-grow-1" id="departure-location" placeholder="Lieu de départ" aria-label="Lieu de départ" required>
+                            </div>
+                        </div>
+
+                        <div class="col-12">
+                            <div class="form-input-custom d-flex align-items-center">
+                                <i class="bi bi-flag me-2"></i>
+                                <input type="text" class="form-control-custom flex-grow-1" id="arrival-location" placeholder="Lieu d'arrivée" aria-label="Lieu d'arrivée" required>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="form-input-custom d-flex align-items-center">
+                                <i class="bi bi-calendar3 me-2"></i>
+                                <input type="text" class="form-control-custom flex-grow-1" id="departure-date" placeholder="Date de départ" onfocus="(this.type='date')" onblur="if(!this.value) {this.type='text';}" aria-label="Date de départ" required>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="form-input-custom d-flex align-items-center">
+                                <i class="bi bi-clock me-2"></i>
+                                <input type="time" class="form-control-custom flex-grow-1" id="departure-time" aria-label="Heure de départ" required>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="form-input-custom d-flex align-items-center">
+                                <i class="bi bi-people me-2"></i>
+                                <input type="number" class="form-control-custom flex-grow-1" id="available-seats" placeholder="Places disponibles" aria-label="Nombre de places disponibles" min="1" required>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="form-input-custom d-flex align-items-center">
+                                <i class="bi bi-coin me-2"></i> <input type="number" class="form-control-custom flex-grow-1" id="price-per-seat" placeholder="Prix par passager (crédits)" aria-label="Prix par passager en crédits" min="0" required>
+                            </div>
+                            <small class="form-text text-muted ms-1">La plateforme prélève 2 crédits sur ce montant.</small>
+                        </div>
+
+                        <div class="col-12">
+                            <label for="ride-vehicle" class="form-label visually-hidden">Choisissez votre véhicule</label>
+                            <div class="form-input-custom">
+                                <select class="form-select-custom flex-grow-1" id="ride-vehicle" aria-label="Choisissez votre véhicule" required>
+                                    <option selected disabled value="">Choisissez votre véhicule...</option>
+                                    <option value="vehicule1_id">Peugeot 208 (AA-123-BB)</option>
+                                    <option value="vehicule2_id">Renault Clio (CC-456-DD) - Électrique</option>
+                                </select>
+                            </div>
+                            <div class="text-center mt-3"> <button type="button" id="show-add-vehicle-form-publish" class="btn secondary-btn btn-sm" data-bs-toggle="collapse" data-bs-target="#add-vehicle-form-publish-container">
+                                    <i class="bi bi-plus-circle me-1"></i> Ajouter un nouveau véhicule
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="col-12 collapse mt-3" id="add-vehicle-form-publish-container"> <div class="card card-body"> <h4 class="h6 form-label border-bottom pb-2 mb-3">Ajouter un nouveau véhicule</h4>
+                                <p class="text-muted text-center">(Contenu du formulaire d'ajout de véhicule ici)</p>
+                                <div class="text-end">
+                                    <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="collapse" data-bs-target="#add-vehicle-form-publish-container">Annuler</button>
+                                    <button type="button" class="btn btn-sm primary-btn">Enregistrer ce véhicule</button> </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-12">
+                            <label for="ride-message" class="form-label visually-hidden">Message pour les passagers (optionnel)</label>
+                            <div class="form-input-custom">
+                                <textarea class="form-control-custom flex-grow-1" id="ride-message" rows="3" placeholder="Message pour les passagers (ex: point de RDV précis, bagages autorisés...)" aria-label="Message pour les passagers"></textarea>
+                            </div>
+                        </div>
+
+                        <div class="col-12 text-center mt-4">
+                            <button type="submit" class="btn primary-btn btn-lg">Publier le Trajet</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
