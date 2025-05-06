@@ -234,15 +234,18 @@ footer a[href^="mailto:"] {
     opacity: 1;
 }
 
-/* Style du bouton (ajuste le padding/arrondi) */
-.primary-btn {
-    background-color: var(--light-blue);
-    border-color: var(--blue);
-    color: var(--text-color);
+/* Style des boutons */
+
+.btn {
     border-radius: 50px;
     padding: 0.6rem 1.5rem;
     font-weight: var(--font-weight-semibold);
     font-size: var(--font-size-forms)
+}
+.primary-btn {
+    background-color: var(--light-blue);
+    border-color: var(--blue);
+    color: var(--text-color);
 }
 .primary-btn:hover {
     background-color: var(--headline);
@@ -250,10 +253,20 @@ footer a[href^="mailto:"] {
     color: var(--white)
 }
 
+.secondary-btn {
+    background-color: var(--brown);
+    border-color: var(--white);
+    color: var(--white);
+}
+.secondary-btn:hover {
+    background-color: var(--light-brown);
+    border-color: var(--brown);
+    color: var(--white)
+}
+
 /* Stylisation cartes home page */
 
-/* Ajustement des cartes si nécessaire */
-.presentation-section .card {
+.card {
     background-color: var(--white);
 }
 
@@ -264,7 +277,7 @@ footer a[href^="mailto:"] {
     object-fit: contain;
 }
 
-.presentation-section .card {
+.card {
     border-radius: 3%;
     border: 2px solid var(--light-blue);
     box-shadow: offset-x offset-y blur-radius spread-radius couleur;
@@ -272,7 +285,7 @@ footer a[href^="mailto:"] {
 }
 
 /* Style du texte de carte */
-.presentation-section .card-text {
+.card-text {
     color: var(--text-color);
     font-size: var(--font-size-text);
     line-height: 1.6;
@@ -288,5 +301,30 @@ footer a[href^="mailto:"] {
 .auth-link-bar {
     background-color: var(--white);
     padding: 0.75rem 1.25rem;
-    margin-bottom: 2rem;
 }
+
+/* Style de la page de résultats de recherche */
+
+.form-label {
+    color: var(--brown)
+}
+
+    /* Style de la pagination */
+.pagination .page-link {
+    color: var(--blue);
+    background-color: var(--white);
+    border-color: var(--light-blue);
+}
+    
+    /* Style de la page ACTIVE */
+    .pagination .page-item.active .page-link {
+        color: var(--white);
+        background-color: var(--blue);
+        border-color: var(--blue);
+        z-index: 1;
+    }
+
+    .pagination .page-link:hover {
+        background-color: var(--light-blue);
+        color: var(--headline);
+    }
