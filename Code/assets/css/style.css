@@ -339,3 +339,35 @@ footer a[href^="mailto:"] {
     font-size: var(--font-size-forms);
     cursor: pointer;
 }
+
+/* Style page Covoiturages */
+.nav-tabs {
+    border-bottom: 1px solid var(--light-blue);
+}
+
+.nav-tabs .nav-link {
+    color: var(--blue);
+    margin-bottom: -1px;    /* Pour que la bordure de l'onglet actif se superpose bien */
+    border: 1px solid transparent; /* Nécessaire pour que la taille soit la même que .active */
+    border-top-left-radius: 0.25rem;
+    border-top-right-radius: 0.25rem;
+    background-color: rgba(253, 255, 252, 0.3); /* var(--white) avec 30% d'opacité */
+    font-weight: var(--font-weight-medium);
+}
+
+.nav-tabs .nav-link:hover,
+.nav-tabs .nav-link:focus {
+    color: var(--headline);
+    border-color: var(--light-blue);
+    background-color: rgba(253, 255, 252, 0.5); /* var(--white) avec 50% d'opacité au survol */
+    isolation: isolate;
+}
+
+.nav-tabs .nav-link.active,
+.nav-tabs .nav-link.active:hover,
+.nav-tabs .nav-link.active:focus {
+    color: var(--headline);
+    background-color: var(--white); 
+    border-color: var(--light-blue) var(--light-blue) var(--white);
+    font-weight: var(--font-weight-bold);
+}

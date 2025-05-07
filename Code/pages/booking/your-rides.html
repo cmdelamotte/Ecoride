@@ -1,0 +1,155 @@
+<section class="banner-container position-relative text-white text-center">
+    <div class="container">
+        <h1 class="banner-title display-4 mb-3">Mes Trajets</h1>
+        <p class="banner-subtitle lead">Votre historique de covoiturages passés et à venir</p>
+    </div>
+</section>
+
+<section class="rides-history-section py-4">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-12 col-md-10 col-lg-10">
+
+                <ul class="nav nav-tabs mb-4 justify-content-center" id="ridesTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="upcoming-rides-tab" data-bs-toggle="tab" data-bs-target="#upcoming-rides" type="button" role="tab" aria-controls="upcoming-rides" aria-selected="true">Trajets à venir</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="past-rides-tab" data-bs-toggle="tab" data-bs-target="#past-rides" type="button" role="tab" aria-controls="past-rides" aria-selected="false">Trajets passés</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="all-rides-tab" data-bs-toggle="tab" data-bs-target="#all-rides" type="button" role="tab" aria-controls="all-rides" aria-selected="false">Tous mes trajets</button>
+                    </li>
+                </ul>
+
+                <div class="tab-content" id="ridesTabsContent">
+                    <div class="tab-pane fade show active" id="upcoming-rides" role="tabpanel" aria-labelledby="upcoming-rides-tab">
+                        <h3 class="visually-hidden">Trajets à venir</h3>
+                        <div class="card ride-card mb-3">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <span class="badge bg-primary">Chauffeur</span>
+                                <span class="text-muted">ID Trajet: #12345</span>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-8">
+                                        <h5 class="card-title mb-1">Paris <i class="bi bi-arrow-right-short"></i> Lyon</h5>
+                                        <p class="card-text mb-1">
+                                            <i class="bi bi-calendar3 me-1"></i> 15 Mai 2025 <i class="bi bi-dot"></i> <i class="bi bi-clock me-1"></i> 08:00
+                                        </p>
+                                        <p class="card-text mb-1">
+                                            <i class="bi bi-hourglass-split me-1"></i> <span class="form-label">Durée estimée :</span> 2h30
+                                        </p>
+                                        <p class="card-text mb-1"><span class="form-label">Véhicule :</span> Peugeot 208 (AA-123-BB)</p>
+                                        <p class="card-text mb-1"><span class="form-label">Passagers inscrits :</span> 2 / 3</p>
+                                        <p class="card-text mb-1"><span class="form-label">Gain estimé :</span> 45 crédits</p>
+                                    </div>
+                                    <div class="col-md-4 text-md-end mt-2 mt-md-0 align-self-center">
+                                        <button class="btn primary-btn btn-sm mb-1 w-100">Démarrer le trajet</button> <button class="btn btn-outline-danger btn-sm w-100">Annuler ce trajet</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-footer text-muted">
+                                Statut : À venir
+                            </div>
+                        </div>
+
+                        <div class="card ride-card mb-3">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <span class="badge bg-success">Passager</span>
+                                <span class="text-muted">ID Trajet: #67890</span>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-8">
+                                        <h5 class="card-title mb-1">Rennes <i class="bi bi-arrow-right-short"></i> Nantes</h5>
+                                        <p class="card-text mb-1">
+                                            <i class="bi bi-calendar3 me-1"></i> 20 Mai 2025 <i class="bi bi-dot"></i> <i class="bi bi-clock me-1"></i> 14:30
+                                        </p>
+                                        <p class="card-text mb-1">
+                                            <i class="bi bi-hourglass-split me-1"></i> <span class="form-label">Durée estimée :</span> 7h
+                                        </p>
+                                        <p class="card-text mb-1"><span class="form-label">Chauffeur :</span> PseudoChauffeur (<i class="bi bi-star-fill text-warning"></i> 4.8)</p>
+                                        <p class="card-text mb-1"><span class="form-label">Prix payé :</span> 10 crédits</p>
+                                    </div>
+                                    <div class="col-md-4 text-md-end mt-2 mt-md-0 align-self-center">
+                                        <button class="btn btn-outline-danger btn-sm w-100">Annuler ma réservation</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-footer text-muted">
+                                Statut : Confirmé
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="tab-pane fade" id="past-rides" role="tabpanel" aria-labelledby="past-rides-tab">
+                        <h3 class="visually-hidden">Trajets passés</h3>
+                        <div class="card ride-card mb-3 opacity-75"> <div class="card-header d-flex justify-content-between align-items-center">
+                                <span class="badge bg-primary">Chauffeur</span>
+                                <span class="text-muted">ID Trajet: #00112</span>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-8">
+                                        <h5 class="card-title mb-1">Lille <i class="bi bi-arrow-right-short"></i> Bordeaux</h5>
+                                        <p class="card-text mb-1">
+                                            <i class="bi bi-calendar3 me-1"></i> 01 Avril 2025 <i class="bi bi-dot"></i> <i class="bi bi-clock me-1"></i> 09:00
+                                        </p>
+                                        <p class="card-text mb-1">
+                                            <i class="bi bi-hourglass-split me-1"></i> <span class="form-label">Durée :</span> 7h30
+                                        </p>
+                                        <p class="card-text mb-1"><span class="form-label">Passagers transportés :</span> 3</p>
+                                        <p class="card-text mb-1"><span class="form-label">Gain obtenu :</span> 60 crédits</p>
+                                    </div>
+                                    <div class="col-md-4 text-md-end mt-2 mt-md-0 align-self-center">
+                                        </div>
+                                </div>
+                            </div>
+                            <div class="card-footer text-muted">
+                                Statut : Terminé
+                            </div>
+                        </div>
+                        
+                        <div class="card ride-card mb-3 opacity-75">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <span class="badge bg-success">Passager</span>
+                                <span class="text-muted">ID Trajet: #00334</span>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-8">
+                                        <h5 class="card-title mb-1">Marseille <i class="bi bi-arrow-right-short"></i> Toulouse</h5>
+                                        <p class="card-text mb-1">
+                                            <i class="bi bi-calendar3 me-1"></i> 10 Avril 2025 <i class="bi bi-dot"></i> <i class="bi bi-clock me-1"></i> 11:00
+                                        </p>
+                                        <p class="card-text mb-1">
+                                            <i class="bi bi-hourglass-split me-1"></i> <span class="form-label">Durée :</span> 2h30
+                                        </p>
+                                        <p class="card-text mb-1"><span class="form-label">Chauffeur :</span> AutreChauffeur (<i class="bi bi-star-fill text-warning"></i> 4.2)</p>
+                                    </div>
+                                    <div class="col-md-4 text-md-end mt-2 mt-md-0 align-self-center">
+                                        <button class="btn secondary-btn btn-sm w-100">Laisser un avis</button> </div>
+                                </div>
+                            </div>
+                            <div class="card-footer text-muted">
+                                Statut : Terminé
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="tab-pane fade" id="all-rides" role="tabpanel" aria-labelledby="all-rides-tab">
+                        <p class="text-center text-muted mt-4">Affichage de tous les trajets (à venir et passés).</p>
+                        </div>
+                </div>
+                
+                <div id="no-rides-message" class="text-center py-5 d-none"> <i class="bi bi-car-front display-1 text-muted"></i>
+                    <p class="lead mt-3">Vous n'avez aucun trajet dans votre historique pour le moment.</p>
+                    <a href="/rides-search" class="btn primary-btn mt-2">Rechercher un trajet</a>
+                    <a href="/publish-ride" class="btn secondary-btn mt-2">Proposer un trajet</a>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</section>
