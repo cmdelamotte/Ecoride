@@ -129,7 +129,12 @@
                                         <p class="card-text mb-1"><span class="form-label">Chauffeur :</span> AutreChauffeur (<i class="bi bi-star-fill text-warning"></i> 4.2)</p>
                                     </div>
                                     <div class="col-md-4 text-md-end mt-2 mt-md-0 align-self-center">
-                                        <button class="btn secondary-btn btn-sm w-100">Laisser un avis</button> </div>
+                                        <button class="btn secondary-btn btn-sm w-100"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#reviewModal"
+                                        data-ride-id="[ID_DU_TRAJET]"  data-driver-name="[NOM_DU_CHAUFFEUR]"
+                                        data-ride-description="[VILLE_DEPART] → [VILLE_ARRIVEE]">Laisser un avis</button>
+                                    </div>
                                 </div>
                             </div>
                             <div class="card-footer text-muted">
@@ -149,6 +154,65 @@
                     <a href="/publish-ride" class="btn secondary-btn mt-2">Proposer un trajet</a>
                 </div>
 
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="reviewModal" tabindex="-1" aria-labelledby="reviewModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg"> <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="reviewModalLabel">Votre avis sur le trajet</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+                </div>
+                <form id="submit-review-form">
+                    <div class="modal-body">
+                        <p class="mb-1">Trajet : <strong id="review-modal-ride-details">[Ville Départ] → [Ville Arrivée]</strong></p>
+                        <p>Avec : <strong id="review-modal-driver-name">[PseudoChauffeur]</strong></p>
+                        <hr>
+    
+                        <div class="mb-3">
+                            <label class="form-label mb-1">Le trajet s'est-il globalement bien passé ?</label>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="tripOverallExperience" id="tripGood" value="good" checked>
+                                <label class="form-check-label" for="tripGood">
+                                    Oui, tout s'est bien déroulé.
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="tripOverallExperience" id="tripBad" value="bad">
+                                <label class="form-check-label" for="tripBad">
+                                    Non, j'ai rencontré un problème.
+                                </label>
+                            </div>
+                        </div>
+    
+                        <div class="mb-3">
+                            <label for="review-rating" class="form-label mb-1">Votre note pour [PseudoChauffeur] :</label>
+                            <div id="review-rating-stars" class="rating-stars mb-2">
+                                <i class="bi bi-star" data-value="1"></i>
+                                <i class="bi bi-star" data-value="2"></i>
+                                <i class="bi bi-star" data-value="3"></i>
+                                <i class="bi bi-star" data-value="4"></i>
+                                <i class="bi bi-star" data-value="5"></i>
+                            </div>
+                            <input type="hidden" name="ratingValue" id="ratingValueHiddenInput"> </div>
+    
+                        <div class="mb-3">
+                            <label for="review-comment" class="form-label mb-1">Votre commentaire (optionnel) :</label>
+                            <textarea class="form-control form-control-custom-modal" id="review-comment" rows="4" placeholder="Partagez votre expérience..."></textarea>
+                        </div>
+    
+                        <div id="report-problem-section" class="mb-3 border p-3 rounded bg-light d-none">
+                            <label for="report-comment" class="form-label mb-1 text-danger">Veuillez décrire le problème rencontré :</label>
+                            <textarea class="form-control form-control-custom-modal" id="report-comment" rows="4" placeholder="Expliquez en détail ce qui ne s'est pas bien passé..."></textarea>
+                            <small class="form-text text-muted">Ces informations seront transmises à notre équipe pour examen.</small>
+                        </div>
+    
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn secondary-btn" data-bs-dismiss="modal">Annuler</button>
+                        <button type="submit" class="btn primary-btn" id="submit-review-btn">Soumettre l'avis</button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>

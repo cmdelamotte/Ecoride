@@ -371,3 +371,18 @@ footer a[href^="mailto:"] {
     border-color: var(--light-blue) var(--light-blue) var(--white);
     font-weight: var(--font-weight-bold);
 }
+
+/* Style de modal pour les avis */
+
+.rating-stars > i {
+    font-size: 1.5rem; 
+    color: var(--bs-gray-400);
+    cursor: pointer;
+    padding: 0 0.15rem;
+    transition: color 0.2s ease-in-out;
+}
+.rating-stars > i:hover,
+.rating-stars > i.selected,
+.rating-stars:hover > i.hover-selected { 
+    color: var(--bs-warning);
+}
