@@ -6,7 +6,7 @@ export const allRoutes = [
     new Route("/login", "Connexion", "/pages/auth/login.html", ["disconnected"]),
     new Route("/register", "Inscription", "/pages/auth/register.html", ["disconnected"]),
     new Route("/account", "Mon compte", "/pages/auth/account.html", ["client", "admin"]),
-    new Route("/edit-password", "Changement de mot de passe",["client", "admin"]),
+    new Route("/edit-password", "Changement de mot de passe","/pages/auth/edit-password.html",["client", "admin"]),
     new Route("/employee-login", "Connexion employé", "/pages/auth/employee-login.html",["disconnected"]),
     new Route("/forgot-password", "Mot de passe oublié", "/pages/auth/forgot-password.html",["disconnected"]),
     new Route("/your-rides", "Vos covoiturages", "/pages/booking/your-rides.html", ["client"]),
