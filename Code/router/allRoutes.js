@@ -11,11 +11,12 @@ export const allRoutes = [
     new Route("/employee-dashboard", "Espace employé", "/pages/auth/employee-dashboard.html",["disconnected"]),
     new Route("/admin-dashboard", "Espace employé", "/pages/auth/admin-dashboard.html",["disconnected"]),
     new Route("/forgot-password", "Mot de passe oublié", "/pages/auth/forgot-password.html",["disconnected"]),
-    new Route("/your-rides", "Vos covoiturages", "/pages/booking/your-rides.html", ["client"]),
+    new Route("/your-rides", "Vos covoiturages", "/pages/your-rides.html", ["client"]),
     new Route("/book-ride", "Réserver", "/pages/booking/book-ride.html", ["client"]),
     new Route("/publish-ride", "Publier un trajet", "/pages/publish-ride.html", ["client"]),
     new Route("/search", "Rechercher un trajet", "/pages/search.html", ["client"]),
     new Route("/rides-search", "Résultats de recherche", "/pages/rides-search.html", ["client"]),
+    new Route("/contact", "Formulaire de contact", "/pages/contact.html", ["client"]),
 ];
 
 //Le titre s'affiche comme ceci : Route.titre - websitename
