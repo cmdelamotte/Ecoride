@@ -8,36 +8,40 @@
 <section class="form-section auth-form py-4">
     <div class="container">
         <div class="row justify-content-center">
-            <div class="col-12 col-md-10 col-lg-8">
-                <form id="login-form">
+            <div class="col-12 col-md-10 col-lg-8"> <form id="login-form">
                     <div class="row g-3">
+
                         <div class="col-12">
-                            <div class="form-input-custom d-flex align-items-center">
-                                <input type="text" class="form-control-custom flex-grow-1" placeholder="Pseudo" aria-label="Pseudo voulu par l'utilisateur" required>
+                            <label for="login-pseudo" class="visually-hidden">Pseudo</label> <div class="form-input-custom d-flex align-items-center">
+                                <i class="bi bi-person me-2"></i> <input type="text" class="form-control-custom flex-grow-1" id="login-pseudo" placeholder="Pseudo" aria-label="Pseudo" required>
                             </div>
                         </div>
 
                         <div class="col-12">
-                            <div class="form-input-custom d-flex align-items-center">
-                                <input type="password" class="form-control-custom flex-grow-1" placeholder="Mot de passe" aria-label="Choix du mot de passe" required>
+                            <label for="login-password" class="visually-hidden">Mot de passe</label> <div class="form-input-custom d-flex align-items-center">
+                                <i class="bi bi-shield-lock me-2"></i> <input type="password" class="form-control-custom flex-grow-1" id="login-password" placeholder="Mot de passe" aria-label="Mot de passe" required>
                             </div>
                         </div>
 
                         <div class="col-12 mt-3">
-                            <div id="error-message-login" class="alert alert-danger d-none" role="alert">Vos identifiants ne correspondent pas</div>
+                            <div id="error-message-login" class="alert alert-danger d-none" role="alert">
+                                Vos identifiants ne correspondent pas
+                            </div>
                         </div>
 
-                        <div class="col-8 mx-auto"> <div class="d-grid">
-                            <button type="submit" class="btn primary-btn">Se connecter</button>
+                        <div class="col-8 mx-auto">
+                            <div class="d-grid">
+                                <button type="submit" class="btn primary-btn">Se connecter</button>
+                            </div>
                         </div>
                     </div>
                 </form>
             </div>
         </div>
-    </div> 
-</section>                    
-        <div class="auth-link-bar mb-4">
-            <p class="mb-0 text-center">
-                    Pas encore inscrit ? <a href="/register" class="link">Cliquez ici</a>
-            </p>
-        </div>
+    </div>
+</section>
+<div class="auth-link-bar mb-4">
+    <p class="mb-0 text-center">
+        Pas encore inscrit ? <a href="/register" class="link">Cliquez ici</a>
+    </p>
+</div>
