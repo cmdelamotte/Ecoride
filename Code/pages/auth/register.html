@@ -13,24 +13,24 @@
                     <div class="row g-3">
 
                         <div class="col-12">
-                            <label for="register-pseudo" class="visually-hidden">Pseudo</label>
+                            <label for="register-username" class="visually-hidden">Pseudo</label>
                             <div class="form-input-custom d-flex align-items-center">
                                 <i class="bi bi-person me-2"></i>
-                                <input type="text" class="form-control-custom flex-grow-1" id="register-pseudo" name="register-pseudo" placeholder="Pseudo" aria-label="Pseudo voulu par l'utilisateur" required>
+                                <input type="text" class="form-control-custom flex-grow-1" id="register-username" name="register-username" placeholder="Pseudo" aria-label="Pseudo voulu par l'utilisateur" required autocomplete="username">
                             </div>
                         </div>
 
                         <div class="col-12">
-                            <label for="register-nom" class="visually-hidden">Nom</label>
+                            <label for="register-last-name" class="visually-hidden">Nom</label>
                             <div class="form-input-custom d-flex align-items-center">
-                                <i class="bi bi-person-lines-fill me-2"></i> <input type="text" class="form-control-custom flex-grow-1" id="register-nom" name="register-nom" placeholder="Nom" aria-label="Nom de l'utilisateur" required>
+                                <i class="bi bi-person-lines-fill me-2"></i> <input type="text" class="form-control-custom flex-grow-1" id="register-last-name" name="register-last-name" placeholder="Nom" aria-label="Nom de l'utilisateur" required>
                             </div>
                         </div>
 
                         <div class="col-12">
-                            <label for="register-prenom" class="visually-hidden">Prénom</label>
+                            <label for="register-first-name" class="visually-hidden">Prénom</label>
                             <div class="form-input-custom d-flex align-items-center">
-                                <i class="bi bi-person me-2"></i> <input type="text" class="form-control-custom flex-grow-1" id="register-prenom" name="register-prenom" placeholder="Prénom" aria-label="Prénom de l'utilisateur" required>
+                                <i class="bi bi-person me-2"></i> <input type="text" class="form-control-custom flex-grow-1" id="register-first-name" name="register-first-name" placeholder="Prénom" aria-label="Prénom de l'utilisateur" required>
                             </div>
                         </div>
 
@@ -38,7 +38,7 @@
                             <label for="register-email" class="visually-hidden">Email</label>
                             <div class="form-input-custom d-flex align-items-center">
                                 <i class="bi bi-envelope me-2"></i>
-                                <input type="email" class="form-control-custom flex-grow-1" id="register-email" name="register-email" placeholder="Email" aria-label="Email de l'utilisateur" required>
+                                <input type="email" class="form-control-custom flex-grow-1" id="register-email" name="register-email" placeholder="Email" aria-label="Email de l'utilisateur" required autocomplete="email">
                             </div>
                         </div>
 
@@ -46,7 +46,7 @@
                             <label for="register-password" class="visually-hidden">Mot de passe</label>
                             <div class="form-input-custom d-flex align-items-center">
                                 <i class="bi bi-shield-lock me-2"></i>
-                                <input type="password" class="form-control-custom flex-grow-1" id="register-password" name="register-password" placeholder="Mot de passe" aria-label="Choix du mot de passe" aria-describedby="register-password-help" required>
+                                <input type="password" class="form-control-custom flex-grow-1" id="register-password" name="register-password" placeholder="Mot de passe" aria-label="Choix du mot de passe" aria-describedby="register-password-help" required autocomplete="new-password">
                             </div>
                             <small id="register-password-help" class="form-text text-muted ps-1">
                                 Le mot de passe doit contenir au moins 8 caractères, incluant majuscule, minuscule, chiffre et caractère spécial.
@@ -56,7 +56,7 @@
                         <div class="col-12">
                             <label for="register-confirm-password" class="visually-hidden">Confirmation du mot de passe</label>
                             <div class="form-input-custom d-flex align-items-center">
-                                <i class="bi bi-shield-check me-2"></i> <input type="password" class="form-control-custom flex-grow-1" id="register-confirm-password" name="register-confirm-password" placeholder="Confirmation du mot de passe" aria-label="Confirmation du mot de passe" required>
+                                <i class="bi bi-shield-check me-2"></i> <input type="password" class="form-control-custom flex-grow-1" id="register-confirm-password" name="register-confirm-password" placeholder="Confirmation du mot de passe" aria-label="Confirmation du mot de passe" required autocomplete="new-password">
                             </div>
                         </div>
 
