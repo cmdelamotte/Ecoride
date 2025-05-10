@@ -1,8 +1,9 @@
 import Route from "./Route.js";
 import { allRoutes, websiteName } from "./allRoutes.js";
+import { loadAndInitializePageScript } from "../assets/js/pageScriptManager.js";
 
 // Création d'une route pour la page 404 (page introuvable)
-const route404 = new Route("404", "Page introuvable", "/pages/404.html");
+const route404 = new Route("404", "Page introuvable", "/pages/404.html", []);
 
 // Fonction pour récupérer la route correspondant à une URL donnée
 const getRouteByUrl = (url) => {
@@ -26,20 +27,21 @@ export const LoadContentPage = async () => {
   const path = window.location.pathname;
   // Récupération de l'URL actuelle
   const actualRoute = getRouteByUrl(path);
+
   // Récupération du contenu HTML de la route
   const html = await fetch(actualRoute.pathHtml).then((data) => data.text());
   // Ajout du contenu HTML à l'élément avec l'ID "main-page"
   document.getElementById("main-page").innerHTML = html;
 
-  // Ajout du contenu JavaScript
-  if (actualRoute.pathJS != "") {
-    // Création d'une balise script
-    var scriptTag = document.createElement("script");
-    scriptTag.setAttribute("type", "text/javascript");
-    scriptTag.setAttribute("src", actualRoute.pathJS);
-
-    // Ajout de la balise script au corps du document
-    document.querySelector("body").appendChild(scriptTag);
+  if (actualRoute.pathJS && actualRoute.pathJS !== "") {
+    try {
+      // ÉTAPE 2: Appeler la fonction importée
+      await loadAndInitializePageScript(actualRoute.pathJS);
+    } catch (e) {
+      // Ce catch est une sécurité si l'appel à loadAndInitializePageScript lui-même échoue
+      // (par exemple, si l'import de pageScriptManager.js en haut du fichier a échoué)
+      console.error(`Router.js: Erreur lors de la tentative d'exécution du script de page via pageScriptManager pour ${actualRoute.pathJS}:`, e);
+    }
   }
 
   // Changement du titre de la page
