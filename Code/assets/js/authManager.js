@@ -72,7 +72,7 @@ function shouldElementBeVisible(rules, userRole) {
 }
 
 // La fonction showAndHideElementsForRoles applique les résultats de shouldElementBeVisible :
-function showAndHideElementsForRoles() {
+export function showAndHideElementsForRoles() {
     const userRole = getRole(); // "passenger", "driver", ..., ou null si non connecté
 
     console.log(`UI Update based on Role: ${userRole || 'disconnected'}`);

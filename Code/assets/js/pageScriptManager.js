@@ -21,7 +21,10 @@ export async function loadAndInitializePageScript(pathJS) {
     } else if (pageModule.initializeRegisterForm && typeof pageModule.initializeRegisterForm === 'function') { // AJOUT
         pageModule.initializeRegisterForm();
         console.log(`PageScriptManager: initializeRegisterForm() appelée depuis ${pathJS}`);
-    }
+    } else if (pageModule.initializeLoginForm && typeof pageModule.initializeLoginForm === 'function') { // NOUVEAU
+        pageModule.initializeLoginForm();
+        console.log(`PageScriptManager: initializeLoginForm() appelée depuis ${pathJS}`);
+} 
     } catch (e) {
         console.error(`PageScriptManager: Erreur lors du chargement ou de l'initialisation du module JS ${pathJS}:`, e);
     }
