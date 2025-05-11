@@ -18,13 +18,16 @@ export async function loadAndInitializePageScript(pathJS) {
     if (pageModule.initializeSearchForm && typeof pageModule.initializeSearchForm === 'function') {
         pageModule.initializeSearchForm();
         console.log(`PageScriptManager: initializeSearchForm() appelée depuis ${pathJS}`);
-    } else if (pageModule.initializeRegisterForm && typeof pageModule.initializeRegisterForm === 'function') { // AJOUT
+    } else if (pageModule.initializeRegisterForm && typeof pageModule.initializeRegisterForm === 'function') {
         pageModule.initializeRegisterForm();
         console.log(`PageScriptManager: initializeRegisterForm() appelée depuis ${pathJS}`);
-    } else if (pageModule.initializeLoginForm && typeof pageModule.initializeLoginForm === 'function') { // NOUVEAU
+    } else if (pageModule.initializeLoginForm && typeof pageModule.initializeLoginForm === 'function') {
         pageModule.initializeLoginForm();
         console.log(`PageScriptManager: initializeLoginForm() appelée depuis ${pathJS}`);
-} 
+    } else if (pageModule.initializeForgotPasswordForm && typeof pageModule.initializeForgotPasswordForm === 'function') {
+    pageModule.initializeForgotPasswordForm();
+    console.log(`PageScriptManager: initializeForgotPasswordForm() appelée depuis ${pathJS}`);
+    }
     } catch (e) {
         console.error(`PageScriptManager: Erreur lors du chargement ou de l'initialisation du module JS ${pathJS}:`, e);
     }
