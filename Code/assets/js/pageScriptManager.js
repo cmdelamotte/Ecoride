@@ -30,6 +30,9 @@ export async function loadAndInitializePageScript(pathJS) {
     } else if (pageModule.initializeEditPasswordForm && typeof pageModule.initializeEditPasswordForm === 'function') { // NOUVEAU
         pageModule.initializeEditPasswordForm();
         console.log(`PageScriptManager: initializeEditPasswordForm() appelée depuis ${pathJS}`);
+    }  else if (pageModule.initializeContactForm && typeof pageModule.initializeContactForm === 'function') { // NOUVEAU
+        pageModule.initializeContactForm();
+        console.log(`PageScriptManager: initializeContactForm() appelée depuis ${pathJS}`);
     } 
     } catch (e) {
         console.error(`PageScriptManager: Erreur lors du chargement ou de l'initialisation du module JS ${pathJS}:`, e);
