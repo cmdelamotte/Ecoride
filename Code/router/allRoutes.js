@@ -15,7 +15,7 @@ export const allRoutes = [
     new Route("/book-ride", "Réserver", "/pages/booking/book-ride.html", ["passenger, passenger-driver"]),
     new Route("/publish-ride", "Publier un trajet", "/pages/publish-ride.html", ["driver, passenger-driver"]),
     new Route("/search", "Rechercher un trajet", "/pages/search.html", ["passenger", "driver", "passenger-driver"]),
-    new Route("/rides-search", "Résultats de recherche", "/pages/rides-search.html", ["passenger", "driver", "passenger-driver"], "/assets/js/searchFormHandler.js"),
+    new Route("/rides-search", "Résultats de recherche", "/pages/rides-search.html", ["passenger", "driver", "passenger-driver"], "/assets/js/ridesSearchPageHandler.js"),
     new Route("/contact", "Formulaire de contact", "/pages/contact.html", [], "/assets/js/contactFormHandler.js"),
     new Route("/legal-mentions", "Mentions légales", "/pages/legal-mentions.html", []),
 ];

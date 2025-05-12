@@ -33,6 +33,12 @@ export async function loadAndInitializePageScript(pathJS) {
     }  else if (pageModule.initializeContactForm && typeof pageModule.initializeContactForm === 'function') { // NOUVEAU
         pageModule.initializeContactForm();
         console.log(`PageScriptManager: initializeContactForm() appelée depuis ${pathJS}`);
+    } else if (pageModule.initializeFilters && typeof pageModule.initializeFilters === 'function') { // NOUVEAU
+        pageModule.initializeFilters();
+        console.log(`PageScriptManager: initializeFilters() appelée depuis ${pathJS}`);
+    } else if (pageModule.initializeRidesSearchPage && typeof pageModule.initializeRidesSearchPage === 'function') { // <<<=== NOUVEAU BLOC À AJOUTER/MODIFIER
+        pageModule.initializeRidesSearchPage();
+        console.log(`PageScriptManager: initializeRidesSearchPage() appelée depuis ${pathJS}`);
     } 
     } catch (e) {
         console.error(`PageScriptManager: Erreur lors du chargement ou de l'initialisation du module JS ${pathJS}:`, e);

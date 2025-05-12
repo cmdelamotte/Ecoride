@@ -35,8 +35,7 @@
 
                 <div class="col-lg-auto col-md-12 col-12">
                     <div class="d-grid">
-                        <button id="search-form-submit" type="submit" class="btn primary-btn"> <i class="bi bi-search me-1"></i> Rechercher
-                        </button>
+                        <button id="search-form-submit" type="submit" class="btn primary-btn"> <i class="bi bi-search me-1"></i> Rechercher</button>
                     </div>
                 </div>
 
@@ -60,52 +59,55 @@
                     <div class="row g-3">
 
                         <div class="col-md-6">
-                            <label for="filterPrice" class="form-label">Prix maximum (crédits)</label>
-                            <input type="range" class="form-range" min="0" max="100" step="5" id="filterPrice" oninput="this.nextElementSibling.value = this.value">
-                            <output class="badge bg-secondary">50</output> </div>
+                            <label for="price-filter" class="form-label">Prix maximum (crédits)</label>
+                            <input type="range" class="form-range" min="0" max="100" step="5" id="price-filter" name="price-filter">
+                            <output class="badge bg-secondary" id="price-output">50</output>
+                        </div>
 
                         <div class="col-md-6">
-                            <label for="filterDuration" class="form-label">Durée maximum du trajet</label>
-                            <select class="form-select form-select-sm" id="filterDuration">
-                                <option selected value="">Indifférent</option>
-                                <option value="1">Moins d'1h</option>
-                                <option value="2">Moins de 2h</option>
-                                <option value="4">Moins de 4h</option>
-                                <option value="99">Plus de 4h</option>
-                            </select>
+                            <label for="duration-filter-range" class="form-label">Durée maximum du trajet</label>
+                            <input type="range" 
+                                class="form-range" 
+                                min="0.5" 
+                                max="24" 
+                                step="0.5" 
+                                id="duration-filter-range" 
+                                name="duration_filter_range" 
+                                value="4">
+                            <output for="duration-filter-range" class="badge bg-secondary" id="duration-output">4h00</output>
                         </div>
 
                         <div class="col-md-6">
                             <label class="form-label d-block mb-2">Animaux autorisés</label>
                             <div>
                                 <div class="form-check form-check-inline">
-                                    <input class="form-check-input" type="radio" name="animalOptions" id="animalAny" value="" checked>
+                                    <input class="form-check-input" type="radio" name="animal-option" id="animal-any" value="" checked>
                                     <label class="form-check-label" for="animalAny">Indifférent</label>
                                 </div>
                                 <div class="form-check form-check-inline">
-                                    <input class="form-check-input" type="radio" name="animalOptions" id="animalYes" value="true">
+                                    <input class="form-check-input" type="radio" name="animal-option" id="animal-yes" value="true">
                                     <label class="form-check-label" for="animalYes">Oui</label>
                                 </div>
                                 <div class="form-check form-check-inline">
-                                    <input class="form-check-input" type="radio" name="animalOptions" id="animalNo" value="false">
+                                    <input class="form-check-input" type="radio" name="animal-option" id="animal-no" value="false">
                                     <label class="form-check-label" for="animalNo">Non</label>
                                 </div>
                             </div>
                         </div>
 
                         <div class="col-md-6">
-                            <label for="filterRating" class="form-label">Note minimale du conducteur</label>
-                            <div id="filterRating">
+                            <label for="rating-filter" class="form-label">Note minimale du conducteur</label>
+                            <div id="rating-filter">
                                 <div class="form-check form-check-inline">
-                                    <input class="form-check-input" type="radio" name="ratingOptions" id="ratingAny" value="0" checked>
+                                    <input class="form-check-input" type="radio" name="rating-options" id="rating-any" value="0" checked>
                                     <label class="form-check-label" for="ratingAny">Tout</label>
                                 </div>
                                 <div class="form-check form-check-inline">
-                                    <input class="form-check-input" type="radio" name="ratingOptions" id="rating4" value="4">
+                                    <input class="form-check-input" type="radio" name="rating-options" id="rating-4" value="4">
                                     <label class="form-check-label" for="rating4">4+ <i class="bi bi-star-fill text-warning"></i></label>
                                 </div>
                                 <div class="form-check form-check-inline">
-                                    <input class="form-check-input" type="radio" name="ratingOptions" id="rating4.5" value="4.5">
+                                    <input class="form-check-input" type="radio" name="rating-options" id="rating-4.5" value="4.5">
                                     <label class="form-check-label" for="rating4.5">4.5+ <i class="bi bi-star-fill text-warning"></i></label>
                                 </div>
                             </div>
@@ -113,8 +115,8 @@
 
                         <div class="col-md-6">
                             <div class="form-check form-switch">
-                                <input class="form-check-input" type="checkbox" role="switch" id="filterEco">
-                                <label class="form-check-label form-label" for="filterEco">Voyage Écologique uniquement</label>
+                                <input class="form-check-input" type="checkbox" role="switch" id="eco-filter" name="eco-filter">
+                                <label class="form-check-label form-label" for="eco-filter">Voyage Écologique uniquement</label>
                             </div>
                         </div>
 
