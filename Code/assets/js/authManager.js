@@ -7,7 +7,7 @@ function getToken() {
     return sessionStorage.getItem('ecoRideUserToken'); // SessionStorage pour que ça s'efface à la fermeture du navigateur (plus simple pour tests)
 }
 
-function getRole() {
+export function getRole() {
     // Plus tard, lira un vrai rôle
     // return localStorage.getItem('ecoRideUserRole');
     return sessionStorage.getItem('ecoRideUserRole');
@@ -32,7 +32,7 @@ function simulateLogin(role, token = "fakeUserToken123") {
 /**
  * Simule une déconnexion.
  */
-function signout(event) {
+export function signout(event) {
     if(event) event.preventDefault(); // Si appelé depuis un lien
     sessionStorage.removeItem('ecoRideUserToken');
     sessionStorage.removeItem('ecoRideUserRole');

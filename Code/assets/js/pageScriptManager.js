@@ -39,6 +39,9 @@ export async function loadAndInitializePageScript(pathJS) {
     } else if (pageModule.initializeRidesSearchPage && typeof pageModule.initializeRidesSearchPage === 'function') { // <<<=== NOUVEAU BLOC À AJOUTER/MODIFIER
         pageModule.initializeRidesSearchPage();
         console.log(`PageScriptManager: initializeRidesSearchPage() appelée depuis ${pathJS}`);
+    } else if (pageModule.initializeAccountPage && typeof pageModule.initializeAccountPage === 'function') { // <<<=== NOUVEAU BLOC À AJOUTER
+        pageModule.initializeAccountPage();
+        console.log(`PageScriptManager: initializeAccountPage() appelée depuis ${pathJS}`);
     } 
     } catch (e) {
         console.error(`PageScriptManager: Erreur lors du chargement ou de l'initialisation du module JS ${pathJS}:`, e);
