@@ -7,6 +7,7 @@ export const allRoutes = [
     new Route("/register", "Inscription", "/pages/auth/register.html", ["disconnected"], "/assets/js/registerFormHandler.js"),
     new Route("/account", "Mon compte", "/pages/auth/account.html", ["passenger", "driver", "passenger-driver"], "/assets/js/accountPageHandler.js" ),
     new Route("/edit-password", "Changement de mot de passe","/pages/auth/edit-password.html",["passenger", "driver", "passenger-driver"], "/assets/js/editPasswordFormHandler.js"),
+    new Route("/edit-personal-info", "Modification des informations personnelles","/pages/auth/edit-personal-info.html",["passenger", "driver", "passenger-driver"], "/assets/js/personalInfoFormHandler.js"),
     new Route("/employee-login", "Connexion employé", "/pages/auth/employee-login.html",["employee"]),
     new Route("/employee-dashboard", "Espace employé", "/pages/auth/employee-dashboard.html",["employee"]),
     new Route("/admin-dashboard", "Espace Admin", "/pages/auth/admin-dashboard.html",["admin"]),

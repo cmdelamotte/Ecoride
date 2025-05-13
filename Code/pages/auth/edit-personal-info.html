@@ -1,0 +1,78 @@
+<section class="banner-container position-relative text-white text-center">
+    <div class="container">
+        <h1 class="banner-title display-4 mb-3">Modifier mes Informations</h1>
+        <p class="banner-subtitle lead">Mettez à jour vos informations et confirmez avec votre mot de passe.</p>
+    </div>
+</section>
+
+<section class="form-section auth-form py-4">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-12 col-md-8 col-lg-6">
+                <form id="edit-personal-info-form">
+                    <div class="row g-3">
+
+                        <div class="col-12"> <label for="edit-username" class="form-label">Pseudo</label>
+                            <div class="form-input-custom d-flex align-items-center">
+                                <i class="bi bi-person-badge me-2"></i>
+                                <input type="text" class="form-control-custom flex-grow-1" id="edit-username" name="edit-username" placeholder="Nouveau pseudo" aria-label="Pseudo" required autocomplete="username">
+                            </div>
+                        </div>
+
+                        <div class="col-12">
+                            <label for="edit-first-name" class="visually-hidden">Prénom</label>
+                            <div class="form-input-custom d-flex align-items-center">
+                                <i class="bi bi-person me-2"></i>
+                                <input type="text" class="form-control-custom flex-grow-1" id="edit-first-name" name="edit-first-name" placeholder="Prénom" aria-label="Prénom" required>
+                            </div>
+                        </div>
+
+                        <div class="col-12">
+                            <label for="edit-last-name" class="visually-hidden">Nom</label>
+                            <div class="form-input-custom d-flex align-items-center">
+                                <i class="bi bi-person-lines-fill me-2"></i>
+                                <input type="text" class="form-control-custom flex-grow-1" id="edit-last-name" name="edit-last-name" placeholder="Nom" aria-label="Nom" required>
+                            </div>
+                        </div>
+
+                        <div class="col-12">
+                            <label for="edit-email" class="visually-hidden">Email</label>
+                            <div class="form-input-custom d-flex align-items-center">
+                                <i class="bi bi-envelope me-2"></i>
+                                <input type="email" class="form-control-custom flex-grow-1" id="edit-email" name="edit-email" placeholder="Nouvelle adresse email" aria-label="Email" required autocomplete="email">
+                            </div>
+                        </div>
+                        
+                        <hr class="my-3">
+
+                        <div class="col-12">
+                            <label for="edit-info-current-password" class="visually-hidden">Mot de passe actuel (pour confirmation)</label>
+                            <div class="form-input-custom d-flex align-items-center">
+                                <i class="bi bi-shield-lock me-2"></i>
+                                <input type="password" class="form-control-custom flex-grow-1" id="edit-info-current-password" name="edit-info-current-password" placeholder="Mot de passe actuel pour confirmer" aria-label="Mot de passe actuel pour confirmer" required autocomplete="current-password">
+                            </div>
+                            <small id="password-help" class="form-text text-muted ps-1">
+                                Veuillez saisir votre mot de passe actuel pour valider les modifications.
+                            </small>
+                        </div>
+
+                        <div class="col-12 mt-3">
+                            <div id="message-edit-personal-info" class="alert d-none" role="alert"></div>
+                        </div>
+
+                        <div class="col-10 mx-auto mt-2">
+                            <div class="d-grid">
+                                <button type="submit" class="btn primary-btn">Enregistrer les modifications</button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="auth-link-bar mt-4 mb-4">
+        <p class="mb-0 text-center">
+            <a href="/account" class="link">Retour à Mon Compte</a>
+        </p>
+    </div>
+</section>

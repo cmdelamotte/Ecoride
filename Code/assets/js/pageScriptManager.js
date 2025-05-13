@@ -27,22 +27,25 @@ export async function loadAndInitializePageScript(pathJS) {
     } else if (pageModule.initializeForgotPasswordForm && typeof pageModule.initializeForgotPasswordForm === 'function') {
     pageModule.initializeForgotPasswordForm();
     console.log(`PageScriptManager: initializeForgotPasswordForm() appelée depuis ${pathJS}`);
-    } else if (pageModule.initializeEditPasswordForm && typeof pageModule.initializeEditPasswordForm === 'function') { // NOUVEAU
+    } else if (pageModule.initializeEditPasswordForm && typeof pageModule.initializeEditPasswordForm === 'function') { 
         pageModule.initializeEditPasswordForm();
         console.log(`PageScriptManager: initializeEditPasswordForm() appelée depuis ${pathJS}`);
-    }  else if (pageModule.initializeContactForm && typeof pageModule.initializeContactForm === 'function') { // NOUVEAU
+    }  else if (pageModule.initializeContactForm && typeof pageModule.initializeContactForm === 'function') { 
         pageModule.initializeContactForm();
         console.log(`PageScriptManager: initializeContactForm() appelée depuis ${pathJS}`);
-    } else if (pageModule.initializeFilters && typeof pageModule.initializeFilters === 'function') { // NOUVEAU
+    } else if (pageModule.initializeFilters && typeof pageModule.initializeFilters === 'function') { 
         pageModule.initializeFilters();
         console.log(`PageScriptManager: initializeFilters() appelée depuis ${pathJS}`);
-    } else if (pageModule.initializeRidesSearchPage && typeof pageModule.initializeRidesSearchPage === 'function') { // <<<=== NOUVEAU BLOC À AJOUTER/MODIFIER
+    } else if (pageModule.initializeRidesSearchPage && typeof pageModule.initializeRidesSearchPage === 'function') { 
         pageModule.initializeRidesSearchPage();
         console.log(`PageScriptManager: initializeRidesSearchPage() appelée depuis ${pathJS}`);
-    } else if (pageModule.initializeAccountPage && typeof pageModule.initializeAccountPage === 'function') { // <<<=== NOUVEAU BLOC À AJOUTER
+    } else if (pageModule.initializeAccountPage && typeof pageModule.initializeAccountPage === 'function') { 
         pageModule.initializeAccountPage();
         console.log(`PageScriptManager: initializeAccountPage() appelée depuis ${pathJS}`);
-    } 
+    } else if (pageModule.initializeEditPersonalInfoForm && typeof pageModule.initializeEditPersonalInfoForm === 'function') {
+        pageModule.initializeEditPersonalInfoForm();
+        console.log(`PageScriptManager: initializeEditPersonalInfoForm() appelée depuis ${pathJS}`);
+    }
     } catch (e) {
         console.error(`PageScriptManager: Erreur lors du chargement ou de l'initialisation du module JS ${pathJS}:`, e);
     }
