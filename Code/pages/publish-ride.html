@@ -13,6 +13,7 @@
                     <div class="row g-3">
 
                         <div class="col-12">
+                                <label for="departure-location" class="form-label visually-hidden">Lieu de départ</label>
                             <div class="form-input-custom d-flex align-items-center">
                                 <i class="bi bi-geo-alt me-2"></i>
                                 <input type="text" class="form-control-custom flex-grow-1" id="departure-location" placeholder="Lieu de départ" aria-label="Lieu de départ" required>
@@ -63,18 +64,11 @@
                                     <option value="vehicule2_id">Renault Clio (CC-456-DD) - Électrique</option>
                                 </select>
                             </div>
-                            <div class="text-center mt-3"> <button type="button" id="show-add-vehicle-form-publish" class="btn secondary-btn btn-sm" data-bs-toggle="collapse" data-bs-target="#add-vehicle-form-publish-container">
-                                    <i class="bi bi-plus-circle me-1"></i> Ajouter un nouveau véhicule
-                                </button>
-                            </div>
-                        </div>
-                        
-                        <div class="col-12 collapse mt-3" id="add-vehicle-form-publish-container"> <div class="card card-body"> <h4 class="h6 form-label border-bottom pb-2 mb-3">Ajouter un nouveau véhicule</h4>
-                                <p class="text-muted text-center">(Contenu du formulaire d'ajout de véhicule ici)</p>
-                                <div class="text-end">
-                                    <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="collapse" data-bs-target="#add-vehicle-form-publish-container">Annuler</button>
-                                    <button type="button" class="btn btn-sm primary-btn">Enregistrer ce véhicule</button> </div>
-                            </div>
+                            <div class="text-center mt-3">
+                                <a href="/account" class="btn secondary-btn btn-sm">
+                                    <i class="bi bi-car-front me-1"></i> Gérer mes véhicules (Mon Compte)
+                                </a>
+                                </div>
                         </div>
                         
                         <div class="col-12">
@@ -82,6 +76,9 @@
                             <div class="form-input-custom">
                                 <textarea class="form-control-custom flex-grow-1" id="ride-message" rows="3" placeholder="Message pour les passagers (ex: point de RDV précis, bagages autorisés...)" aria-label="Message pour les passagers"></textarea>
                             </div>
+                        </div>
+
+                        <div class="col-12 mt-3"> <div id="publish-ride-message-global" class="alert d-none" role="alert"></div>
                         </div>
 
                         <div class="col-12 text-center mt-4">
