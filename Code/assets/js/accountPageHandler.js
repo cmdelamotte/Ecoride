@@ -1,6 +1,4 @@
-// assets/js/accountPageHandler.js
-
-// Imports (Assure-toi que les chemins sont corrects par rapport à ton arborescence)
+// Imports
 import { getRole, showAndHideElementsForRoles, signout as authManagerSignout } from './authManager.js';
 import { LoadContentPage } from '../../router/Router.js'; 
 
@@ -362,16 +360,16 @@ export function initializeAccountPage() {
 
              // Validation de la date (simple vérification qu'elle n'est pas vide si requise, le type="date" aide)
              if (regDateInput && !registrationDate && regDateInput.hasAttribute('required')) { // Si tu ajoutes 'required' au HTML
-                 regDateInput.setCustomValidity("La date d'immatriculation est requise.");
-                 isVehicleFormValid = false;
-             } else if (regDateInput && registrationDate) {
-                 // Optionnel : Vérifier que la date n'est pas dans le futur
-                 const today = new Date().toISOString().split('T')[0];
-                 if (registrationDate > today) {
+                regDateInput.setCustomValidity("La date d'immatriculation est requise.");
+                isVehicleFormValid = false;
+                } else if (regDateInput && registrationDate) {
+                 // Vérifier que la date n'est pas dans le futur
+                const today = new Date().toISOString().split('T')[0];
+                if (registrationDate > today) {
                     regDateInput.setCustomValidity("La date d'immatriculation ne peut pas être dans le futur.");
                     isVehicleFormValid = false;
-                 }
-             }
+                }
+            }
 
             // Si une validation a échoué...
             if (!isVehicleFormValid) {
@@ -425,7 +423,7 @@ export function initializeAccountPage() {
                     alert("Véhicule modifié (simulation) !");
                 } else {
                     console.warn("Impossible de trouver l'élément véhicule à mettre à jour dans le DOM.");
-                     alert("Erreur lors de la mise à jour de l'affichage du véhicule.");
+                    alert("Erreur lors de la mise à jour de l'affichage du véhicule.");
                 }
 
             } else { 
