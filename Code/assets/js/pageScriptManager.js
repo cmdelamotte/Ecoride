@@ -48,6 +48,9 @@ export async function loadAndInitializePageScript(pathJS) {
     } else if (pageModule.initializePublishRidePage && typeof pageModule.initializePublishRidePage === 'function') { // Nom de la fonction mis à jour
     pageModule.initializePublishRidePage();
     console.log(`PageScriptManager: initializePublishRidePage() appelée depuis ${pathJS}`);
+    } else if (pageModule.initializeAdminDashboardPage && typeof pageModule.initializeAdminDashboardPage === 'function') {
+    pageModule.initializeAdminDashboardPage();
+    console.log(`PageScriptManager: initializeAdminDashboardPage() appelée depuis ${pathJS}`);
     }
     } catch (e) {
         console.error(`PageScriptManager: Erreur lors du chargement ou de l'initialisation du module JS ${pathJS}:`, e);
