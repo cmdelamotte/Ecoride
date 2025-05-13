@@ -21,29 +21,25 @@
                         <div class="mb-3">
                             <span class="form-label">Pseudo :</span>
                             <span id="account-username-display" class="fw-bold">[PseudoUtilisateur]</span>
-                            </div>
-
+                        </div>
                         <div class="mb-3">
                             <span class="form-label">Nom :</span>
                             <span id="account-last-name-display" class="fw-bold">[NomUtilisateur]</span>
-                            </div>
-
+                        </div>
                         <div class="mb-3">
                             <span class="form-label">Prénom :</span>
                             <span id="account-first-name-display" class="fw-bold">[PrénomUtilisateur]</span>
-                            </div>
-
+                        </div>
                         <div class="mb-3">
                             <span class="form-label">Email :</span>
                             <span id="account-email-display" class="fw-bold">[EmailUtilisateur]</span>
-                            </div>
+                        </div>
                         <p><span class="form-label">Crédits EcoRide :</span> <span id="account-credits">[CréditsUtilisateur]</span></p>
-                        
-                        <div id="personal-info-actions"> <a href="/edit-personal-info" class="btn secondary-btn btn-sm mt-2">Modifier mes informations</a>
+                        <div id="personal-info-actions">
+                            <a href="/edit-personal-info" class="btn secondary-btn btn-sm mt-2">Modifier mes informations</a>
                             <a href="/edit-password" class="btn btn-outline-danger btn-sm mt-2">Changer de mot de passe</a>
                         </div>
-                        
-                        </div>
+                    </div>
                 </div>
 
                 <div class="card mb-4">
@@ -78,103 +74,101 @@
                         <h2 class="h5 mb-0">Informations Chauffeur</h2>
                     </div>
                     <div class="card-body">
-                        <form id="driver-details-form">
-                            <h3 class="h6 form-label">Mes Véhicules</h3>
-                            <div id="vehicles-list">
-                                <div class="vehicle-item card card-body mb-2">
-                                    <p class="mb-1"><span class="form-label">Modèle :</span> Peugeot 208 - <span class="form-label">Plaque :</span> AA-123-BB</p>
-                                    <button type="button" class="btn btn-sm btn-outline-secondary">Modifier</button>
-                                    <button type="button" class="btn btn-sm btn-outline-danger mt-1">Supprimer</button>
+                        <h3 class="h6 form-label">Mes Véhicules</h3>
+                        <div id="vehicles-list">
+                            <div class="vehicle-item card card-body mb-2" data-vehicle-id="123-example">
+                                <p class="mb-1">
+                                    <span class="form-label">Marque :</span> <span class="vehicle-brand-display">Peugeot</span><br>
+                                    <span class="form-label">Modèle :</span> <span class="vehicle-model-display">208</span> - 
+                                    <span class="form-label">Plaque :</span> <span class="vehicle-plate-display">AA-123-BB</span>
+                                </p>
+                                <div class="mt-2">
+                                    <button type="button" class="btn btn-sm btn-outline-secondary edit-vehicle-btn">Modifier</button>
+                                    <button type="button" class="btn btn-sm btn-outline-danger mt-1 mt-sm-0 ms-sm-1 delete-vehicle-btn">Supprimer</button>
                                 </div>
                             </div>
-                            <button type="button" id="add-vehicle-btn" class="btn secondary-btn btn-sm mb-3">
-                                <i class="bi bi-plus-circle me-1"></i> Ajouter un véhicule
-                            </button>
+                        </div>
+                        <button type="button" id="add-vehicle-btn" class="btn secondary-btn btn-sm mb-3">
+                            <i class="bi bi-plus-circle me-1"></i> Ajouter un véhicule
+                        </button>
 
-                            <div id="vehicle-form-container" class="card card-body mb-3 d-none">
-                                <h3 class="h6 form-label border-bottom pb-3 mb-3">Ajouter/Modifier un Véhicule</h3>
+                        <div id="vehicle-form-container" class="card card-body mb-3 d-none">
+                            <form id="vehicle-form"> 
+                                <h3 class="h6 form-label border-bottom pb-3 mb-3" id="vehicle-form-title">Ajouter un Véhicule</h3>
+                                <input type="hidden" id="editing-vehicle-id" name="editing_vehicle_id" value="">
                                 <div class="row g-3">
-                                    <div class="col-12"> <label for="vehicle-brand">Marque</label>
+                                    <div class="col-12"> <label for="vehicle-brand" class="form-label">Marque</label>
                                         <div class="form-input-custom d-flex align-items-center">
                                             <input type="text" class="form-control-custom flex-grow-1" id="vehicle-brand" name="vehicle_brand" placeholder="Marque" aria-label="Marque du véhicule" required>
                                         </div>
                                     </div>
-                                
                                     <div class="col-12">
-                                        <label for="vehicle-model">Modèle</label>
+                                        <label for="vehicle-model" class="form-label">Modèle</label>
                                         <div class="form-input-custom d-flex align-items-center">
                                             <input type="text" class="form-control-custom flex-grow-1" id="vehicle-model" name="vehicle_model" placeholder="Modèle" aria-label="Modèle du véhicule" required>
                                         </div>
                                     </div>
-                                
                                     <div class="col-12">
-                                        <label for="vehicle-color">Couleur</label>
+                                        <label for="vehicle-color" class="form-label">Couleur</label>
                                         <div class="form-input-custom d-flex align-items-center">
                                             <input type="text" class="form-control-custom flex-grow-1" id="vehicle-color" name="vehicle_color" placeholder="Couleur" aria-label="Couleur du véhicule">
                                         </div>
                                     </div>
-                                
                                     <div class="col-12">
-                                        <label for="vehicle-license-plate">Plaque d'immatriculation</label>
+                                        <label for="vehicle-license-plate" class="form-label">Plaque d'immatriculation</label>
                                         <div class="form-input-custom d-flex align-items-center">
                                             <input type="text" class="form-control-custom flex-grow-1" id="vehicle-license-plate" name="vehicle_license_plate" placeholder="Plaque d'immatriculation (Ex: AA-123-BB)" aria-label="Plaque d'immatriculation" required>
                                         </div>
                                     </div>
-                                
                                     <div class="col-12">
-                                        <label for="vehicle-registration-date">Date de 1ère immatriculation</label>
+                                        <label for="vehicle-registration-date" class="form-label">Date de 1ère immatriculation</label>
                                         <div class="form-input-custom d-flex align-items-center">
                                             <input type="text" class="form-control-custom flex-grow-1" id="vehicle-registration-date" name="vehicle_registration_date" placeholder="Date de 1ère immatriculation (JJ/MM/AAAA)" onfocus="(this.type='date')" onblur="(this.type='text')" aria-label="Date de 1ère immatriculation" >
                                         </div>
                                     </div>
                                     <div class="col-12">
-                                        <label for="vehicle-seats">Nombre de places disponibles (hors chauffeur)</label>
+                                        <label for="vehicle-seats" class="form-label">Nombre de places disponibles (hors chauffeur)</label>
                                         <div class="form-input-custom d-flex align-items-center">
                                             <input type="number" class="form-control-custom flex-grow-1" id="vehicle-seats" name="vehicle_seats" placeholder="Nombre de places disponibles" aria-label="Nombre de places disponibles" min="1" max="8" required>
                                         </div>
                                     </div>
-                                
-                                    <div class="col-12 mt-2"> <div class="form-check form-check-custom-vehicle"> <input class="form-check-input" type="checkbox" id="vehicle-electric" name="vehicle_electric"> <label class="form-check-label" for="vehicle-electric">
-                                                Véhicule électrique (pour trajets écologiques)
-                                            </label>
+                                    <div class="col-12 mt-2">
+                                        <div class="form-check form-check-custom-vehicle">
+                                            <input class="form-check-input" type="checkbox" id="vehicle-electric" name="vehicle_electric">
+                                            <label class="form-check-label" for="vehicle-electric">Véhicule électrique (pour trajets écologiques)</label>
                                         </div>
                                     </div>
-                                
-                                    <div class="col-12 text-center mt-3"> <button type="button" id="cancel-vehicle-form-btn" class="btn secondary-btn me-2">Annuler</button>
-                                        <button type="submit" class="btn primary-btn">Enregistrer Véhicule</button>
+                                    <div class="col-12 text-center mt-3">
+                                        <button type="button" id="cancel-vehicle-form-btn" class="btn secondary-btn me-2">Annuler</button>
+                                        <button type="submit" id="save-vehicle-btn" class="btn primary-btn">Enregistrer Véhicule</button>
                                     </div>
                                 </div>
-                            </div>
+                            </form> 
+                        </div>
 
-                            <h3 class="h6 form-label mt-4">Mes Préférences de Conduite</h3>
+                        <form id="driver-preferences-form"> <h3 class="h6 form-label mt-4">Mes Préférences de Conduite</h3>
                             <div class="form-check">
-                                <input class="form-check-input" type="checkbox" id="pref-smoker" name="pref_smoker" value="smoker"> <label class="form-check-label" for="pref-smoker">
-                                    Accepte les fumeurs
-                                </label>
+                                <input class="form-check-input" type="checkbox" id="pref-smoker" name="pref_smoker" value="smoker">
+                                <label class="form-check-label" for="pref-smoker">Accepte les fumeurs</label>
                             </div>
                             <div class="form-check">
-                                <input class="form-check-input" type="checkbox" id="pref-animals" name="pref_animals" value="animals"> <label class="form-check-label" for="pref-animals">
-                                    Accepte les animaux
-                                </label>
+                                <input class="form-check-input" type="checkbox" id="pref-animals" name="pref_animals" value="animals">
+                                <label class="form-check-label" for="pref-animals">Accepte les animaux</label>
                             </div>
                             <div class="mt-2">
                                 <label for="pref-custom" class="form-label-sm">Autres préférences (ex: musique, discussions...)</label>
-                                <textarea class="form-control form-control-sm form-control-custom" id="pref-custom" name="pref_custom" rows="2"></textarea> </div>
-
-                            <button type="submit" class="btn primary-btn mt-3">Enregistrer les informations Chauffeur</button>
+                                <textarea class="form-control form-control-sm form-control-custom" id="pref-custom" name="pref_custom" rows="2"></textarea>
+                            </div>
+                            <button type="submit" class="btn primary-btn mt-3">Enregistrer les Préférences</button> 
                         </form>
                     </div>
                 </div>
 
                 <div class="auth-link-bar mt-4">
-                    <p class="mb-0 text-center">
-                        <a href="/your-rides" class="link">Voir mon historique de trajets</a>
-                    </p>
+                    <p class="mb-0 text-center"><a href="/your-rides" class="link">Voir mon historique de trajets</a></p>
                 </div>
                 <div class="auth-link-bar mt-2">
-                    <p class="mb-0 text-center">
-                        <a href="/" class="link" id="logout-account-btn">Se déconnecter</a>
-                    </p>
+                    <p class="mb-0 text-center"><a href="/" class="link" id="logout-account-btn">Se déconnecter</a></p>
                 </div>
 
             </div>
@@ -182,21 +176,3 @@
     </div>
 </section>
 
-<div class="modal fade" id="confirmDeleteAccountModal" tabindex="-1" aria-labelledby="confirmDeleteAccountModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header">
-                    <h5 class="modal-title" id="confirmDeleteAccountModalLabel">Confirmer la suppression du compte</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
-            </div>
-            <div class="modal-body">
-                <p>Êtes-vous sûr de vouloir supprimer définitivement votre compte ? Cette action est irréversible.</p>
-                <p class="text-danger fw-bold">Toutes vos données, y compris vos trajets et crédits, seront perdues.</p>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                <button type="button" id="confirm-delete-btn" class="btn btn-danger">Oui, supprimer mon compte</button>
-            </div>
-        </div>
-    </div>
-</div>
