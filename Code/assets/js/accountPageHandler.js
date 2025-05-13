@@ -12,7 +12,7 @@ function toggleDriverInfoSection(currentRole) {
             driverInfoSection.classList.add('d-none');
         }
     } else {
-        console.warn("AccountPageHandler: Section 'driver-info-section' non trouvée.");
+        // console.warn("AccountPageHandler: Section 'driver-info-section' non trouvée.");
     }
 }
 
@@ -56,7 +56,10 @@ export function initializeAccountPage() {
     const confirmDeleteAccountBtn = document.getElementById('confirm-delete-btn'); 
     let confirmDeleteAccountModal = null;
     if (confirmDeleteAccountModalElement) {
-        confirmDeleteAccountModal = new bootstrap.Modal(confirmDeleteAccountModalElement);
+        if (!window.confirmDeleteAccountModalInstance) {
+            window.confirmDeleteAccountModalInstance = new bootstrap.Modal(confirmDeleteAccountModalElement);
+        }
+        confirmDeleteAccountModal = window.confirmDeleteAccountModalInstance;
     }
 
     // Éléments pour la gestion des véhicules
@@ -68,17 +71,17 @@ export function initializeAccountPage() {
     const cancelVehicleFormBtn = document.getElementById('cancel-vehicle-form-btn');
 
     const vehiclesList = document.getElementById('vehicles-list'); 
-    const confirmDeleteVehicleModalElementFromHTML = document.getElementById('confirmDeleteVehicleModal'); // Renommé pour éviter conflit de scope
+    const confirmDeleteVehicleModalElementFromHTML = document.getElementById('confirmDeleteVehicleModal');
     const confirmVehicleDeleteBtn = document.getElementById('confirm-vehicle-delete-btn');
     const vehicleToDeleteInfoSpan = document.querySelector('#confirmDeleteVehicleModal .vehicle-to-delete-info');
     let confirmDeleteVehicleModalInstance = null; 
     let vehicleIdToDelete = null;
 
     if (confirmDeleteVehicleModalElementFromHTML) { 
-        if (!window.confirmDeleteVehicleModalInstance) { // Assurer une seule initialisation
-            window.confirmDeleteVehicleModalInstance = new bootstrap.Modal(confirmDeleteVehicleModalElementFromHTML);
+        if (!window.confirmDeleteVehicleModalVehicleInstance) { 
+            window.confirmDeleteVehicleModalVehicleInstance = new bootstrap.Modal(confirmDeleteVehicleModalElementFromHTML);
         }
-        confirmDeleteVehicleModalInstance = window.confirmDeleteVehicleModalInstance;
+        confirmDeleteVehicleModalInstance = window.confirmDeleteVehicleModalVehicleInstance;
     }
     
     if (userPseudoSpan) userPseudoSpan.textContent = sessionStorage.getItem('simulatedUserPseudo') || userPseudoSpan.textContent;
@@ -173,7 +176,6 @@ export function initializeAccountPage() {
             if (!vehicleItem) return;
             const vehicleId = vehicleItem.getAttribute('data-vehicle-id');
             
-            // Récupérer les infos affichées pour le pré-remplissage ou la modale
             const brandDisplayElement = vehicleItem.querySelector('.vehicle-brand-display');
             const modelDisplayElement = vehicleItem.querySelector('.vehicle-model-display');
             const plateDisplayElement = vehicleItem.querySelector('.vehicle-plate-display');
@@ -181,29 +183,26 @@ export function initializeAccountPage() {
             const brand = brandDisplayElement ? brandDisplayElement.textContent : "Marque Inconnue";
             const model = modelDisplayElement ? modelDisplayElement.textContent : "Modèle Inconnu";
             const plate = plateDisplayElement ? plateDisplayElement.textContent : "Plaque Inconnue";
-            // Tu devras récupérer les autres valeurs (color, seats, etc.) de manière similaire
-            // si tu les affiches dans le vehicle-item et que tu veux les utiliser pour pré-remplir le formulaire.
-            // Pour la simulation, on peut mettre des valeurs d'exemple.
 
             if (target.classList.contains('edit-vehicle-btn') || target.closest('.edit-vehicle-btn')) {
                 if (!vehicleId) { console.error("ID de véhicule manquant pour Modifier."); return; }
-                console.log("Clic sur Modifier véhicule ID:", vehicleId);
+                // console.log("Clic sur Modifier véhicule ID:", vehicleId);
                 
                 const vehicleDataForEdit = { 
                     id: vehicleId, 
-                    brand: brand, // Utilise la valeur lue du DOM
+                    brand: brand, 
                     model: model, 
                     plate: plate,
-                    // Pour les autres, on met des exemples car ils ne sont pas dans ton HTML de liste actuel
-                    color: "CouleurExemple", 
-                    registrationDate: "", 
-                    seats: 2, 
-                    isElectric: false 
+                    // Récupérer les autres infos si elles sont dans des data-attributes ou des spans cachés
+                    color: vehicleItem.getAttribute('data-color') || "CouleurExemple", 
+                    registrationDate: vehicleItem.getAttribute('data-reg-date') || "",    
+                    seats: parseInt(vehicleItem.getAttribute('data-seats'), 10) || 2,                
+                    isElectric: (vehicleItem.getAttribute('data-is-electric') === 'true') || false        
                 };
                 showVehicleForm(true, vehicleDataForEdit);
             } else if (target.classList.contains('delete-vehicle-btn') || target.closest('.delete-vehicle-btn')) {
                 if (!vehicleId) { console.error("ID de véhicule manquant pour Supprimer."); return; }
-                console.log("Clic sur Supprimer véhicule ID:", vehicleId);
+                // console.log("Clic sur Supprimer véhicule ID:", vehicleId);
                 vehicleIdToDelete = vehicleId; 
                 if (vehicleToDeleteInfoSpan) vehicleToDeleteInfoSpan.textContent = `Marque: ${brand}, Modèle: ${model}, Plaque: ${plate}`;
                 if (confirmDeleteVehicleModalInstance) { 
@@ -216,7 +215,7 @@ export function initializeAccountPage() {
     if (confirmVehicleDeleteBtn && confirmDeleteVehicleModalInstance) {
         confirmVehicleDeleteBtn.addEventListener('click', () => {
             if (vehicleIdToDelete) {
-                console.log("Confirmation de suppression pour véhicule ID:", vehicleIdToDelete);
+                // console.log("Confirmation de suppression pour véhicule ID:", vehicleIdToDelete);
                 const vehicleElementToRemove = vehiclesList.querySelector(`.vehicle-item[data-vehicle-id="${vehicleIdToDelete}"]`);
                 if (vehicleElementToRemove) vehicleElementToRemove.remove();
                 alert(`Véhicule ID ${vehicleIdToDelete} supprimé (simulation).`);
@@ -226,9 +225,11 @@ export function initializeAccountPage() {
         });
     }
     
+    // --- GESTION DE LA SOUMISSION DU FORMULAIRE VÉHICULE ---
     if (vehicleForm) {
         vehicleForm.addEventListener('submit', function(event) {
             event.preventDefault();
+            console.log("Soumission du formulaire véhicule interceptée.");
 
             const brandInput = document.getElementById('vehicle-brand');
             const modelInput = document.getElementById('vehicle-model');
@@ -238,12 +239,13 @@ export function initializeAccountPage() {
             const seatsInput = document.getElementById('vehicle-seats');
             const electricInput = document.getElementById('vehicle-electric');
             
-            [brandInput, modelInput, plateInput, seatsInput, regDateInput].forEach(input => {
+            // Réinitialiser les customValidity
+            [brandInput, modelInput, plateInput, seatsInput, regDateInput, colorInput].forEach(input => {
                 if(input) input.setCustomValidity("");
             });
 
             let isVehicleFormValid = true;
-            if (!vehicleForm.checkValidity()) {
+            if (!vehicleForm.checkValidity()) { // Valide 'required', 'min', 'max' etc. du HTML
                 isVehicleFormValid = false;
             }
 
@@ -251,23 +253,28 @@ export function initializeAccountPage() {
             const model = modelInput?.value.trim();
             const plate = plateInput?.value.trim();
             const seats = seatsInput ? parseInt(seatsInput.value, 10) : 0;
+            const color = colorInput?.value.trim();
+            const registrationDate = regDateInput?.value;
+            const isElectric = electricInput?.checked || false;
 
+
+            // Validations JS personnalisées (exemples)
             if (brandInput && !brand) { 
                 brandInput.setCustomValidity("La marque est requise.");
                 isVehicleFormValid = false;
-            } else if (brandInput) { brandInput.setCustomValidity(""); }
+            }
             if (modelInput && !model) {
                 modelInput.setCustomValidity("Le modèle est requis.");
                 isVehicleFormValid = false;
-            } else if (modelInput) { modelInput.setCustomValidity(""); }
+            }
             if (plateInput && !plate) { 
                 plateInput.setCustomValidity("La plaque d'immatriculation est requise.");
                 isVehicleFormValid = false;
-            } else if (plateInput) { plateInput.setCustomValidity(""); }
+            }
             if (seatsInput && (isNaN(seats) || seats < 1 || seats > 8)) {
                 seatsInput.setCustomValidity("Nombre de places invalide (doit être entre 1 et 8).");
                 isVehicleFormValid = false;
-            } else if (seatsInput) { seatsInput.setCustomValidity(""); }
+            }
 
             if (!isVehicleFormValid) {
                 vehicleForm.reportValidity();
@@ -279,43 +286,59 @@ export function initializeAccountPage() {
                 id: editingVehicleIdInput.value, 
                 brand: brand,
                 model: model,
-                color: colorInput?.value.trim(),
+                color: color,
                 plate: plate,
-                registrationDate: regDateInput?.value,
+                registrationDate: registrationDate,
                 seats: seats,
-                isElectric: electricInput?.checked || false
+                isElectric: isElectric
             };
 
-            if (vehicleDataFromForm.id) { 
-                console.log("Données du véhicule à MODIFIER (simulation):", vehicleDataFromForm);
+            if (vehicleDataFromForm.id) { // Mode édition
+                console.log("MODIFICATION Véhicule (simulation):", vehicleDataFromForm);
                 const itemToUpdate = vehiclesList.querySelector(`.vehicle-item[data-vehicle-id="${vehicleDataFromForm.id}"]`);
                 if (itemToUpdate) {
-                    // --- DÉBUT DE LA CORRECTION POUR LA MISE À JOUR DE L'AFFICHAGE ---
+                    // Mettre à jour les spans d'affichage
                     const brandDisplay = itemToUpdate.querySelector('.vehicle-brand-display');
                     const modelDisplay = itemToUpdate.querySelector('.vehicle-model-display');
                     const plateDisplay = itemToUpdate.querySelector('.vehicle-plate-display');
+                    // TODO: Ajouter des spans pour couleur, places, électrique dans le HTML de vehicle-item si tu veux les voir mis à jour
                     
                     if(brandDisplay) brandDisplay.textContent = vehicleDataFromForm.brand;
                     if(modelDisplay) modelDisplay.textContent = vehicleDataFromForm.model;
                     if(plateDisplay) plateDisplay.textContent = vehicleDataFromForm.plate;
-                    // TODO: Mettre à jour d'autres spans si tu les ajoutes dans le HTML du vehicle-item
-                    // (ex: couleur, places, statut électrique)
-                    // --- FIN DE LA CORRECTION ---
+
+                    // Mettre à jour aussi les data-attributes si on les utilise pour pré-remplir
+                    itemToUpdate.setAttribute('data-brand', vehicleDataFromForm.brand);
+                    itemToUpdate.setAttribute('data-model', vehicleDataFromForm.model);
+                    itemToUpdate.setAttribute('data-plate', vehicleDataFromForm.plate);
+                    itemToUpdate.setAttribute('data-color', vehicleDataFromForm.color);
+                    itemToUpdate.setAttribute('data-reg-date', vehicleDataFromForm.registrationDate);
+                    itemToUpdate.setAttribute('data-seats', vehicleDataFromForm.seats.toString());
+                    itemToUpdate.setAttribute('data-is-electric', vehicleDataFromForm.isElectric.toString());
                 }
                 alert("Véhicule modifié (simulation) !");
-            } else { 
-                console.log("Données du véhicule à AJOUTER (simulation):", vehicleDataFromForm);
+            } else { // Mode ajout
+                console.log("AJOUT Véhicule (simulation):", vehicleDataFromForm);
                 const newVehicleId = "simulated-" + Date.now(); 
+                
                 const newVehicleElement = document.createElement('div');
                 newVehicleElement.className = 'vehicle-item card card-body mb-2';
                 newVehicleElement.setAttribute('data-vehicle-id', newVehicleId); 
-                // S'assurer que le HTML généré ici inclut bien les spans avec les bonnes classes
+                // Stocker toutes les données dans les data-attributes pour le mode édition futur
+                newVehicleElement.setAttribute('data-brand', vehicleDataFromForm.brand);
+                newVehicleElement.setAttribute('data-model', vehicleDataFromForm.model);
+                newVehicleElement.setAttribute('data-plate', vehicleDataFromForm.plate);
+                newVehicleElement.setAttribute('data-color', vehicleDataFromForm.color);
+                newVehicleElement.setAttribute('data-reg-date', vehicleDataFromForm.registrationDate);
+                newVehicleElement.setAttribute('data-seats', vehicleDataFromForm.seats.toString());
+                newVehicleElement.setAttribute('data-is-electric', vehicleDataFromForm.isElectric.toString());
+
                 newVehicleElement.innerHTML = `
                     <p class="mb-1">
                         <span class="form-label">Marque :</span> <span class="vehicle-brand-display">${vehicleDataFromForm.brand}</span><br>
                         <span class="form-label">Modèle :</span> <span class="vehicle-model-display">${vehicleDataFromForm.model}</span> - 
                         <span class="form-label">Plaque :</span> <span class="vehicle-plate-display">${vehicleDataFromForm.plate}</span>
-                    </p>
+                        </p>
                     <div class="mt-2">
                         <button type="button" class="btn btn-sm btn-outline-secondary edit-vehicle-btn">Modifier</button>
                         <button type="button" class="btn btn-sm btn-outline-danger mt-1 mt-sm-0 ms-sm-1 delete-vehicle-btn">Supprimer</button>
