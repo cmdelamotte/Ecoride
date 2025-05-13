@@ -43,47 +43,47 @@
         </div>
 
         <h2 class="mb-3 d-flex justify-content-between align-items-center">
-    <span>Gestion des Employés</span>
-    <button class="btn primary-btn btn-sm" data-bs-toggle="modal" data-bs-target="#createEmployeeModal">
+        <span>Gestion des Employés</span>
+        <button class="btn primary-btn btn-sm" data-bs-toggle="modal" data-bs-target="#createEmployeeModal">
         <i class="bi bi-plus-circle me-1"></i> Ajouter un employé
-    </button>
-</h2>
-<div class="table-responsive">
-    <table class="table table-striped table-hover table-bordered">
-        <thead class="table-light">
-            <tr>
-                <th scope="col">#ID</th>
-                <th scope="col">Nom</th>
-                <th scope="col">Prénom</th>
-                <th scope="col">Email</th>
-                <th scope="col">Statut</th>
-                <th scope="col">Actions</th>
-            </tr>
-        </thead>
-        <tbody id="employees-table-body">
-            </tbody>
-    </table>
-    <div id="no-employees-message" class="text-center py-3 text-muted d-none">
-        <p><i class="bi bi-person-x-fill"></i> Aucun employé trouvé.</p>
-    </div>
-</div>
+        </button>
+        </h2>
+        <div class="table-responsive">
+            <table class="table table-striped table-hover table-bordered">
+                <thead class="table-light">
+                    <tr>
+                        <th scope="col">#ID</th>
+                        <th scope="col">Nom</th>
+                        <th scope="col">Prénom</th>
+                        <th scope="col">Email</th>
+                        <th scope="col">Statut</th>
+                        <th scope="col">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="employees-table-body">
+                    </tbody>
+            </table>
+        <div id="no-employees-message" class="text-center py-3 text-muted d-none">
+            <p><i class="bi bi-person-x-fill"></i> Aucun employé trouvé.</p>
+        </div>
+        </div>
 
-<template id="employee-row-template">
-    <tr>
-        <th scope="row" data-label="ID_Employé"></th> <td data-label="Nom"></td>
-        <td data-label="Prénom"></td>
-        <td data-label="Email"></td>
-        <td data-label="Statut"><span class="badge"></span></td>
-        <td data-label="Actions">
-            <button class="btn btn-warning btn-sm action-suspend" title="Suspendre ce compte">
-                <i class="bi bi-person-slash"></i> Suspendre
-            </button>
-            <button class="btn btn-success btn-sm action-reactivate d-none" title="Réactiver ce compte">
-                <i class="bi bi-person-check"></i> Réactiver
-            </button>
-        </td>
-    </tr>
-</template>
+        <template id="employee-row-template">
+            <tr>
+                <th scope="row" data-label="ID_Employé"></th> <td data-label="Nom"></td>
+                <td data-label="Prénom"></td>
+                <td data-label="Email"></td>
+                <td data-label="Statut"><span class="badge"></span></td>
+                <td data-label="Actions">
+                    <button class="btn btn-warning btn-sm action-suspend" title="Suspendre ce compte">
+                        <i class="bi bi-person-slash"></i> Suspendre
+                    </button>
+                    <button class="btn btn-success btn-sm action-reactivate d-none" title="Réactiver ce compte">
+                        <i class="bi bi-person-check"></i> Réactiver
+                    </button>
+                </td>
+            </tr>
+        </template>
 
         <h2 class="mt-5 mb-3">Gestion des Utilisateurs (Clients)</h2>
         <div class="table-responsive">
@@ -98,35 +98,31 @@
                         <th scope="col">Actions</th>
                     </tr>
                 </thead>
-                <tbody>
-                    <tr>
-                        <th scope="row">USR101</th>
-                        <td>ClientTest</td>
-                        <td>client.test@email.com</td>
-                        <td>15</td>
-                        <td><span class="badge bg-success">Actif</span></td>
-                        <td>
-                            <button class="btn btn-warning btn-sm" title="Suspendre ce compte">
-                                <i class="bi bi-person-slash"></i> Suspendre
-                            </button>
-                        </td>
-                    </tr>
-                    <tr>
-                        <th scope="row">USR102</th>
-                        <td>PassagerX</td>
-                        <td>passager.x@email.com</td>
-                        <td>0</td>
-                        <td><span class="badge bg-danger">Suspendu</span></td>
-                        <td>
-                            <button class="btn btn-success btn-sm" title="Réactiver ce compte">
-                                <i class="bi bi-person-check"></i> Réactiver
-                            </button>
-                        </td>
-                    </tr>
+                <tbody id="users-table-body">
                     </tbody>
             </table>
+            <div id="no-users-message" class="text-center py-3 text-muted d-none">
+                <p><i class="bi bi-person-x-fill"></i> Aucun utilisateur trouvé.</p>
+            </div>
         </div>
-    </div>
+        </div>
+
+        <template id="user-row-template">
+            <tr>
+                <th scope="row" data-label="ID_Utilisateur"></th> <td data-label="Pseudo"></td>
+                <td data-label="Email"></td>
+                <td data-label="Crédits"></td>
+                <td data-label="Statut"><span class="badge"></span></td>
+                <td data-label="Actions">
+                    <button class="btn btn-warning btn-sm user-action-suspend" title="Suspendre ce compte">
+                        <i class="bi bi-person-slash"></i> Suspendre
+                    </button>
+                    <button class="btn btn-success btn-sm user-action-reactivate d-none" title="Réactiver ce compte">
+                        <i class="bi bi-person-check"></i> Réactiver
+                    </button>
+                </td>
+            </tr>
+        </template>
 </section>
 
 <div class="modal fade" id="createEmployeeModal" tabindex="-1" aria-labelledby="createEmployeeModalLabel" aria-hidden="true">
