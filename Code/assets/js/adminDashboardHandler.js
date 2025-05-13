@@ -1,3 +1,81 @@
+// assets/js/adminDashboardHandler.js
+
+// La variable currentEmployees est au niveau du module pour être accessible par toutes les fonctions.
+let currentEmployees = [
+    { id: 'EMP001', nom: 'Dupont', prenom: 'Jean', email: 'jean.dupont@ecoride.pro', statut: 'Actif' },
+    { id: 'EMP002', nom: 'Martin', prenom: 'Sophie', email: 'sophie.martin@ecoride.pro', statut: 'Suspendu' },
+    { id: 'EMP003', nom: 'Petit', prenom: 'Lucas', email: 'lucas.petit@ecoride.pro', statut: 'Actif' },
+    { id: 'EMP004', nom: 'Durand', prenom: 'Alice', email: 'alice.durand@ecoride.pro', statut: 'Actif' },
+];
+
+
+function displayEmployeesTable(employeesData) { // Cette fonction reste identique à celle que je t'ai fournie précédemment
+    const tableBody = document.getElementById('employees-table-body');
+    const template = document.getElementById('employee-row-template'); 
+    const noEmployeesMessage = document.getElementById('no-employees-message'); 
+
+    if (!tableBody || !template || !noEmployeesMessage) {
+        console.error("Éléments de la table des employés, template, ou message pour table vide introuvables.");
+        return;
+    }
+
+    tableBody.innerHTML = ''; 
+
+    if (!employeesData || employeesData.length === 0) {
+        noEmployeesMessage.classList.remove('d-none'); 
+        return;
+    }
+    
+    noEmployeesMessage.classList.add('d-none'); 
+
+    employeesData.forEach(employee => {
+        const clone = template.content.cloneNode(true); 
+        
+        const idCell = clone.querySelector('th[data-label="ID_Employé"]');
+        const nomCell = clone.querySelector('td[data-label="Nom"]');
+        const prenomCell = clone.querySelector('td[data-label="Prénom"]');
+        const emailCell = clone.querySelector('td[data-label="Email"]');
+        const statusBadge = clone.querySelector('td[data-label="Statut"] .badge');
+        const actionCell = clone.querySelector('td[data-label="Actions"]');
+        const suspendButton = actionCell.querySelector('.action-suspend');
+        const reactivateButton = actionCell.querySelector('.action-reactivate');
+
+        if (idCell) {
+            idCell.textContent = employee.id;
+        }
+        if (nomCell) nomCell.textContent = employee.nom;
+        if (prenomCell) prenomCell.textContent = employee.prenom;
+        if (emailCell) emailCell.textContent = employee.email;
+        
+        if (statusBadge) {
+            statusBadge.textContent = employee.statut;
+            if (employee.statut === 'Actif') {
+                statusBadge.className = 'badge bg-success'; 
+            } else if (employee.statut === 'Suspendu') {
+                statusBadge.className = 'badge bg-danger';
+            } else {
+                statusBadge.className = 'badge bg-secondary'; 
+            }
+        }
+
+        if (suspendButton && reactivateButton) {
+            if (employee.statut === 'Actif') {
+                suspendButton.classList.remove('d-none');
+                reactivateButton.classList.add('d-none');
+            } else if (employee.statut === 'Suspendu') {
+                suspendButton.classList.add('d-none');
+                reactivateButton.classList.remove('d-none');
+            }
+            // On s'assure que les data-attributes sont bien là pour la délégation d'événements
+            suspendButton.setAttribute('data-employee-id', employee.id);
+            reactivateButton.setAttribute('data-employee-id', employee.id);
+        }
+        
+        tableBody.appendChild(clone); 
+    });
+}
+
+
 export function initializeAdminDashboardPage() { // Nom de la fonction principale pour la page
     const createEmployeeModalForm = document.getElementById('create-employee-form');
     
@@ -43,38 +121,43 @@ export function initializeAdminDashboardPage() { // Nom de la fonction principal
                 empPrenomInput.setCustomValidity("Le prénom de l'employé doit contenir au moins 2 caractères.");
                 isFormValidOverall = false;
             }
-            // L'email est déjà validé par type="email" et required via checkValidity()
 
-            // Validation du mot de passe initial
-            if (empPasswordInput && password) { // Valide seulement si le champ est rempli (required est déjà géré)
+            if (empPasswordInput && password) { 
                 if (!passwordRegex.test(password)) {
                     empPasswordInput.setCustomValidity(passwordRequirementsMessage);
                     isFormValidOverall = false;
                 }
-            } // Si vide et 'required', checkValidity() s'en charge
+            } 
 
             // 4. Affichage des erreurs ou traitement si valide
             if (!isFormValidOverall) {
-                createEmployeeModalForm.reportValidity(); // Affiche les tooltips DANS la modale
+                createEmployeeModalForm.reportValidity(); 
                 console.log("Validation du formulaire de création d'employé échouée.");
-                // Afficher un message dans modalErrorMessageDiv si besoin
             } else {
-                console.log("Formulaire de création d'employé valide. Données :", { nom, prenom, email, password });
+                const newEmployee = {
+                    id: "EMP" + Date.now().toString().slice(-4), 
+                    nom: nom,
+                    prenom: prenom,
+                    email: email,
+                    statut: 'Actif' 
+                };
+                currentEmployees.push(newEmployee); 
+                displayEmployeesTable(currentEmployees); 
                 
-                // TODO: Appel fetch vers l'API backend pour créer le compte employé.
-                // fetch('/api/admin/employees', { method: 'POST', body: JSON.stringify({ nom, prenom, email, password }), ...})
+                console.log("Formulaire de création d'employé valide. Données :", { nom, prenom, email });
+                
+                alert("Compte employé créé et ajouté à la liste (simulation) !"); 
+                createEmployeeModalForm.reset(); 
 
-                alert("Compte employé créé avec succès (simulation) !");
-                createEmployeeModalForm.reset(); // Vider le formulaire
-
-                // Fermer la modale Bootstrap
                 const modalElement = document.getElementById('createEmployeeModal');
-                const modalInstance = bootstrap.Modal.getInstance(modalElement);
-                if (modalInstance) {
-                    modalInstance.hide();
+                if (modalElement) { 
+                    const modalInstance = bootstrap.Modal.getInstance(modalElement);
+                    if (modalInstance) {
+                        modalInstance.hide();
+                    }
                 }
             }
-        }); // Fin du listener 'submit'
+        }); 
 
         // UX: Réinitialiser les messages custom sur input
         [empNomInput, empPrenomInput, empEmailInput, empPasswordInput].forEach(input => {
@@ -86,7 +169,80 @@ export function initializeAdminDashboardPage() { // Nom de la fonction principal
         });
     }
 
-    // TODO (Plus tard): Ajouter ici d'autres initialisations pour la page admin-dashboard
-    // Par exemple, charger les statistiques, les listes d'utilisateurs/employés, etc.
+    // GESTION DU FOCUS POUR LA MODALE (Bloc existant, non modifié)
+    const createEmployeeModalElement = document.getElementById('createEmployeeModal');
+    let createEmployeeModalTrigger = null; 
 
-} 
+    if (createEmployeeModalElement) {
+        createEmployeeModalElement.addEventListener('show.bs.modal', function (event) {
+            if (event.relatedTarget) {
+                createEmployeeModalTrigger = event.relatedTarget;
+            }
+        });
+        createEmployeeModalElement.addEventListener('hidden.bs.modal', function () {
+            if (createEmployeeModalTrigger) {
+                createEmployeeModalTrigger.focus();
+                createEmployeeModalTrigger = null; 
+            }
+        });
+    }
+
+    // Appel pour afficher la liste initiale des employés
+    displayEmployeesTable(currentEmployees); 
+    
+    // === DÉBUT NOUVELLE LOGIQUE ACTIONS ===
+    // Gestion des actions "Suspendre" / "Réactiver" sur la table des employés
+    const employeesTableBody = document.getElementById('employees-table-body');
+    if (employeesTableBody) {
+        employeesTableBody.addEventListener('click', function(event) {
+            const target = event.target;
+            let actionButton = null;
+            let actionToPerform = null;
+
+            // Vérifier si le clic vient d'un bouton "Suspendre" ou de son icône
+            if (target.classList.contains('action-suspend') || target.closest('.action-suspend')) {
+                actionButton = target.classList.contains('action-suspend') ? target : target.closest('.action-suspend');
+                actionToPerform = 'suspend';
+            } 
+            // Sinon, vérifier si le clic vient d'un bouton "Réactiver" ou de son icône
+            else if (target.classList.contains('action-reactivate') || target.closest('.action-reactivate')) {
+                actionButton = target.classList.contains('action-reactivate') ? target : target.closest('.action-reactivate');
+                actionToPerform = 'reactivate';
+            }
+
+            if (actionButton && actionToPerform) {
+                const employeeId = actionButton.getAttribute('data-employee-id');
+                if (!employeeId) {
+                    console.error("ID de l'employé non trouvé sur le bouton d'action.");
+                    return;
+                }
+
+                // Trouver l'employé dans notre liste `currentEmployees`
+                const employeeIndex = currentEmployees.findIndex(emp => emp.id === employeeId);
+                if (employeeIndex === -1) {
+                    console.error(`Employé avec ID ${employeeId} non trouvé dans currentEmployees.`);
+                    return;
+                }
+
+                // Mettre à jour le statut (simulation)
+                if (actionToPerform === 'suspend') {
+                    currentEmployees[employeeIndex].statut = 'Suspendu';
+                    console.log(`Employé ${employeeId} suspendu (simulation).`);
+                    // TODO (Backend): Appel API pour suspendre
+                } else if (actionToPerform === 'reactivate') {
+                    currentEmployees[employeeIndex].statut = 'Actif';
+                    console.log(`Employé ${employeeId} réactivé (simulation).`);
+                    // TODO (Backend): Appel API pour réactiver
+                }
+
+                // Rafraîchir la table pour refléter le changement
+                displayEmployeesTable(currentEmployees);
+                alert(`Employé ${employeeId} ${currentEmployees[employeeIndex].statut.toLowerCase()} (simulation) !`);
+            }
+        });
+    }
+    // === FIN NOUVELLE LOGIQUE ACTIONS ===
+    
+    // TODO (Plus tard): Ajouter ici d'autres initialisations pour la page admin-dashboard
+    console.log("AdminDashboardHandler: Initialisation de la page admin terminée.");
+}
