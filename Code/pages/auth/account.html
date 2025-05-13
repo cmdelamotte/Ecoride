@@ -96,6 +96,28 @@
                                 </div>
                             </div>
                         </div>
+
+                        <template id="vehicle-item-template">
+                            <div class="vehicle-item card card-body mb-2" 
+                                data-vehicle-id="" 
+                                data-brand="" 
+                                data-model="" 
+                                data-plate="" 
+                                data-color="" 
+                                data-reg-date="" 
+                                data-seats="" 
+                                data-is-electric="">
+                                <p class="mb-1">
+                                    <span class="form-label">Marque :</span> <span class="vehicle-brand-display"></span><br>
+                                    <span class="form-label">Modèle :</span> <span class="vehicle-model-display"></span> - 
+                                    <span class="form-label">Plaque :</span> <span class="vehicle-plate-display"></span>
+                                </p>
+                                <div class="mt-2">
+                                    <button type="button" class="btn btn-sm btn-outline-secondary edit-vehicle-btn">Modifier</button>
+                                    <button type="button" class="btn btn-sm btn-outline-danger mt-1 mt-sm-0 ms-sm-1 delete-vehicle-btn">Supprimer</button>
+                                </div>
+                            </div>
+                        </template>
                         <button type="button" id="add-vehicle-btn" class="btn secondary-btn btn-sm mb-3">
                             <i class="bi bi-plus-circle me-1"></i> Ajouter un véhicule
                         </button>
@@ -185,20 +207,20 @@
 </section>
 
 <div class="modal fade" id="confirmDeleteVehicleModal" tabindex="-1" aria-labelledby="confirmDeleteVehicleModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="confirmDeleteVehicleModalLabel">Confirmer la suppression du véhicule</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
-      </div>
-      <div class="modal-body">
-        <p>Êtes-vous sûr de vouloir supprimer ce véhicule ?</p>
-        <p class="vehicle-to-delete-info fw-bold"></p> 
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-        <button type="button" id="confirm-vehicle-delete-btn" class="btn btn-danger">Oui, supprimer ce véhicule</button>
-      </div>
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="confirmDeleteVehicleModalLabel">Confirmer la suppression du véhicule</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+            </div>
+            <div class="modal-body">
+                <p>Êtes-vous sûr de vouloir supprimer ce véhicule ?</p>
+                <p class="vehicle-to-delete-info fw-bold"></p> 
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <button type="button" id="confirm-vehicle-delete-btn" class="btn btn-danger">Oui, supprimer ce véhicule</button>
+            </div>
+        </div>
     </div>
-  </div>
 </div>
