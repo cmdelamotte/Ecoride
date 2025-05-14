@@ -51,7 +51,10 @@ export async function loadAndInitializePageScript(pathJS) {
     } else if (pageModule.initializeAdminDashboardPage && typeof pageModule.initializeAdminDashboardPage === 'function') {
     pageModule.initializeAdminDashboardPage();
     console.log(`PageScriptManager: initializeAdminDashboardPage() appelée depuis ${pathJS}`);
-    }
+    } else if (pageModule.initializeYourRidesPage && typeof pageModule.initializeYourRidesPage === 'function') {
+        pageModule.initializeYourRidesPage();
+        console.log(`PageScriptManager: initializeYourRidesPage() appelée depuis ${pathJS}`);
+    } 
     } catch (e) {
         console.error(`PageScriptManager: Erreur lors du chargement ou de l'initialisation du module JS ${pathJS}:`, e);
     }
