@@ -9,7 +9,7 @@ export const allRoutes = [
     new Route("/edit-password", "Changement de mot de passe","/pages/auth/edit-password.html",["passenger", "driver", "passenger-driver"], "/assets/js/editPasswordFormHandler.js"),
     new Route("/edit-personal-info", "Modification des informations personnelles","/pages/auth/edit-personal-info.html",["passenger", "driver", "passenger-driver"], "/assets/js/personalInfoFormHandler.js"),
     new Route("/employee-login", "Connexion employé", "/pages/auth/employee-login.html",["employee"]),
-    new Route("/employee-dashboard", "Espace employé", "/pages/auth/employee-dashboard.html",["employee"]),
+    new Route("/employee-dashboard", "Espace employé", "/pages/auth/employee-dashboard.html",["employee", "admin"], "/assets/js/employeeDashboardHandler.js"),
     new Route("/admin-dashboard", "Espace Admin", "/pages/auth/admin-dashboard.html",["admin"], "/assets/js/adminDashboardHandler.js"),
     new Route("/forgot-password", "Mot de passe oublié", "/pages/auth/forgot-password.html",["disconnected"], "/assets/js/forgotPasswordHandler.js"),
     new Route("/your-rides", "Vos covoiturages", "/pages/your-rides.html", ["passenger", "driver", "passenger-driver"], "/assets/js/yourRidesPageHandler.js"),
