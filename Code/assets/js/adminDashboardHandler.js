@@ -1,5 +1,3 @@
-// assets/js/adminDashboardHandler.js
-
 // La variable currentEmployees est au niveau du module pour être accessible par toutes les fonctions.
 let currentEmployees = [
     { id: 'EMP001', nom: 'Dupont', prenom: 'Jean', email: 'jean.dupont@ecoride.pro', statut: 'Actif' },
@@ -8,13 +6,12 @@ let currentEmployees = [
     { id: 'EMP004', nom: 'Durand', prenom: 'Alice', email: 'alice.durand@ecoride.pro', statut: 'Actif' },
 ];
 
-// === DÉBUT NOUVEAU : Données factices pour les Utilisateurs (Clients) ===
+// Données factices pour les Utilisateurs (Clients)
 let currentUsers = [
     { id: 'USR101', pseudo: 'ClientTest', email: 'client.test@email.com', credits: 15, statut: 'Actif' },
     { id: 'USR102', pseudo: 'PassagerX', email: 'passager.x@email.com', credits: 0, statut: 'Suspendu' },
     { id: 'USR103', pseudo: 'EcoVoyageur', email: 'eco.voyageur@mail.net', credits: 55, statut: 'Actif' },
 ];
-// === FIN NOUVEAU ===
 
 
 function displayEmployeesTable(employeesData) {
@@ -76,18 +73,17 @@ function displayEmployeesTable(employeesData) {
     });
 }
 
-// === DÉBUT NOUVEAU : Fonction pour afficher la table des Utilisateurs (Clients) ===
 function displayUsersTable(usersData) {
-    const tableBody = document.getElementById('users-table-body'); // ID du tbody pour les utilisateurs
-    const template = document.getElementById('user-row-template');    // ID du template pour une ligne utilisateur
-    const noUsersMessage = document.getElementById('no-users-message'); // ID du message si table vide
+    const tableBody = document.getElementById('users-table-body'); 
+    const template = document.getElementById('user-row-template');    
+    const noUsersMessage = document.getElementById('no-users-message'); 
 
     if (!tableBody || !template || !noUsersMessage) {
         console.error("Éléments de la table des utilisateurs, template, ou message pour table vide introuvables.");
         return;
     }
 
-    tableBody.innerHTML = ''; // Vider le contenu actuel
+    tableBody.innerHTML = ''; 
 
     if (!usersData || usersData.length === 0) {
         noUsersMessage.classList.remove('d-none');
@@ -99,14 +95,12 @@ function displayUsersTable(usersData) {
     usersData.forEach(user => {
         const clone = template.content.cloneNode(true);
         
-        // Cibler les éléments à l'intérieur du clone pour les utilisateurs
         const idCell = clone.querySelector('th[data-label="ID_Utilisateur"]');
         const pseudoCell = clone.querySelector('td[data-label="Pseudo"]');
         const emailCell = clone.querySelector('td[data-label="Email"]');
         const creditsCell = clone.querySelector('td[data-label="Crédits"]');
         const statusBadge = clone.querySelector('td[data-label="Statut"] .badge');
         const actionCell = clone.querySelector('td[data-label="Actions"]');
-        // Important: utiliser les classes spécifiques pour les boutons utilisateurs
         const suspendButton = actionCell.querySelector('.user-action-suspend'); 
         const reactivateButton = actionCell.querySelector('.user-action-reactivate');
 
@@ -130,7 +124,6 @@ function displayUsersTable(usersData) {
                 suspendButton.classList.add('d-none');
                 reactivateButton.classList.remove('d-none');
             }
-            // Utiliser un data-attribute spécifique, ex: 'data-user-id'
             suspendButton.setAttribute('data-user-id', user.id);
             reactivateButton.setAttribute('data-user-id', user.id);
         }
@@ -138,10 +131,103 @@ function displayUsersTable(usersData) {
         tableBody.appendChild(clone);
     });
 }
-// === FIN NOUVEAU ===
+
+// === DÉBUT AJOUT GRAPHIQUES ET STATS ===
+// Fonction pour mettre à jour le total des crédits
+function updateTotalCreditsDisplay(totalCredits) {
+    const totalCreditsElement = document.getElementById('admin-total-credits');
+    if (totalCreditsElement) {
+        // Formate le nombre avec des séparateurs de milliers pour la lisibilité et ajoute "crédits"
+        totalCreditsElement.textContent = totalCredits.toLocaleString('fr-FR') + ' crédits'; 
+    } else {
+        console.warn("Élément #admin-total-credits introuvable.");
+    }
+}
+
+// Fonction pour créer le graphique "Covoiturages / Jour"
+function createRidesPerDayChart() {
+    const canvasElement = document.getElementById('ridesPerDayChart');
+    if (!canvasElement) {
+        console.error("Canvas #ridesPerDayChart introuvable !");
+        return;
+    }
+    const ctx = canvasElement.getContext('2d');
+
+    // Données factices pour "Covoiturages / Jour"
+    const rideLabels = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
+    const rideDataValues = [12, 19, 3, 5, 22, 30, 15]; 
+
+    new Chart(ctx, {
+        type: 'bar', 
+        data: {
+            labels: rideLabels,
+            datasets: [{
+                label: 'Nombre de Covoiturages',
+                data: rideDataValues,
+                backgroundColor: 'rgba(54, 162, 235, 0.6)', 
+                borderColor: 'rgba(54, 162, 235, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: { beginAtZero: true, title: { display: true, text: 'Nb. Covoiturages' } },
+                x: { title: { display: true, text: 'Jour' } }
+            },
+            plugins: {
+                legend: { display: false }, // Cachée car un seul dataset
+                title: { display: true, text: 'Covoiturages de la Semaine' }
+            }
+        }
+    });
+}
+
+// Fonction pour créer le graphique "Crédits Gagnés / Jour"
+function createCreditsGainedPerDayChart() {
+    const canvasElement = document.getElementById('creditsGainedPerDayChart');
+    if (!canvasElement) {
+        console.error("Canvas #creditsGainedPerDayChart introuvable !");
+        return;
+    }
+    const ctx = canvasElement.getContext('2d');
+
+    const creditLabels = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
+    const creditDataValues = [50, 75, 20, 40, 110, 150, 90];
+
+    new Chart(ctx, {
+        type: 'line', 
+        data: {
+            labels: creditLabels,
+            datasets: [{
+                label: 'Crédits Gagnés',
+                data: creditDataValues,
+                backgroundColor: 'rgba(75, 192, 192, 0.5)', 
+                borderColor: 'rgba(75, 192, 192, 1)',
+                borderWidth: 2,
+                fill: true,
+                tension: 0.1 
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: { beginAtZero: true, title: { display: true, text: 'Crédits Gagnés' } },
+                x: { title: { display: true, text: 'Jour' } }
+            },
+            plugins: {
+                legend: { display: false },
+                title: { display: true, text: 'Gain de Crédits Journalier' }
+            }
+        }
+    });
+}
+// === FIN AJOUT GRAPHIQUES ET STATS ===
 
 
-export function initializeAdminDashboardPage() { // Nom de la fonction principale pour la page
+export function initializeAdminDashboardPage() { 
     const createEmployeeModalForm = document.getElementById('create-employee-form');
     
     const empNomInput = document.getElementById('emp-nom');
@@ -166,10 +252,10 @@ export function initializeAdminDashboardPage() { // Nom de la fonction principal
             const email = empEmailInput?.value.trim();
             const password = empPasswordInput?.value;
 
-            if (empNomInput && nom.length < 2) { /* ... */ isFormValidOverall = false; }
-            if (empPrenomInput && prenom.length < 2) { /* ... */ isFormValidOverall = false; }
+            if (empNomInput && nom.length < 2) { empNomInput.setCustomValidity("Le nom de l'employé doit contenir au moins 2 caractères."); isFormValidOverall = false; }
+            if (empPrenomInput && prenom.length < 2) { empPrenomInput.setCustomValidity("Le prénom de l'employé doit contenir au moins 2 caractères."); isFormValidOverall = false; }
             if (empPasswordInput && password) { 
-                if (!passwordRegex.test(password)) { /* ... */ isFormValidOverall = false; }
+                if (!passwordRegex.test(password)) { empPasswordInput.setCustomValidity(passwordRequirementsMessage); isFormValidOverall = false; }
             } 
 
             if (!isFormValidOverall) {
@@ -243,8 +329,7 @@ export function initializeAdminDashboardPage() { // Nom de la fonction principal
         });
     }
     
-    // === DÉBUT NOUVEAU : Logique pour la table des Utilisateurs (Clients) ===
-    displayUsersTable(currentUsers); // Affichage initial de la table des utilisateurs
+    displayUsersTable(currentUsers); 
 
     const usersTableBody = document.getElementById('users-table-body');
     if (usersTableBody) {
@@ -253,7 +338,6 @@ export function initializeAdminDashboardPage() { // Nom de la fonction principal
             let actionButton = null;
             let actionToPerform = null;
 
-            // Utiliser les classes spécifiques pour les boutons utilisateurs
             if (target.classList.contains('user-action-suspend') || target.closest('.user-action-suspend')) {
                 actionButton = target.classList.contains('user-action-suspend') ? target : target.closest('.user-action-suspend');
                 actionToPerform = 'suspend';
@@ -264,32 +348,37 @@ export function initializeAdminDashboardPage() { // Nom de la fonction principal
             }
 
             if (actionButton && actionToPerform) {
-                const userId = actionButton.getAttribute('data-user-id'); // Utiliser 'data-user-id'
-                if (!userId) {
-                    console.error("ID de l'utilisateur non trouvé sur le bouton d'action.");
-                    return;
-                }
-
+                const userId = actionButton.getAttribute('data-user-id'); 
+                if (!userId) return;
                 const userIndex = currentUsers.findIndex(user => user.id === userId);
-                if (userIndex === -1) {
-                    console.error(`Utilisateur avec ID ${userId} non trouvé dans currentUsers.`);
-                    return;
-                }
+                if (userIndex === -1) return;
 
-                if (actionToPerform === 'suspend') {
-                    currentUsers[userIndex].statut = 'Suspendu';
-                    console.log(`Utilisateur ${userId} suspendu (simulation).`);
-                } else if (actionToPerform === 'reactivate') {
-                    currentUsers[userIndex].statut = 'Actif';
-                    console.log(`Utilisateur ${userId} réactivé (simulation).`);
-                }
+                if (actionToPerform === 'suspend') currentUsers[userIndex].statut = 'Suspendu';
+                else if (actionToPerform === 'reactivate') currentUsers[userIndex].statut = 'Actif';
 
-                displayUsersTable(currentUsers); // Rafraîchir la table des utilisateurs
+                displayUsersTable(currentUsers); 
                 alert(`Utilisateur ${userId} ${currentUsers[userIndex].statut.toLowerCase()} (simulation) !`);
             }
         });
     }
-    // === FIN NOUVEAU ===
+    
+    // === DÉBUT AJOUT GRAPHIQUES ET STATS (Appels aux nouvelles fonctions) ===
+    // Donnée factice pour le total des crédits
+    const mockTotalCredits = 12345; 
+    updateTotalCreditsDisplay(mockTotalCredits);
+
+    // Création des graphiques (s'assurer que Chart.js est bien chargé via le CDN dans index.html)
+    if (typeof Chart !== 'undefined') { // Vérification simple que Chart.js est disponible
+        createRidesPerDayChart();
+        createCreditsGainedPerDayChart();
+    } else {
+        console.error("Chart.js n'est pas chargé. Vérifiez l'inclusion du CDN dans index.html.");
+        const ridesChartCanvas = document.getElementById('ridesPerDayChart');
+        const creditsChartCanvas = document.getElementById('creditsGainedPerDayChart');
+        if (ridesChartCanvas?.parentElement) ridesChartCanvas.parentElement.innerHTML = '<p class="text-danger text-center m-auto">Erreur: Chart.js non chargé.</p>';
+        if (creditsChartCanvas?.parentElement) creditsChartCanvas.parentElement.innerHTML = '<p class="text-danger text-center m-auto">Erreur: Chart.js non chargé.</p>';
+    }
+    // === FIN AJOUT GRAPHIQUES ET STATS ===
     
     console.log("AdminDashboardHandler: Initialisation de la page admin terminée.");
 }
