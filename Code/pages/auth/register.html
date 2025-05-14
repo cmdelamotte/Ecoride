@@ -43,6 +43,22 @@
                         </div>
 
                         <div class="col-12">
+                            <label for="register-birthdate" class="visually-hidden">Date de naissance</label>
+                            <div class="form-input-custom d-flex align-items-center">
+                                <i class="bi bi-calendar-event me-2"></i>
+                                <input type="text" class="form-control-custom flex-grow-1" id="register-birthdate" name="register-birthdate" placeholder="Date de naissance" onfocus="(this.type='date')" onblur="if(!this.value)this.type='text'" aria-label="Date de naissance de l'utilisateur" required>
+                            </div>
+                        </div>
+
+                        <div class="col-12">
+                            <label for="register-phone" class="visually-hidden">Téléphone</label>
+                            <div class="form-input-custom d-flex align-items-center">
+                                <i class="bi bi-telephone me-2"></i>
+                                <input type="tel" class="form-control-custom flex-grow-1" id="register-phone" name="register-phone" placeholder="Numéro de téléphone" aria-label="Numéro de téléphone de l'utilisateur" pattern="[0-9]{10}" title="Format attendu : 10 chiffres sans espaces (ex: 0612345678)" required>
+                                </div>
+                        </div>
+
+                        <div class="col-12">
                             <label for="register-password" class="visually-hidden">Mot de passe</label>
                             <div class="form-input-custom d-flex align-items-center">
                                 <i class="bi bi-shield-lock me-2"></i>
