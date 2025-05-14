@@ -34,8 +34,15 @@
                             <span class="form-label">Email :</span>
                             <span id="account-email-display" class="fw-bold">[EmailUtilisateur]</span>
                         </div>
-                        <p><span class="form-label">Crédits EcoRide :</span> <span id="account-credits">[CréditsUtilisateur]</span></p>
-                        <div id="personal-info-actions">
+                        <div class="mb-3">
+                            <span class="form-label">Date de naissance :</span>
+                            <span id="account-birthdate-display" class="fw-bold">[DateNaissanceUtilisateur]</span>
+                        </div>
+                        <div class="mb-3">
+                            <span class="form-label">Téléphone :</span>
+                            <span id="account-phone-display" class="fw-bold">[TelephoneUtilisateur]</span>
+                        </div>
+                        <p><span class="form-label">Crédits EcoRide :</span> <span id="account-credits" class="fw-bold">[CréditsUtilisateur]</span></p> <div id="personal-info-actions">
                             <a href="/edit-personal-info" class="btn secondary-btn btn-sm mt-2">Modifier mes informations</a>
                             <a href="/edit-password" class="btn btn-outline-danger btn-sm mt-2">Changer de mot de passe</a>
                         </div>
@@ -186,8 +193,8 @@
                                 <label class="form-check-label" for="pref-animals">Accepte les animaux</label>
                             </div>
                             <div class="mt-2">
-                                <label for="pref-custom" class="form-label-sm">Autres préférences (ex: musique, discussions...)</label>
-                                <textarea class="form-control form-control-sm form-control-custom" id="pref-custom" name="pref_custom" rows="2"></textarea>
+                                <label for="pref-custom" class="form-label-sm">Autres préférences (ex: musique, discussions...) :</label>
+                                <textarea class="form-control form-control-custom" id="pref-custom" name="pref_custom" rows="2"></textarea>
                             </div>
                             <button type="submit" class="btn primary-btn mt-3">Enregistrer les Préférences</button> 
                         </form>
@@ -198,7 +205,7 @@
                     <p class="mb-0 text-center"><a href="/your-rides" class="link">Voir mon historique de trajets</a></p>
                 </div>
                 <div class="auth-link-bar mt-2">
-                    <p class="mb-0 text-center"><a href="/" class="link" id="logout-account-btn">Se déconnecter</a></p>
+                    <p class="mb-0 text-center"><a href="#" class="link" id="logout-account-btn">Se déconnecter</a></p>
                 </div>
 
             </div>
