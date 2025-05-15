@@ -1,6 +1,13 @@
 RewriteEngine On
-RewriteBase /
-RewriteRule ^index.html$ - [L]
+
+# Si la requête commence par "api/", ne pas appliquer les règles de réécriture suivantes.
+# Laisse Apache gérer cette requête normalement (exécuter le script PHP).
+RewriteRule ^api/ - [L]
+
+# Pour toutes les autres requêtes :
+# Si ce n'est pas un fichier existant physiquement sur le serveur,
+# ET si ce n'est pas un dossier existant physiquement sur le serveur,
+# ALORS réécrire la requête vers index.html pour que le routeur JS de la SPA la gère.
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteRule . /index.html [L]

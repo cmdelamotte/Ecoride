@@ -1,0 +1,13 @@
+### Test Inscription Utilisateur
+POST http://ecoride.local/api/register.php
+Content-Type: application/json
+
+{
+    "username": "testuser_php1",
+    "firstName": "Test",
+    "lastName": "PHP",
+    "email": "testphp1@example.com",
+    "password": "securePassword123",
+    "birthdate": "1995-05-15",
+    "phone": "0600000011"
+}
