@@ -1,6 +1,3 @@
-// assets/js/accountPageHandler.js
-
-// Imports (assure-toi que les chemins sont corrects)
 import { getRole, showAndHideElementsForRoles, signout as authManagerSignout } from './authManager.js';
 import { LoadContentPage } from '../../router/Router.js'; 
 
@@ -8,13 +5,12 @@ import { LoadContentPage } from '../../router/Router.js';
  * Affiche ou masque la section des informations du chauffeur en fonction du rôle.
  * @param {string|null} currentRole - Le rôle actuel de l'utilisateur.
  */
-function toggleDriverInfoSection(currentRole) {
-    const driverInfoSection = document.getElementById('driver-info-section');
-    if (driverInfoSection) {
+function toggleDriverInfoSection(currentRole, driverInfoSectionElement) {
+    if (driverInfoSectionElement) {
         if (currentRole === 'driver' || currentRole === 'passenger-driver') {
-            driverInfoSection.classList.remove('d-none');
+            driverInfoSectionElement.classList.remove('d-none');
         } else {
-            driverInfoSection.classList.add('d-none');
+            driverInfoSectionElement.classList.add('d-none');
         }
     }
 }
@@ -23,11 +19,10 @@ function toggleDriverInfoSection(currentRole) {
  * Pré-coche le bouton radio correspondant au rôle actuel de l'utilisateur.
  * @param {string|null} currentRole - Le rôle actuel de l'utilisateur.
  */
-function preselectUserRole(currentRole) {
-    const roleRadios = document.querySelectorAll('input[name="user_role_form"]');
+function preselectUserRole(currentRole, radiosNodeList) {
     let roleActuallySelected = false;
-    if (currentRole) {
-        roleRadios.forEach(radio => {
+    if (currentRole && radiosNodeList) {
+        radiosNodeList.forEach(radio => {
             if (radio.value === currentRole) {
                 radio.checked = true;
                 roleActuallySelected = true;
@@ -36,15 +31,20 @@ function preselectUserRole(currentRole) {
             }
         });
     }
-    if (!roleActuallySelected) {
+    // Fallback : s'assurer qu'une option est cochée si aucune ne l'a été par currentRole ou par défaut en HTML
+        if (!roleActuallySelected && radiosNodeList && radiosNodeList.length > 0) {
+        // Si currentRole n'a rien coché, on applique notre défaut.
         const passengerRadio = document.getElementById('passenger-role');
-        if (passengerRadio) {
-             passengerRadio.checked = true;
-        } else if (roleRadios.length > 0) {
-             roleRadios[0].checked = true;
+        if (passengerRadio && Array.from(radiosNodeList).includes(passengerRadio)) {
+            passengerRadio.checked = true;
+        } else {
+            // Si 'passenger-role' n'est pas trouvé ou ne fait pas partie du groupe,
+            // on coche le premier radio disponible dans la liste.
+            radiosNodeList[0].checked = true;
         }
     }
 }
+
 
 /**
  * Affiche le formulaire d'ajout/modification de véhicule.
@@ -105,6 +105,48 @@ function hideVehicleForm() {
     }
 }
 
+function displayUserVehicles(vehiclesData, vehiclesListElement) {
+    if (!vehiclesListElement) {
+        console.warn("Élément pour la liste des véhicules non trouvé.");
+        return;
+    }
+    vehiclesListElement.innerHTML = ''; // Vide la liste existante
+
+    if (!vehiclesData || vehiclesData.length === 0) {
+        return;
+    }
+
+    const template = document.getElementById('vehicle-item-template');
+    if (!template) {
+        console.error("Template '#vehicle-item-template' introuvable.");
+        return;
+    }
+
+    vehiclesData.forEach(vehicle => {
+        const clone = template.content.cloneNode(true);
+        const vehicleElement = clone.querySelector('.vehicle-item');
+        if (vehicleElement) {
+            vehicleElement.setAttribute('data-vehicle-id', vehicle.id);
+            vehicleElement.setAttribute('data-brand', vehicle.brand_name);
+            vehicleElement.setAttribute('data-model', vehicle.model_name);
+            vehicleElement.setAttribute('data-plate', vehicle.license_plate);
+            vehicleElement.setAttribute('data-color', vehicle.color || "");
+            vehicleElement.setAttribute('data-reg-date', vehicle.registration_date || "");
+            vehicleElement.setAttribute('data-seats', String(vehicle.passenger_capacity));
+            vehicleElement.setAttribute('data-is-electric', String(vehicle.is_electric));
+
+            const brandDisplay = vehicleElement.querySelector('.vehicle-brand-display');
+            const modelDisplay = vehicleElement.querySelector('.vehicle-model-display');
+            const plateDisplay = vehicleElement.querySelector('.vehicle-plate-display');
+            
+            if (brandDisplay) brandDisplay.textContent = vehicle.brand_name;
+            if (modelDisplay) modelDisplay.textContent = vehicle.model_name;
+            if (plateDisplay) plateDisplay.textContent = vehicle.license_plate;
+            
+            vehiclesListElement.appendChild(clone);
+        }
+    });
+}
 
 // === Fonction Principale d'Initialisation de la Page ===
 export function initializeAccountPage() {
@@ -117,9 +159,10 @@ export function initializeAccountPage() {
     const userCreditsSpan = document.getElementById('account-credits');
     const lastNameDisplay = document.getElementById('account-last-name-display');
     const firstNameDisplay = document.getElementById('account-first-name-display');
-    // Nouveaux champs pour affichage date de naissance et téléphone
     const birthdateDisplay = document.getElementById('account-birthdate-display');
     const phoneDisplay = document.getElementById('account-phone-display');
+    const roleRadios = document.querySelectorAll('input[name="user_role_form"]');
+    const driverInfoSection = document.getElementById('driver-info-section');
     
     const deleteAccountBtn = document.getElementById('delete-account-btn');
     const confirmDeleteAccountModalElement = document.getElementById('confirmDeleteAccountModal');
@@ -172,30 +215,91 @@ export function initializeAccountPage() {
     }
 
 
-    // --- Initialisation de l'affichage ---
-    if (userPseudoSpan) userPseudoSpan.textContent = sessionStorage.getItem('user_pseudo') || "[PseudoUtilisateur]";
-    if (lastNameDisplay) lastNameDisplay.textContent = sessionStorage.getItem('simulatedUserLastName') || "[NomUtilisateur]";
-    if (firstNameDisplay) firstNameDisplay.textContent = sessionStorage.getItem('simulatedUserFirstName') || "[PrénomUtilisateur]";
-    if (userEmailSpan) userEmailSpan.textContent = sessionStorage.getItem('simulatedUserEmail') || "[EmailUtilisateur]";
-    if (userCreditsSpan) userCreditsSpan.textContent = sessionStorage.getItem('simulatedUserCredits') || "[N/A]";
-    
-    // Affichage date de naissance et téléphone
-    if (birthdateDisplay) {
-        const storedBirthdate = sessionStorage.getItem('simulatedUserBirthdate');
-        if (storedBirthdate && storedBirthdate !== "Non renseignée" && storedBirthdate.includes('-')) { // Format AAAA-MM-JJ
-            const parts = storedBirthdate.split('-');
-            birthdateDisplay.textContent = `${parts[2]}/${parts[1]}/${parts[0]}`; // Affichage JJ/MM/AAAA
-        } else {
-            birthdateDisplay.textContent = storedBirthdate || "Non renseignée";
+fetch('http://ecoride.local/api/get_user_profile.php', { 
+        method: 'GET',
+        headers: {
+            'Accept': 'application/json',
         }
-    }
-    if (phoneDisplay) {
-        phoneDisplay.textContent = sessionStorage.getItem('simulatedUserPhone') || "Non renseigné";
-    }
-    
-    const currentRole = getRole(); 
-    preselectUserRole(currentRole); 
-    toggleDriverInfoSection(currentRole); 
+    })
+    .then(response => {
+        console.log("Profil Fetch: Statut Réponse:", response.status);
+        if (response.status === 401) {
+            console.warn("Utilisateur non authentifié, redirection vers login.");
+            if (typeof LoadContentPage === "function") {
+                window.history.pushState({}, "", "/login");
+                LoadContentPage();
+            } else {
+                window.location.href = "/"; 
+            }
+            throw new Error('Non authentifié');
+        }
+        if (!response.ok) { 
+            return response.text().then(text => { 
+                throw new Error(`Erreur HTTP ${response.status} lors de la récupération du profil: ${text}`);
+            });
+        }
+        return response.json();
+    })
+    .then(data => {
+        console.log("Profil Fetch: Données reçues:", data);
+        if (data.success && data.user) {
+            const userData = data.user;
+            const vehiclesData = data.vehicles || [];
+
+            // Peuplement des informations personnelles
+            if (userPseudoSpan) userPseudoSpan.textContent = userData.username || "[N/A]";
+            if (lastNameDisplay) lastNameDisplay.textContent = userData.last_name || "[N/A]";
+            if (firstNameDisplay) firstNameDisplay.textContent = userData.first_name || "[N/A]";
+            if (userEmailSpan) userEmailSpan.textContent = userData.email || "[N/A]";
+            if (userCreditsSpan) userCreditsSpan.textContent = userData.credits !== null ? String(userData.credits) : "[N/A]";
+
+            if (birthdateDisplay) {
+                if (userData.birth_date && userData.birth_date.includes('-')) { 
+                    const parts = userData.birth_date.split('-');
+                    birthdateDisplay.textContent = `${parts[2]}/${parts[1]}/${parts[0]}`;
+                } else {
+                    birthdateDisplay.textContent = userData.birth_date || "Non renseignée";
+                }
+            }
+            if (phoneDisplay) phoneDisplay.textContent = userData.phone_number || "Non renseigné";
+
+            // Pré-remplissage du rôle fonctionnel et affichage de la section chauffeur
+            const currentFunctionalRole = userData.functional_role || 'passenger';
+            preselectUserRole(currentFunctionalRole, roleRadios); 
+            toggleDriverInfoSection(currentFunctionalRole, driverInfoSection);
+
+            // Pré-remplissage des préférences du chauffeur
+            if (currentFunctionalRole === 'driver' || currentFunctionalRole === 'passenger_driver') {
+                if (prefSmokerInput) prefSmokerInput.checked = userData.driver_pref_smoker; // Devrait être un booléen du PHP
+                if (prefAnimalsInput) prefAnimalsInput.checked = userData.driver_pref_animals; // Idem
+                if (prefCustomTextarea) prefCustomTextarea.value = userData.driver_pref_custom || '';
+            }
+
+            // Affichage des véhicules
+            if(vehiclesList) {
+                displayUserVehicles(vehiclesData, vehiclesList);
+            } else {
+                console.warn("Élément #vehicles-list non trouvé pour afficher les véhicules.");
+            }
+
+        } else {
+            console.error("Erreur lors de la récupération des données du profil:", data.message || "Format de réponse inattendu.");
+        }
+    })
+    .catch(error => {
+    console.error("Erreur Fetch globale pour get_user_profile:", error);
+
+        if (error.message !== 'Non authentifié') {
+            console.log("Redirection vers la page 404 suite à une erreur de chargement du profil.");
+            if (typeof LoadContentPage === "function") {
+                window.history.pushState({}, "", "/404");
+                LoadContentPage(); 
+            } else {
+                // Fallback si LoadContentPage n'est pas dispo
+                window.location.href = "/404"; 
+            }
+        }
+});
 
     // --- Ajout des écouteurs d'événements ---
     if (roleForm) {
@@ -248,7 +352,7 @@ export function initializeAccountPage() {
             const vehicleItem = target.closest('.vehicle-item'); 
             if (!vehicleItem) return;
 
-            const vehicleId = vehicleItem.getAttribute('data-vehicle-id'); // Utilisation de getAttribute
+            const vehicleId = vehicleItem.getAttribute('data-vehicle-id');
             
             if (target.classList.contains('edit-vehicle-btn') || target.closest('.edit-vehicle-btn')) {
                 if (!vehicleId) { console.error("ID de véhicule manquant pour Modifier."); return; }
@@ -338,7 +442,7 @@ export function initializeAccountPage() {
             }
 
             const vehicleDataFromForm = {
-                id: currentVehicleId || `simulated-${Date.now()}`, // Simule ID si ajout
+                id: currentVehicleId || `simulated-${Date.now()}`,
                 brand, model, color, plate, registrationDate, seats, isElectric
             };
 

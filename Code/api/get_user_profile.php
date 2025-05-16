@@ -10,7 +10,7 @@ header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *'); // Pour développement
 header('Access-Control-Allow-Methods: GET, OPTIONS'); // Ce sera une requête GET
 header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With');
-// header('Access-Control-Allow-Credentials: true'); // Pas besoin si même origine
+// header('Access-Control-Allow-Credentials: true'); 
 
 if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
     http_response_code(200);
@@ -61,9 +61,6 @@ try {
     $response['user'] = $user_data;
 
     // 3. Récupérer les véhicules de l'utilisateur (s'il peut être chauffeur)
-    // On peut conditionner cela au functional_role si on veut, ou toujours les récupérer
-    // si l'utilisateur a le droit d'en avoir.
-    // if ($user_data['functional_role'] === 'driver' || $user_data['functional_role'] === 'passenger_driver') {
         $sqlVehicles = "SELECT v.id, v.brand_id, b.name as brand_name, v.model_name, v.color, 
                             v.license_plate, v.registration_date, v.passenger_capacity, 
                             v.is_electric, v.energy_type, v.created_at, v.updated_at

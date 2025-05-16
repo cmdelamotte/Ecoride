@@ -73,9 +73,9 @@ export async function signout(event) { // Ajout de async car on va utiliser awai
 
     // --- Nettoyage côté client (toujours effectué, même si l'appel API échoue) ---
     console.log("authManager: Nettoyage du sessionStorage JS.");
-    sessionStorage.removeItem('user_id'); // Nouvelle clé que loginFormHandler stocke
+    sessionStorage.removeItem('user_id'); 
     sessionStorage.removeItem('username');
-    sessionStorage.removeItem('simulatedUserFirstName'); // et les autres clés de profil
+    sessionStorage.removeItem('simulatedUserFirstName');
     sessionStorage.removeItem('simulatedUserLastName');
     sessionStorage.removeItem('simulatedUserEmail');
     sessionStorage.removeItem('simulatedUserBirthdate');
@@ -111,35 +111,27 @@ export async function signout(event) { // Ajout de async car on va utiliser awai
  */
 
 function shouldElementBeVisible(rules, userRole) {
-    // Cas 1: L'élément est pour les utilisateurs déconnectés
     if (rules.includes('disconnected')) {
-        // Afficher SEULEMENT si userRole est null (donc pas connecté)
         return userRole === null;
     }
-
-    // Cas 2: L'élément est pour des utilisateurs connectés. Si un utilisateur est connecté, il a forcément un rôle.
-    if (rules.includes(userRole)) { 
-        return true;
+    // Pour les utilisateurs connectés
+    if (userRole !== null && typeof userRole === 'string') {
+        const userRoleProcessed = userRole.trim(); // Sécurité : enlever les espaces
+        // Vérifier si une des règles (après trim aussi) correspond au rôle traité de l'utilisateur
+        return rules.some(rule => rule.trim() === userRoleProcessed);
     }
-    
-    // Si aucune des conditions ci-dessus n'est remplie, on n'affiche pas.
-    return false;
+    return false; // Si userRole est null et que la règle n'est pas 'disconnected'
 }
 
 // La fonction showAndHideElementsForRoles applique les résultats de shouldElementBeVisible :
 export function showAndHideElementsForRoles() {
-    const userRole = getRole(); // "passenger", "driver", ..., ou null si non connecté
-
-    console.log(`UI Update based on Role: ${userRole || 'disconnected'}`);
-
-        // Boucle qui parcourt chaque élément ayant un data-show
+    const userRole = getRole(); 
+    console.log("authManager - UI Update based on Role:", userRole || 'disconnected'); // LOG 1
     document.querySelectorAll('[data-show]').forEach(element => {
         const rules = element.dataset.show.split(' ');
-        
-        // Affiche l'élément si userRole = l'un des éléments du tableau rules
+        console.log("authManager - Element:", element.id || element.textContent.trim().substring(0,20), "Rules:", rules, "Current Role:", userRole); // LOG 2
         if (shouldElementBeVisible(rules, userRole)) {
             element.classList.remove('d-none');
-        // Masque l'élément si userRole != l'un des éléments du tableau rules
         } else {
             element.classList.add('d-none');
         }
