@@ -3,12 +3,10 @@
 // Inclure le fichier de configuration de la base de données
 require_once 'config/database.php';
 
-// Définir le type de contenu de la réponse en JSON
+
 header('Content-Type: application/json');
-// Autoriser les requêtes Cross-Origin (CORS) - utile pour le développement
-// En production, il faudra être plus restrictif.
-header('Access-Control-Allow-Origin: *'); // Permet à n'importe quel domaine d'accéder
-header('Access-Control-Allow-Methods: POST, GET, OPTIONS'); // Méthodes autorisées
+header('Access-Control-Allow-Origin: *'); 
+header('Access-Control-Allow-Methods: POST, GET, OPTIONS'); 
 header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With');
 
 // Gérer les requêtes OPTIONS (pré-vérification CORS)

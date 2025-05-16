@@ -5,9 +5,7 @@ if (session_status() == PHP_SESSION_NONE) {
     session_start();
 }
 
-// Définir le type de contenu de la réponse en JSON
 header('Content-Type: application/json');
-// Headers CORS (comme pour login et register)
 header('Access-Control-Allow-Origin: *'); 
 header('Access-Control-Allow-Methods: POST, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With');
