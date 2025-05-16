@@ -1,15 +1,11 @@
 import { LoadContentPage } from "../../router/Router.js";
 
-// --- Fonctions pour simuler/gérer l'état d'authentification ---
+// Fonctions pour gérer l'état d'authentification
 function getToken() {
-    // Plus tard, lira un vrai token (ex: localStorage, cookie)
-    // return localStorage.getItem('ecoRideUserToken');
-    return sessionStorage.getItem('ecoRideUserToken'); // SessionStorage pour que ça s'efface à la fermeture du navigateur (plus simple pour tests)
+    return sessionStorage.getItem('ecoRideUserToken');
 }
 
 export function getRole() {
-    // Plus tard, lira un vrai rôle
-    // return localStorage.getItem('ecoRideUserRole');
     return sessionStorage.getItem('ecoRideUserRole');
 }
 
@@ -22,30 +18,89 @@ function isConnected() {
  * @param {string} role - Le rôle à simuler (ex: "passenger", "driver", "passenger-driver", "employee", "admin")
  * @param {string} token - Un token factice.
  */
-function simulateLogin(role, token = "fakeUserToken123") {
-    sessionStorage.setItem('ecoRideUserToken', token);
-    sessionStorage.setItem('ecoRideUserRole', role);
-    console.log(`Simulation: Connexion en tant que ${role}`);
-    showAndHideElementsForRoles();
-}
+// function simulateLogin(role, token = "fakeUserToken123") {
+//     sessionStorage.setItem('ecoRideUserToken', token);
+//     sessionStorage.setItem('ecoRideUserRole', role);
+//     console.log(`Simulation: Connexion en tant que ${role}`);
+//     showAndHideElementsForRoles();
+// }
 
 /**
- * Simule une déconnexion.
+ * Gère la déconnexion de l'utilisateur.
+ * Appelle l'API pour détruire la session serveur, puis nettoie le client.
+ * @param {Event} event - L'événement clic (optionnel, si appelé depuis un lien).
  */
-export function signout(event) {
-    if(event) event.preventDefault(); // Si appelé depuis un lien
-    sessionStorage.removeItem('ecoRideUserToken');
-    sessionStorage.removeItem('ecoRideUserRole');
-    console.log("Simulation: Déconnexion.");
-    showAndHideElementsForRoles();
+export async function signout(event) { // Ajout de async car on va utiliser await pour fetch
+    if (event) event.preventDefault();
+    console.log("authManager: Déconnexion initiée.");
 
-    window.history.pushState({}, "", "/");
+    try {
+        const response = await fetch('http://ecoride.local/api/logout.php', {
+            method: 'POST', // Conformément au script logout.php
+            headers: {
+                'Content-Type': 'application/json' // Même si le corps est vide, c'est une bonne pratique
+            },
+        });
+
+        // Tenter de parser la réponse JSON même si on s'attend surtout à un succès
+        const data = await response.json().catch(jsonError => {
+            console.warn("authManager (logout): La réponse de l'API de déconnexion n'était pas du JSON valide.", jsonError);
+            // Si la réponse n'est pas JSON, on peut quand même vérifier le statut HTTP
+            // et considérer la déconnexion comme réussie côté serveur si le statut est OK.
+            if (response.ok) {
+                return { success: true, message: "Réponse non-JSON du serveur, mais statut OK." };
+            } else {
+                // Forger un objet d'erreur si le statut n'est pas OK et que ce n'est pas du JSON
+                return { success: false, message: `Erreur serveur (statut ${response.status}) lors de la déconnexion. Réponse non-JSON.` };
+            }
+        });
+
+        if (response.ok && data.success) {
+            console.log("authManager: Déconnexion réussie côté serveur.", data.message);
+        } else {
+            // Même si la déconnexion serveur échoue ou renvoie une erreur,
+            // on procède à la déconnexion côté client pour que l'utilisateur
+            // ne soit pas bloqué dans un état "connecté" si le serveur a un souci.
+            console.warn("authManager: La déconnexion côté serveur a potentiellement échoué ou renvoyé un message d'erreur.", data.message);
+        }
+
+    } catch (error) {
+        // Erreur réseau ou autre problème avec l'appel fetch lui-même
+        console.error("authManager: Erreur lors de l'appel fetch à l'API de déconnexion:", error);
+        // Malgré l'erreur d'appel à l'API, on va quand même déconnecter l'utilisateur côté client
+        // pour qu'il ne soit pas bloqué.
+    }
+
+    // --- Nettoyage côté client (toujours effectué, même si l'appel API échoue) ---
+    console.log("authManager: Nettoyage du sessionStorage JS.");
+    sessionStorage.removeItem('user_id'); // Nouvelle clé que loginFormHandler stocke
+    sessionStorage.removeItem('username');
+    sessionStorage.removeItem('simulatedUserFirstName'); // et les autres clés de profil
+    sessionStorage.removeItem('simulatedUserLastName');
+    sessionStorage.removeItem('simulatedUserEmail');
+    sessionStorage.removeItem('simulatedUserBirthdate');
+    sessionStorage.removeItem('simulatedUserPhone');
+    sessionStorage.removeItem('simulatedUserCredits');
+    sessionStorage.removeItem('userRolesSystem');
+    sessionStorage.removeItem('userFunctionalRole');
+
+    sessionStorage.removeItem('ecoRideUserToken'); // L'ancien indicateur de connexion
+    sessionStorage.removeItem('ecoRideUserRole');  // L'ancien rôle principal pour l'UI
+
+    if (typeof showAndHideElementsForRoles === "function") {
+        showAndHideElementsForRoles(); // Mettre à jour l'affichage de la navbar, etc.
+    } else {
+        console.warn("authManager: showAndHideElementsForRoles n'est pas disponible.");
+    }
+
+    // Redirection vers la page d'accueil
+    console.log("authManager: Redirection vers l'accueil.");
     if (typeof LoadContentPage === "function") {
+        window.history.pushState({}, "", "/");
         LoadContentPage();
     } else {
-        console.warn("LoadContentPage n'est pas défini globalement.");
-        // Fallback si LoadContentPage n'est pas dispo (ex: si ce script est chargé avant le routeur)
-        window.location.href = "/"; // Retour à l'accueil
+        console.warn("authManager: LoadContentPage n'est pas disponible, redirection classique.");
+        window.location.href = "/"; // Fallback
     }
 }
 
@@ -98,7 +153,6 @@ document.addEventListener('DOMContentLoaded', () => {
     if (navLogoutButton) {
         navLogoutButton.addEventListener("click", signout);
     } else {
-        // Ce log est utile si tu renommes l'ID ou si le script s'exécute trop tôt
         console.warn("Bouton de déconnexion 'nav-logout' non trouvé au chargement du DOM.");
     }
 
@@ -108,15 +162,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // DÉBUT BLOC DE DÉBOGAGE - À RETIRER/COMMENTER POUR LA PRODUCTION
-// Ces lignes rendent certaines fonctions du module accessibles globalement (via window)
-// pour faciliter les tests manuels depuis la console du navigateur pendant le développement.
-if (typeof window !== 'undefined') { // Vérifie qu'on est bien dans un environnement navigateur
-    window.simulateLogin = simulateLogin;
-    window.signout = signout;
-    window.showAndHideElementsForRoles = showAndHideElementsForRoles; // Si tu veux la tester aussi
-    window.dev_getRole = getRole; // Préfixe par dev_ pour marquer que c'est pour le dev
-    window.dev_getToken = getToken;
-    window.dev_isConnected = isConnected;
+// if (typeof window !== 'undefined') { // Vérifie qu'on est bien dans un environnement navigateur
+//     window.simulateLogin = simulateLogin;
+//     window.signout = signout;
+//     window.showAndHideElementsForRoles = showAndHideElementsForRoles; // Si tu veux la tester aussi
+//     window.dev_getRole = getRole; // Préfixe par dev_ pour marquer que c'est pour le dev
+//     window.dev_getToken = getToken;
+//     window.dev_isConnected = isConnected;
 
-    console.log("Fonctions de débogage (simulateLogin, signout, etc.) attachées à window.");
-}
+//     console.log("Fonctions de débogage (simulateLogin, signout, etc.) attachées à window.");
+// }
