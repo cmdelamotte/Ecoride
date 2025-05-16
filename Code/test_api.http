@@ -47,3 +47,7 @@ Content-Type: application/json
     "identifier": "unknown_user",
     "password": "password123"
 }
+
+### Test Déconnexion Utilisateur
+POST http://ecoride.local/api/logout.php
+Content-Type: application/json
