@@ -1,112 +1,184 @@
-import { LoadContentPage } from "../../router/Router.js"  ; 
-import { showAndHideElementsForRoles } from './authManager.js';
+import { LoadContentPage } from "../../router/Router.js";      // Pour la redirection SPA
+import { showAndHideElementsForRoles } from './authManager.js'; // Pour mettre à jour l'UI
+
+//TODO : Améliorer redirection après connexion
 
 export function initializeLoginForm() {
     const loginForm = document.getElementById('login-form');
-    
-    // Utiliser les ID exacts de ton HTML login.html
-    const usernameInput = document.getElementById('login-username'); // CHANGÉ ICI pour correspondre à ton HTML
+    if (!loginForm) {
+        console.warn("Formulaire 'login-form' non trouvé pour initialisation.");
+        return;
+    }
+
+    const identifierInput = document.getElementById('login-identifier'); 
     const passwordInput = document.getElementById('login-password');
     const errorMessageDiv = document.getElementById('error-message-login');
 
-    if (loginForm) {
-        loginForm.addEventListener('submit', function(event) {
-            event.preventDefault(); 
+    // Listeners 'input' pour effacer les messages d'erreur custom et globaux
+    [identifierInput, passwordInput].forEach(input => {
+        if (input) {
+            input.addEventListener('input', () => {
+                input.setCustomValidity("");
+                if (errorMessageDiv) {
+                    errorMessageDiv.classList.add('d-none');
+                    errorMessageDiv.textContent = '';
+                }
+            });
+        }
+    });
 
-            if (usernameInput) usernameInput.setCustomValidity("");
-            if (passwordInput) passwordInput.setCustomValidity("");
-            if (errorMessageDiv) {
-                errorMessageDiv.classList.add('d-none');
-                errorMessageDiv.textContent = '';
-            }
+    loginForm.addEventListener('submit', function(event) {
+        event.preventDefault(); 
+        console.log("loginFormHandler: Submit intercepté.");
 
-            let isFormValidOverall = true;
+        // Réinitialisation des messages
+        if (identifierInput) identifierInput.setCustomValidity("");
+        if (passwordInput) passwordInput.setCustomValidity("");
+        if (errorMessageDiv) {
+            errorMessageDiv.classList.add('d-none');
+            errorMessageDiv.textContent = '';
+        }
 
-            if (!loginForm.checkValidity()) {
-                isFormValidOverall = false;
-            }
+        let isFormValidOverall = true;
+        // Validation HTML5
+        if (!loginForm.checkValidity()) {
+            isFormValidOverall = false;
+        }
+        
+        const identifier = identifierInput ? identifierInput.value.trim() : ""; 
+        const passwordValue = passwordInput ? passwordInput.value : "";
+
+        // Validations JS client supplémentaires
+        if (!identifier) {
+            if(identifierInput) identifierInput.setCustomValidity("L'identifiant est requis.");
+            isFormValidOverall = false;
+        }
+        if (!passwordValue) {
+            if(passwordInput) passwordInput.setCustomValidity("Le mot de passe est requis.");
+            isFormValidOverall = false;
+        }
             
-            if (!isFormValidOverall) {
-                loginForm.reportValidity(); 
-                console.log("Validation du formulaire de connexion échouée.");
-            } else {
-                // Récupérer les valeurs APRÈS s'être assuré que les inputs existent
-                const username = usernameInput ? usernameInput.value.trim() : ""; 
-                const passwordValue = passwordInput ? passwordInput.value : ""; // Récupérer la valeur du mot de passe
+        if (!isFormValidOverall) {
+            loginForm.reportValidity(); // Affiche les messages des setCustomValidity et HTML5
+            if (errorMessageDiv && !errorMessageDiv.textContent) { 
+                errorMessageDiv.textContent = "Veuillez remplir tous les champs.";
+                errorMessageDiv.classList.remove('d-none', 'alert-success', 'alert-info');
+                errorMessageDiv.classList.add('alert-danger');
+            }
+            return; 
+        }
+        
+        // Le formulaire est valide côté client, appel de l'API
+        const loginData = {
+            identifier: identifier, // La clé 'identifier' est attendue par api/login.php
+            password: passwordValue
+        };
 
-                console.log("Formulaire de connexion valide côté client. Tentative de connexion pour:", username);
+        console.log("loginFormHandler: Tentative de connexion avec :", loginData);
+        const submitButton = loginForm.querySelector('button[type="submit"]');
+        if(submitButton) submitButton.disabled = true;
+        if (errorMessageDiv) {
+            errorMessageDiv.textContent = 'Connexion en cours...';
+            errorMessageDiv.classList.remove('d-none', 'alert-danger', 'alert-success');
+            errorMessageDiv.classList.add('alert-info');
+        }
 
-                // --- DÉBUT DE LA LOGIQUE DE CONNEXION SIMULÉE ---
-                let loggedIn = false;
-                let userRole = null;
-                let redirectTo = "/"; 
+        fetch('http://ecoride.local/api/login.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(loginData)
+        })
+        .then(response => {
+            console.log("loginFormHandler: Statut Réponse Fetch:", response.status);
+            return response.json().then(data => ({ status: response.status, body: data, ok: response.ok }))
+                .catch(jsonError => {
+                    console.error("loginFormHandler: Erreur parsing JSON:", jsonError);
+                    return response.text().then(textData => {
+                        console.log("loginFormHandler: Réponse brute non-JSON:", textData);
+                        throw new Error(`Réponse non-JSON du serveur (statut ${response.status}): ${textData.substring(0,200)}...`);
+                    });
+                });
+        })
+        .then(({ status, body, ok }) => {
+            if (submitButton) submitButton.disabled = false;
+            console.log("loginFormHandler: Réponse API (JSON parsé):", body);
 
-                // Identifiants de test
-                if (username === "driver" && passwordValue === "123") {
-                    userRole = "driver";
-                    redirectTo = "/account"; 
-                    loggedIn = true;
-                } else if (username === "passenger" && passwordValue === "123") {
-                    userRole = "passenger";
-                    redirectTo = "/account"; 
-                    loggedIn = true;
-                } else if (username === "passenger-driver" && passwordValue === "123") {
-                    userRole = "passenger-driver";
-                    redirectTo = "/account"; 
-                    loggedIn = true;
-                } else if (username === "admin" && passwordValue === "123") {
-                    userRole = "admin"; 
-                    redirectTo = "/admin-dashboard";
-                    loggedIn = true;
-                } else if (username === "employee" && passwordValue === "123") {
-                    userRole = "employee"; 
-                    redirectTo = "/employee-dashboard";
-                    loggedIn = true;
+            if (ok && body.success && body.user) {
+                // Connexion réussie !
+                if (errorMessageDiv) { // Afficher le message de succès avant la redirection
+                    errorMessageDiv.textContent = body.message || 'Connexion réussie ! Redirection...';
+                    errorMessageDiv.classList.remove('d-none', 'alert-danger', 'alert-info');
+                    errorMessageDiv.classList.add('alert-success');
+                }
+                
+                // Stocker les informations utilisateur dans sessionStorage
+                sessionStorage.setItem('user_id', body.user.id);
+                sessionStorage.setItem('username', body.user.username); // Ou 'user_pseudo' si c'est la clé que tu utilises
+                sessionStorage.setItem('simulatedUserFirstName', body.user.firstName);
+                sessionStorage.setItem('simulatedUserLastName', body.user.lastName);
+                sessionStorage.setItem('simulatedUserEmail', body.user.email); // Si renvoyé par l'API et utile
+                sessionStorage.setItem('simulatedUserBirthdate', body.user.birthdate || ''); // Si renvoyé
+                sessionStorage.setItem('simulatedUserPhone', body.user.phone || '');       // Si renvoyé
+                sessionStorage.setItem('simulatedUserCredits', String(body.user.credits)); // Assurer que c'est une chaîne
+                
+                const userRolesSystem = body.user.roles_system || [];
+                const userFunctionalRole = body.user.functional_role;
+
+                let primaryRoleForUI = userFunctionalRole || 'passenger'; // Fallback à passenger
+                if (userRolesSystem.includes('ROLE_ADMIN')) {
+                    primaryRoleForUI = 'admin';
+                } else if (userRolesSystem.includes('ROLE_EMPLOYEE')) {
+                    primaryRoleForUI = 'employee';
+                }
+                sessionStorage.setItem('ecoRideUserRole', primaryRoleForUI); // Pour authManager.js
+                // Pour le token, comme on utilise des sessions PHP, on peut simuler un token ou ne rien mettre
+                // L'important est que isConnected() dans authManager.js fonctionne.
+                // Si isConnected() vérifie ecoRideUserToken, il faut le définir :
+                sessionStorage.setItem('ecoRideUserToken', 'php_session_active'); // Ou l'user_id, ou un booléen
+
+                if (typeof showAndHideElementsForRoles === "function") {
+                    showAndHideElementsForRoles(); // Mettre à jour la navbar, etc.
                 }
 
-                if (loggedIn && userRole) {
-                    sessionStorage.setItem('ecoRideUserToken', 'simulatedTokenFor-' + userRole);
-                    sessionStorage.setItem('ecoRideUserRole', userRole);
-                    
-                    if (typeof showAndHideElementsForRoles === "function") {
-                        showAndHideElementsForRoles(); 
-                    } else {
-                        console.warn("showAndHideElementsForRoles n'est pas disponible.");
+                // Redirection après un court délai pour que l'utilisateur voie le message de succès
+                setTimeout(() => {
+                    let redirectTo = "/account"; // Destination par défaut
+                    if (primaryRoleForUI === 'admin') {
+                        redirectTo = "/admin-dashboard";
+                    } else if (primaryRoleForUI === 'employee') {
+                        redirectTo = "/employee-dashboard";
                     }
                     
-                    alert(`Connexion réussie en tant que ${userRole} (simulation) !`);
-                    
-                    window.history.pushState({}, "", redirectTo);
+                    console.log("loginFormHandler: Redirection vers", redirectTo);
                     if (typeof LoadContentPage === "function") {
+                        window.history.pushState({}, "", redirectTo);
                         LoadContentPage();
                     } else {
-                        console.warn("LoadContentPage n'est pas défini pour la redirection.");
-                        window.location.href = redirectTo; 
+                        window.location.href = redirectTo; // Fallback
                     }
-                } else {
-                    if (errorMessageDiv) {
-                        errorMessageDiv.textContent = "Identifiants incorrects (simulation).";
-                        errorMessageDiv.classList.remove('d-none');
-                        errorMessageDiv.classList.add('alert-danger');
-                    } else {
-                        alert("Identifiants incorrects (simulation).");
-                    }
-                    console.log("Échec de la connexion simulée pour:", username);
-                }
-                // --- FIN DE LA LOGIQUE DE CONNEXION SIMULÉE ---
-            }
-        });
+                }, 1000); 
 
-        [usernameInput, passwordInput].forEach(input => {
-            if (input) {
-                input.addEventListener('input', () => {
-                    input.setCustomValidity("");
-                    if (errorMessageDiv) {
-                        errorMessageDiv.classList.add('d-none');
-                        errorMessageDiv.textContent = '';
-                    }
-                });
+            } else {
+                // Échec de la connexion (identifiants incorrects, compte suspendu, etc.)
+                const message = body.message || 'Identifiant ou mot de passe incorrect.';
+                console.error('loginFormHandler: Erreur API connexion:', status, body);
+                if (errorMessageDiv) {
+                    errorMessageDiv.textContent = message;
+                    errorMessageDiv.classList.remove('d-none', 'alert-info', 'alert-success');
+                    errorMessageDiv.classList.add('alert-danger');
+                }
+            }
+        })
+        .catch(error => {
+            if (submitButton) submitButton.disabled = false;
+            console.error('loginFormHandler: Erreur Fetch globale (connexion):', error);
+            if (errorMessageDiv) {
+                errorMessageDiv.textContent = 'Erreur de communication avec le serveur. ' + error.message;
+                errorMessageDiv.classList.remove('d-none', 'alert-info', 'alert-success');
+                errorMessageDiv.classList.add('alert-danger');
             }
         });
-    }
+    });
 }
