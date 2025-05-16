@@ -21,6 +21,15 @@ Content-Type: application/json
     "password": "password123" 
 }
 
+### Test Connexion Utilisateur (Succès)
+POST http://ecoride.local/api/login.php
+Content-Type: application/json
+
+{
+    "identifier": "alice_driver_passenger", 
+    "password": "password123" 
+}
+
 ### Test Connexion Utilisateur (Admin - Succès)
 POST http://ecoride.local/api/login.php
 Content-Type: application/json
@@ -51,3 +60,6 @@ Content-Type: application/json
 ### Test Déconnexion Utilisateur
 POST http://ecoride.local/api/logout.php
 Content-Type: application/json
+
+### Test de récupération de profil utilisateur 
+GET http://ecoride.local/api/account.php 
