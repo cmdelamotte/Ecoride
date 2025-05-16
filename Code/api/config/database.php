@@ -1,9 +1,9 @@
 <?php
 
 // Paramètres de connexion à la base de données
-define('DB_HOST', 'localhost');        // Ou 127.0.0.1
-define('DB_NAME', 'ecoride');          // Le nom de ta base de données
-define('DB_USER', 'ecoride_admin');    // Ton utilisateur MySQL
+define('DB_HOST', 'localhost'); 
+define('DB_NAME', 'ecoride');
+define('DB_USER', 'ecoride_admin');
 define('DB_PASS', '01v_.fGZ$A26'); 
 define('DB_CHARSET', 'utf8mb4');
 
@@ -24,8 +24,6 @@ $dsn = "mysql:host=" . DB_HOST . ";dbname=" . DB_NAME . ";charset=" . DB_CHARSET
  * @throws PDOException Si la connexion échoue.
  */
 function getPDOConnection() {
-    // 'static' signifie que la variable $pdo conserve sa valeur entre les appels à la fonction
-    // au sein de la même requête PHP.
     static $pdo = null; 
 
     if ($pdo === null) { // Si la connexion n'a pas encore été établie
@@ -37,10 +35,9 @@ function getPDOConnection() {
         } catch (\PDOException $e) {
             // En cas d'erreur de connexion:
             // En phase de développement, il est utile de voir l'erreur.
-            // En production, il faudrait logger cette erreur de manière sécurisée et afficher un message générique à l'utilisateur.
+            // En production, il faudra logger cette erreur de manière sécurisée et afficher un message générique à l'utilisateur.
             error_log("Erreur de connexion PDO : " . $e->getMessage()); // Log l'erreur (vérifie ton error_log Apache/PHP)
             // Arrête le script avec un message d'erreur.
-            // Tu pourrais aussi choisir de `throw $e;` pour la gérer plus haut dans ton code appelant.
             die("Erreur critique : Impossible de se connecter à la base de données. Veuillez contacter l'administrateur.");
         }
     }
@@ -49,9 +46,7 @@ function getPDOConnection() {
 
 /*
 // --- Section de test simple ---
-// Décommente cette section UNIQUEMENT pour tester ce fichier directement.
-// N'oublie pas de la re-commenter ensuite.
-// Pour tester, accède à ce fichier via ton navigateur : http://localhost/chemin_vers_ton_projet/api/config/database.php
+http://localhost/chemin_vers_ton_projet/api/config/database.php
 */
 
 // echo "Tentative de connexion...<br>";

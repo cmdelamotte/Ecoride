@@ -1,5 +1,4 @@
 <?php
-// Fichier: api/register.php
 
 // Inclure le fichier de configuration de la base de données
 require_once 'config/database.php';
@@ -7,7 +6,7 @@ require_once 'config/database.php';
 // Définir le type de contenu de la réponse en JSON
 header('Content-Type: application/json');
 // Autoriser les requêtes Cross-Origin (CORS) - utile pour le développement
-// En production, il faudrait être plus restrictif.
+// En production, il faudra être plus restrictif.
 header('Access-Control-Allow-Origin: *'); // Permet à n'importe quel domaine d'accéder
 header('Access-Control-Allow-Methods: POST, GET, OPTIONS'); // Méthodes autorisées
 header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With');
@@ -30,7 +29,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 $inputJSON = file_get_contents('php://input');
 $input = json_decode($inputJSON, TRUE); // Convertit le JSON en tableau associatif PHP
 
-// --- Validation des données (TRÈS IMPORTANTE !) ---
+// --- Validation des données ---
 // C'est une validation basique, tu devras l'améliorer.
 $username = trim($input['username'] ?? '');
 $firstName = trim($input['firstName'] ?? '');
@@ -65,7 +64,6 @@ if (empty($birthdate)) { $errors[] = "La date de naissance est requise."; }
 
 if (empty($phoneNumber)) { $errors[] = "Le numéro de téléphone est requis."; }
 // TODO: Valider le format du téléphone (regex) comme en JS.
-// Pour l'instant, on ne vérifie pas si le phone_number existe déjà car on a retiré la contrainte UNIQUE
 
 if (!empty($errors)) {
     http_response_code(400); // Bad Request
@@ -104,7 +102,7 @@ try {
 
     // Valeurs par défaut pour les nouveaux utilisateurs
     $defaultFunctionalRole = 'passenger';
-    $defaultAccountStatus = 'active'; // Ou 'pending_email_validation'
+    $defaultAccountStatus = 'active';
 
     $stmtUser->bindParam(':first_name', $firstName);
     $stmtUser->bindParam(':last_name', $lastName);
@@ -135,7 +133,7 @@ try {
     echo json_encode([
         'success' => true, 
         'message' => 'Inscription réussie !', 
-        'userId' => $newUserId // Optionnel: renvoyer l'ID du nouvel utilisateur
+        'userId' => $newUserId // renvoyer l'ID du nouvel utilisateur
     ]);
 
 } catch (PDOException $e) {
