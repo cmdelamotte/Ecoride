@@ -1,5 +1,6 @@
-// Importe LoadContentPage si tu comptes l'utiliser pour une redirection après succès.
-// import { LoadContentPage } from "../../router/Router.js";
+import { LoadContentPage } from "../../router/Router.js";
+
+//TODO: Améliorer le retour à l'accueil après inscription
 
 export function initializeRegisterForm() {
     const registerForm = document.getElementById('register-form');
@@ -194,13 +195,14 @@ export function initializeRegisterForm() {
                             errorMessageDiv.classList.add('alert-success');
                         }
                         registerForm.reset(); // Vider le formulaire après succès
-                        setTimeout(() => {
-                           window.location.hash = '#!/home'; // Ou la méthode de ton routeur, ex:
+                        setTimeout(() => { // Redirection vers l'accueil après inscription réussie
                             if (typeof LoadContentPage === "function") {
-                                window.history.pushState({}, "", "/home");
+                                console.log("Redirection SPA vers / (Accueil)");
+                                window.history.pushState({}, "", "/");
                                 LoadContentPage();
                             } else {
-                               window.location.href = "/#!/home"; // Fallback
+                                console.warn("LoadContentPage non disponible, redirection classique vers /.");
+                                window.location.href = "/"; // Fallback vers la racine
                             }
                         }, 1000);
                     } else {
