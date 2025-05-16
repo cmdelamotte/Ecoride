@@ -11,3 +11,39 @@ Content-Type: application/json
     "birthdate": "1995-05-15",
     "phone": "0600000011"
 }
+
+### Test Connexion Utilisateur (Succès)
+POST http://ecoride.local/api/login.php
+Content-Type: application/json
+
+{
+    "identifier": "bob_passenger", 
+    "password": "password123" 
+}
+
+### Test Connexion Utilisateur (Admin - Succès)
+POST http://ecoride.local/api/login.php
+Content-Type: application/json
+
+{
+    "identifier": "admin@ecoride.com",
+    "password": "adminPass"
+}
+
+### Test Connexion Utilisateur (Échec - mauvais mot de passe)
+POST http://ecoride.local/api/login.php
+Content-Type: application/json
+
+{
+    "identifier": "bob_passenger",
+    "password": "wrongpassword"
+}
+
+### Test Connexion Utilisateur (Échec - utilisateur inconnu)
+POST http://ecoride.local/api/login.php
+Content-Type: application/json
+
+{
+    "identifier": "unknown_user",
+    "password": "password123"
+}
