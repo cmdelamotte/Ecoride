@@ -550,42 +550,61 @@ fetch('http://ecoride.local/api/get_user_profile.php', {
         });
     }
 
-        if (prefSmokerInput) { 
-            const storedSmokerPref = sessionStorage.getItem('simulatedUserPrefSmoker');
-            if (storedSmokerPref !== null) {
-                prefSmokerInput.checked = (storedSmokerPref === 'true');
-            }
-        }
+if (preferencesForm) {
+    preferencesForm.addEventListener('submit', function(event) {
+        event.preventDefault();
+        console.log("accountPageHandler: Soumission du formulaire des préférences.");
 
-        if (prefAnimalsInput) {
-            const storedAnimalsPref = sessionStorage.getItem('simulatedUserPrefAnimals');
-            if (storedAnimalsPref !== null) {
-                prefAnimalsInput.checked = (storedAnimalsPref === 'true');
-            }
-        }
+        const prefSmoker = prefSmokerInput ? prefSmokerInput.checked : false;
+        const prefAnimals = prefAnimalsInput ? prefAnimalsInput.checked : false;
+        const prefCustom = prefCustomTextarea ? prefCustomTextarea.value.trim() : "";
 
-        if (prefCustomTextarea) {
-            const storedCustomPrefs = sessionStorage.getItem('simulatedUserPrefCustom');
-            if (storedCustomPrefs !== null) {
-                prefCustomTextarea.value = storedCustomPrefs;
+        const preferencesData = {
+            pref_smoker: prefSmoker,
+            pref_animals: prefAnimals,
+            pref_custom: prefCustom
+        };
+
+        console.log("accountPageHandler: Envoi des préférences à l'API:", preferencesData);
+
+        // Désactiver le bouton de soumission
+        const prefSubmitButton = preferencesForm.querySelector('button[type="submit"]');
+        if (prefSubmitButton) prefSubmitButton.disabled = true;
+
+        fetch('http://ecoride.local/api/update_driver_preferences.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(preferencesData)
+        })
+        .then(response => {
+            console.log("Update Prefs Fetch: Statut Réponse:", response.status);
+            return response.json().then(data => ({ status: response.status, body: data, ok: response.ok }))
+                .catch(jsonError => {
+                    console.error("Update Prefs: Erreur parsing JSON:", jsonError);
+                    return response.text().then(textData => {
+                        console.log("Update Prefs: Réponse brute non-JSON:", textData);
+                        throw new Error(`Réponse non-JSON (statut ${response.status}): ${textData.substring(0,200)}...`);
+                    });
+                });
+        })
+        .then(({ status, body, ok }) => {
+            if (prefSubmitButton) prefSubmitButton.disabled = false;
+            console.log("Update Prefs: Réponse API:", body);
+
+            if (ok && body.success) {
+                alert(body.message || 'Préférences mises à jour avec succès !');
             } else {
-                prefCustomTextarea.value = '';
+                alert(body.message || `Erreur lors de la mise à jour des préférences (statut ${status}).`);
+                console.error("Erreur API Update Prefs:", body);
             }
-        }
-    
-        if (preferencesForm) {
-        preferencesForm.addEventListener('submit', function(event) {
-            event.preventDefault();
-            const acceptsSmokers = prefSmokerInput?.checked;
-            const acceptsAnimals = prefAnimalsInput?.checked;
-            const customPrefs = prefCustomTextarea?.value.trim();
-
-            sessionStorage.setItem('simulatedUserPrefSmoker', acceptsSmokers ? 'true' : 'false');
-            sessionStorage.setItem('simulatedUserPrefAnimals', acceptsAnimals ? 'true' : 'false');
-            sessionStorage.setItem('simulatedUserPrefCustom', customPrefs);
-
-            console.log("Sauvegarde des préférences (simulation):", { acceptsSmokers, acceptsAnimals, customPrefs });
-            alert("Préférences enregistrées (simulation) !");
+        })
+        .catch(error => {
+            if (prefSubmitButton) prefSubmitButton.disabled = false;
+            console.error("Erreur Fetch globale (Update Prefs):", error);
+            alert('Erreur de communication avec le serveur pour la mise à jour des préférences. ' + error.message);
         });
-    }
+    });
+}
 }
