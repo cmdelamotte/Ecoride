@@ -87,12 +87,12 @@ POST http://ecoride.local/api/add_vehicle.php
 Content-Type: application/json
 
 {
-    "brand_id": 2,
-    "model_name": "Twingo",
+    "brand_id": 6,
+    "model_name": "Prius",
     "color": "Jaune",
-    "license_plate": "NEW-CAR-01",
-    "registration_date": "2022-05-15",
-    "passenger_capacity": 3,
+    "license_plate": "TEST-55-NUL",
+    "registration_date": "2020-05-15",
+    "passenger_capacity": 2,
     "is_electric": false,
     "energy_type": "Essence"
 }
@@ -166,3 +166,33 @@ Content-Type: application/json
     "passenger_capacity": 4,
     "is_electric": false
 }
+
+### Test Suppression Véhicule (Alice - Succès)
+POST http://ecoride.local/api/delete_vehicle.php
+Content-Type: application/json
+
+{
+    "vehicle_id": 3
+}
+
+### Test Suppression Véhicule (Échec - Mauvais Propriétaire)
+POST http://ecoride.local/api/delete_vehicle.php
+Content-Type: application/json
+
+{
+    "vehicle_id": 2 
+}
+
+### Test Suppression Véhicule (Échec - ID Invalide)
+POST http://ecoride.local/api/delete_vehicle.php
+Content-Type: application/json
+
+{
+    "vehicle_id": 9999 
+}
+
+### Test Suppression Véhicule (Échec - ID Manquant)
+POST http://ecoride.local/api/delete_vehicle.php
+Content-Type: application/json
+
+{}

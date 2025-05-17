@@ -517,18 +517,66 @@ fetch('http://ecoride.local/api/get_user_profile.php', {
         });
     }
 
-    if (confirmVehicleDeleteBtn && confirmDeleteVehicleModalInstance) {
+    // Listener pour la confirmation de suppression de VÉHICULE
+    if (confirmVehicleDeleteBtn && confirmDeleteVehicleModalInstance && vehiclesList) { // Ajout de vehiclesList pour être sûr qu'il est dispo
         confirmVehicleDeleteBtn.addEventListener('click', () => {
             if (vehicleIdToDelete) {
                 console.log("Confirmation de suppression pour véhicule ID:", vehicleIdToDelete);
-                const vehicleElementToRemove = vehiclesList.querySelector(`.vehicle-item[data-vehicle-id="${vehicleIdToDelete}"]`);
-                if (vehicleElementToRemove) {
-                    vehicleElementToRemove.remove();
-                    alert(`Véhicule ID ${vehicleIdToDelete} supprimé (simulation).`);
-                }
-                vehicleIdToDelete = null;
+
+                // Désactiver le bouton de confirmation pendant l'appel
+                confirmVehicleDeleteBtn.disabled = true;
+
+                fetch('http://ecoride.local/api/delete_vehicle.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ vehicle_id: parseInt(vehicleIdToDelete, 10) }) // L'API attend vehicle_id
+                })
+                .then(response => {
+                    console.log("Delete Vehicle Fetch: Statut Réponse:", response.status);
+                    return response.json().then(data => ({ ok: response.ok, status: response.status, body: data }))
+                        .catch(jsonError => {
+                            console.error("Delete Vehicle Fetch: Erreur parsing JSON:", jsonError);
+                            return response.text().then(textData => {
+                                console.log("Delete Vehicle Fetch: Réponse brute non-JSON:", textData);
+                                throw new Error(`Réponse non-JSON (statut ${response.status}) pour suppression véhicule: ${textData.substring(0,100)}...`);
+                            });
+                        });
+                })
+                .then(({ ok, status, body }) => {
+                    confirmVehicleDeleteBtn.disabled = false; // Réactiver le bouton
+                    console.log("Delete Vehicle Fetch: Réponse API:", body);
+
+                    if (ok && body.success) {
+                        alert(body.message || `Véhicule ID ${vehicleIdToDelete} supprimé avec succès !`);
+                        
+                        // Supprimer l'élément de la liste côté client
+                        const vehicleElementToRemove = vehiclesList.querySelector(`.vehicle-item[data-vehicle-id="${vehicleIdToDelete}"]`);
+                        if (vehicleElementToRemove) {
+                            vehicleElementToRemove.remove();
+                        } else {
+                            console.warn("L'élément véhicule à supprimer du DOM n'a pas été trouvé après succès API.");
+                        }
+                    } else {
+                        // Gérer les erreurs renvoyées par l'API (ex: non autorisé, véhicule non trouvé, contrainte FK)
+                        alert(body.message || `Erreur lors de la suppression du véhicule (statut ${status}).`);
+                        console.error("Erreur API Delete Vehicle:", body);
+                    }
+                })
+                .catch(error => {
+                    confirmVehicleDeleteBtn.disabled = false;
+                    console.error("Erreur Fetch globale (Delete Vehicle):", error);
+                    alert('Erreur de communication avec le serveur pour la suppression du véhicule. ' + error.message);
+                })
+                .finally(() => {
+                    vehicleIdToDelete = null; // Réinitialise l'ID stocké
+                    if(confirmDeleteVehicleModalInstance) confirmDeleteVehicleModalInstance.hide();
+                });
+            } else {
+                console.warn("Tentative de suppression sans vehicleIdToDelete défini.");
+                if(confirmDeleteVehicleModalInstance) confirmDeleteVehicleModalInstance.hide();
             }
-            if(confirmDeleteVehicleModalInstance) confirmDeleteVehicleModalInstance.hide();
         });
     }
     

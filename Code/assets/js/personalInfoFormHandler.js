@@ -1,5 +1,3 @@
-// assets/js/personalInfoFormHandler.js
-
 export function initializeEditPersonalInfoForm() {
     const form = document.getElementById('edit-personal-info-form');
     if (!form) return;
