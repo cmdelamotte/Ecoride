@@ -196,3 +196,45 @@ POST http://ecoride.local/api/delete_vehicle.php
 Content-Type: application/json
 
 {}
+
+### Test Modification Infos Personnelles (Alice - Succès)
+POST http://ecoride.local/api/update_personal_info.php
+Content-Type: application/json
+
+{
+    "firstName": "AliceUpdated",
+    "lastName": "MartinUpdated",
+    "username": "alice_updated_nick",
+    "email": "alice.martin.updated@email.com",
+    "phone": "0699887766",
+    "birthdate": "1992-07-21",
+    "currentPassword": "password123"
+}
+
+### Test Modification Infos Personnelles (Échec - Mauvais Mot de Passe Actuel)
+POST http://ecoride.local/api/update_personal_info.php
+Content-Type: application/json
+
+{
+    "firstName": "AliceNePasChanger",
+    "lastName": "MartinNePasChanger",
+    "username": "alice_dontchange",
+    "email": "alice.dontchange@email.com",
+    "phone": "0600000000",
+    "birthdate": "1992-07-20",
+    "currentPassword": "WRONGpassword123"
+}
+
+### Test Modification Infos Personnelles (Échec - Email déjà utilisé)
+POST http://ecoride.local/api/update_personal_info.php
+Content-Type: application/json
+
+{
+    "firstName": "Alice",
+    "lastName": "Martin",
+    "username": "alice_unique_temp",
+    "email": "bob.dupont@email.com",
+    "phone": "0611223344",
+    "birthdate": "1992-07-20",
+    "currentPassword": "password123"
+}
