@@ -71,3 +71,13 @@ Content-Type: application/json
 {
     "role": "driver" 
 }
+
+### Test Mise à Jour Préférences Chauffeur (Alice)
+POST http://ecoride.local/api/update_driver_preferences.php
+Content-Type: application/json
+
+{
+    "pref_smoker": true,
+    "pref_animals": false,
+    "pref_custom": "Musique rock bienvenue, mais pas trop fort svp !" 
+}
