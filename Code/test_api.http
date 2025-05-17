@@ -117,3 +117,6 @@ Content-Type: application/json
     "license_plate": "NEW-CAR-01", 
     "passenger_capacity": 2
 }
+
+### Récupérer la liste des marques
+GET http://ecoride.local/api/get_brands.php

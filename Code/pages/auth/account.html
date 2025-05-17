@@ -134,9 +134,11 @@
                                 <h3 class="h6 form-label border-bottom pb-3 mb-3" id="vehicle-form-title">Ajouter un Véhicule</h3>
                                 <input type="hidden" id="editing-vehicle-id" name="editing_vehicle_id" value="">
                                 <div class="row g-3">
-                                    <div class="col-12"> <label for="vehicle-brand" class="form-label">Marque</label>
-                                        <div class="form-input-custom d-flex align-items-center">
-                                            <input type="text" class="form-control-custom flex-grow-1" id="vehicle-brand" name="vehicle_brand" placeholder="Marque" aria-label="Marque du véhicule" required>
+                                    <div class="col-12">
+                                        <label for="vehicle-brand-select" class="form-label">Marque</label> <div class="form-input-custom d-flex align-items-center"> 
+                                            <select class="form-select-custom flex-grow-1" id="vehicle-brand-select" name="brand_id" aria-label="Marque du véhicule" required>
+                                                <option value="" selected disabled>Marques de véhicule</option>
+                                                </select>
                                         </div>
                                     </div>
                                     <div class="col-12">
