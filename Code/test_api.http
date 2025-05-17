@@ -120,3 +120,49 @@ Content-Type: application/json
 
 ### Récupérer la liste des marques
 GET http://ecoride.local/api/get_brands.php
+
+### Test Modification Véhicule (Alice - Succès)
+POST http://ecoride.local/api/update_vehicle.php
+Content-Type: application/json
+
+{
+    "id": 1,
+    "brand_id": 1,
+    "model_name": "208 Style",
+    "color": "Gris Foncé",
+    "license_plate": "AA-123-BB",
+    "registration_date": "2019-03-15",
+    "passenger_capacity": 3,
+    "is_electric": false,
+    "energy_type": "Gasoline"
+}
+
+### Test Modification Véhicule (Échec - Mauvais Propriétaire)
+POST http://ecoride.local/api/update_vehicle.php
+Content-Type: application/json
+
+{
+    "id": 2,
+    "brand_id": 5,
+    "model_name": "Model 3 Hacked",
+    "color": "Noir",
+    "license_plate": "CC-789-DD",
+    "registration_date": "2021-07-01",
+    "passenger_capacity": 4,
+    "is_electric": true
+}
+
+### Test Modification Véhicule (Échec - Plaque Dupliquée)
+POST http://ecoride.local/api/update_vehicle.php
+Content-Type: application/json
+
+{
+    "id": 1, 
+    "brand_id": 1,
+    "model_name": "208 Test Plaque",
+    "color": "Bleu",
+    "license_plate": "CC-789-DD",
+    "registration_date": "2019-03-15",
+    "passenger_capacity": 4,
+    "is_electric": false
+}
