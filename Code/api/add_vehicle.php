@@ -210,6 +210,4 @@ try {
     echo json_encode(['success' => false, 'message' => 'Une erreur inattendue est survenue.']);
 }
 
-echo json_encode(['success' => false, 'message' => 'Logique d\'ajout de véhicule en cours de développement. Données reçues.', 'data_received' => $input]); // Message temporaire
-
 ?>

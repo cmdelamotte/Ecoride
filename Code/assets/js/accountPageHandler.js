@@ -1,20 +1,31 @@
 import { getRole, showAndHideElementsForRoles, signout as authManagerSignout } from './authManager.js';
 import { LoadContentPage } from '../../router/Router.js'; 
 
+// ===================================================================================
+// SECTION DES FONCTIONS HELPER (Auxiliaires)
+// (Place toggleDriverInfoSection, preselectUserRole, showVehicleForm, hideVehicleForm, 
+// displayUserVehicles, ET la nouvelle fonction populateBrandSelect ici)
+// ===================================================================================
+
 /**
- * Affiche ou masque la section des informations du chauffeur en fonction du rôle.
- * @param {string|null} currentRole - Le rôle actuel de l'utilisateur.
+ * Affiche ou masque la section des informations du chauffeur.
+ * @param {string|null} currentRole - Le rôle fonctionnel actuel.
+ * @param {HTMLElement|null} driverInfoSectionElement - L'élément DOM de la section.
  */
 function toggleDriverInfoSection(currentRole, driverInfoSectionElement) {
     if (driverInfoSectionElement) {
-        if (currentRole === 'driver' || currentRole === 'passenger_driver') {
-            driverInfoSectionElement.classList.remove('d-none');
-        } else {
-            driverInfoSectionElement.classList.add('d-none');
-        }
+        const isDriver = currentRole === 'driver' || currentRole === 'passenger_driver';
+        driverInfoSectionElement.classList.toggle('d-none', !isDriver);
+    } else {
+        console.warn("toggleDriverInfoSection: driverInfoSectionElement non fourni.");
     }
 }
 
+/**
+ * Pré-coche le bouton radio du rôle fonctionnel.
+ * @param {string|null} currentRole - Le rôle fonctionnel actuel.
+ * @param {NodeListOf<HTMLInputElement>|null} radiosNodeList - Les boutons radio.
+ */
 /**
  * Pré-coche le bouton radio correspondant au rôle actuel de l'utilisateur.
  * @param {string|null} currentRole - Le rôle actuel de l'utilisateur.
@@ -45,66 +56,52 @@ function preselectUserRole(currentRole, radiosNodeList) {
     }
 }
 
-
 /**
- * Affiche le formulaire d'ajout/modification de véhicule.
- * @param {boolean} isEditing - True si on édite un véhicule existant, false si on en ajoute un nouveau.
- * @param {object|null} vehicleData - Les données du véhicule à éditer (si isEditing est true).
+ * Peuple la liste déroulante des marques de véhicules.
+ * @param {HTMLSelectElement} brandSelectElement - L'élément <select> à peupler.
  */
-function showVehicleForm(isEditing = false, vehicleData = null) {
-    const vehicleFormContainer = document.getElementById('vehicle-form-container');
-    const vehicleForm = document.getElementById('vehicle-form'); 
-    const vehicleFormTitle = document.getElementById('vehicle-form-title');
-    const editingVehicleIdInput = document.getElementById('editing-vehicle-id');
-    const addVehicleBtn = document.getElementById('add-vehicle-btn');
-
-    if (vehicleFormContainer && vehicleForm && vehicleFormTitle && editingVehicleIdInput && addVehicleBtn) {
-        vehicleForm.reset(); 
-
-        if (isEditing && vehicleData) {
-            vehicleFormTitle.textContent = "Modifier le Véhicule";
-            editingVehicleIdInput.value = vehicleData.id || "";
-            
-            const brandInput = document.getElementById('vehicle-brand');
-            const modelInput = document.getElementById('vehicle-model');
-            const colorInput = document.getElementById('vehicle-color');
-            const plateInput = document.getElementById('vehicle-license-plate');
-            const regDateInput = document.getElementById('vehicle-registration-date');
-            const seatsInput = document.getElementById('vehicle-seats');
-            const electricInput = document.getElementById('vehicle-electric');
-
-            if(brandInput) brandInput.value = vehicleData.brand || "";
-            if(modelInput) modelInput.value = vehicleData.model || "";
-            if(colorInput) colorInput.value = vehicleData.color || "";
-            if(plateInput) plateInput.value = vehicleData.plate || "";
-            if(regDateInput) regDateInput.value = vehicleData.registrationDate || "";
-            if(seatsInput) seatsInput.value = vehicleData.seats || "";
-            if(electricInput) electricInput.checked = vehicleData.isElectric || false;
-
+async function populateBrandSelect(brandSelectElement) {
+    if (!brandSelectElement) {
+        console.warn("L'élément select pour les marques n'a pas été trouvé.");
+        return;
+    }
+    function setSelectMessage(messageText) {
+        brandSelectElement.innerHTML = ''; 
+        const option = document.createElement('option');
+        option.value = ""; option.textContent = messageText; option.disabled = true; option.selected = true;
+        brandSelectElement.appendChild(option);
+    }
+    setSelectMessage('Chargement des marques...');
+    try {
+        const response = await fetch('http://ecoride.local/api/get_brands.php');
+        if (!response.ok) throw new Error(`Erreur HTTP ${response.status} (marques)`);
+        const data = await response.json();
+        if (data.success && data.brands && data.brands.length > 0) {
+            brandSelectElement.innerHTML = ''; 
+            const defaultOption = document.createElement('option');
+            defaultOption.value = ""; defaultOption.textContent = "Sélectionnez une marque...";
+            defaultOption.disabled = true; defaultOption.selected = true;
+            brandSelectElement.appendChild(defaultOption);
+            data.brands.forEach(brand => {
+                const option = document.createElement('option');
+                option.value = brand.id; option.textContent = brand.name;
+                brandSelectElement.appendChild(option);
+            });
         } else {
-            vehicleFormTitle.textContent = "Ajouter un Véhicule";
-            editingVehicleIdInput.value = ""; 
+            setSelectMessage('Aucune marque disponible');
+            console.warn("Aucune marque récupérée ou API échec.", data.message || '');
         }
-        vehicleFormContainer.classList.remove('d-none');
-        addVehicleBtn.classList.add('d-none');
-        document.getElementById('vehicle-brand')?.focus();
-    } else {
-        console.warn("Éléments manquants pour initialiser showVehicleForm.");
+    } catch (error) {
+        console.error("Erreur fetch des marques:", error);
+        setSelectMessage('Erreur chargement marques');
     }
 }
 
 /**
- * Masque le formulaire d'ajout/modification de véhicule et réaffiche le bouton "Ajouter".
+ * Affiche la liste des véhicules de l'utilisateur.
+ * @param {Array} vehiclesData - Les données des véhicules.
+ * @param {HTMLElement} vehiclesListElement - L'élément DOM de la liste.
  */
-function hideVehicleForm() {
-    const vehicleFormContainer = document.getElementById('vehicle-form-container');
-    const addVehicleBtn = document.getElementById('add-vehicle-btn');
-    if (vehicleFormContainer && addVehicleBtn) {
-        vehicleFormContainer.classList.add('d-none');
-        addVehicleBtn.classList.remove('d-none');
-    }
-}
-
 function displayUserVehicles(vehiclesData, vehiclesListElement) {
     if (!vehiclesListElement) {
         console.warn("Élément pour la liste des véhicules non trouvé.");
@@ -148,6 +145,74 @@ function displayUserVehicles(vehiclesData, vehiclesListElement) {
     });
 }
 
+
+/**
+ * Affiche/masque le formulaire d'ajout/modification de véhicule.
+ * @param {boolean} isEditing - True pour édition, false pour ajout.
+ * @param {object|null} vehicleData - Données pour pré-remplir en mode édition.
+ * @param {object} formElements - Références aux éléments du formulaire véhicule.
+ */
+function showVehicleForm(isEditing = false, vehicleData = null) {
+    const vehicleFormContainer = document.getElementById('vehicle-form-container');
+    const vehicleForm = document.getElementById('vehicle-form'); 
+    const vehicleFormTitle = document.getElementById('vehicle-form-title');
+    const editingVehicleIdInput = document.getElementById('editing-vehicle-id');
+    const addVehicleBtn = document.getElementById('add-vehicle-btn');
+    
+    const brandSelect = document.getElementById('vehicle-brand-select');
+    const modelInput = document.getElementById('vehicle-model');
+    const colorInput = document.getElementById('vehicle-color');
+    const plateInput = document.getElementById('vehicle-license-plate');
+    const regDateInput = document.getElementById('vehicle-registration-date');
+    const seatsInput = document.getElementById('vehicle-seats');
+    const electricInput = document.getElementById('vehicle-electric');
+
+    if (vehicleFormContainer && vehicleForm && vehicleFormTitle && editingVehicleIdInput && addVehicleBtn && brandSelect) {
+        vehicleForm.reset(); 
+
+        if (isEditing && vehicleData) {
+            vehicleFormTitle.textContent = "Modifier le Véhicule";
+            editingVehicleIdInput.value = vehicleData.id || "";
+            
+            // Pré-remplissage du <select> pour la marque
+            // vehicleData.brand_id contiendra l'ID de la marque (venant de l'API ou des data-attributes)
+            if (brandSelect) brandSelect.value = vehicleData.brand_id || ""; 
+            
+            // Pré-remplissage des autres champs (comme avant)
+            if (modelInput) modelInput.value = vehicleData.model_name || ""; // L'API renvoie model_name
+            if (colorInput) colorInput.value = vehicleData.color || "";
+            if (plateInput) plateInput.value = vehicleData.license_plate || "";
+            if (regDateInput) regDateInput.value = vehicleData.registration_date || "";
+            if (seatsInput) seatsInput.value = vehicleData.passenger_capacity || ""; // L'API renvoie passenger_capacity
+            if (electricInput) electricInput.checked = vehicleData.is_electric || false; // L'API renvoie is_electric
+
+        } else {
+            vehicleFormTitle.textContent = "Ajouter un Véhicule";
+            editingVehicleIdInput.value = ""; 
+            // S'assurer que le select de marque est sur son option par défaut "Sélectionnez une marque..."
+            if (brandSelect) brandSelect.value = ""; 
+        }
+        vehicleFormContainer.classList.remove('d-none');
+        addVehicleBtn.classList.add('d-none');
+        if (brandSelect) brandSelect.focus(); // Met le focus sur le select de marque
+    } else {
+        console.warn("Éléments manquants pour initialiser showVehicleForm (vérifier aussi #vehicle-brand-select).");
+    }
+}
+
+/**
+ * Masque le formulaire véhicule.
+ * @param {object} formElements - Références aux éléments du formulaire véhicule.
+ */
+function hideVehicleForm() {
+    const vehicleFormContainer = document.getElementById('vehicle-form-container');
+    const addVehicleBtn = document.getElementById('add-vehicle-btn');
+    if (vehicleFormContainer && addVehicleBtn) {
+        vehicleFormContainer.classList.add('d-none');
+        addVehicleBtn.classList.remove('d-none');
+    }
+}
+
 // === Fonction Principale d'Initialisation de la Page ===
 export function initializeAccountPage() {
     console.log("AccountPageHandler: Initialisation de la page Mon Espace.");
@@ -180,6 +245,9 @@ export function initializeAccountPage() {
     const cancelVehicleFormBtn = document.getElementById('cancel-vehicle-form-btn');
     const vehiclesList = document.getElementById('vehicles-list'); 
     const editingVehicleIdInput = document.getElementById('editing-vehicle-id');
+
+    const vehicleBrandSelect = document.getElementById('vehicle-brand-select');
+
     
     const confirmDeleteVehicleModalElementFromHTML = document.getElementById('confirmDeleteVehicleModal');
     const confirmVehicleDeleteBtn = document.getElementById('confirm-vehicle-delete-btn');
@@ -300,6 +368,12 @@ fetch('http://ecoride.local/api/get_user_profile.php', {
             }
         }
 });
+
+    if (vehicleBrandSelect) {
+        populateBrandSelect(vehicleBrandSelect);
+    } else {
+        console.warn("Élément select #vehicle-brand-select non trouvé pour peupler les marques.");
+    }
 
     // --- Ajout des écouteurs d'événements ---
     if (roleForm) {
@@ -453,11 +527,11 @@ fetch('http://ecoride.local/api/get_user_profile.php', {
         });
     }
     
-    if (vehicleForm && editingVehicleIdInput && vehiclesList) {
+    if (vehicleForm) {
         vehicleForm.addEventListener('submit', function(event) {
             event.preventDefault();
             
-            const brandInput = document.getElementById('vehicle-brand');
+            const vehicleBrandSelect = document.getElementById('vehicle-brand-select');
             const modelInput = document.getElementById('vehicle-model');
             const colorInput = document.getElementById('vehicle-color');
             const plateInput = document.getElementById('vehicle-license-plate');
@@ -465,7 +539,7 @@ fetch('http://ecoride.local/api/get_user_profile.php', {
             const seatsInput = document.getElementById('vehicle-seats');
             const electricInput = document.getElementById('vehicle-electric');
             
-            [brandInput, modelInput, plateInput, seatsInput, regDateInput, colorInput].forEach(input => {
+            [vehicleBrandSelect, modelInput, plateInput, seatsInput, regDateInput, colorInput].forEach(input => {
                 if(input) input.setCustomValidity("");
             });
 
@@ -474,24 +548,33 @@ fetch('http://ecoride.local/api/get_user_profile.php', {
                 isVehicleFormValid = false;
             }
 
-            const brand = brandInput?.value.trim();
+            const brandId = vehicleBrandSelect ? vehicleBrandSelect.value : null;
             const model = modelInput?.value.trim();
             const plate = plateInput?.value.trim();
             const seats = seatsInput ? parseInt(seatsInput.value, 10) : 0;
             const color = colorInput?.value.trim();
             const registrationDate = regDateInput?.value;
             const isElectric = electricInput?.checked || false;
-            const currentVehicleId = editingVehicleIdInput.value;
 
-            if (brandInput && !brand) { brandInput.setCustomValidity("La marque est requise."); isVehicleFormValid = false; }
-            if (modelInput && !model) { modelInput.setCustomValidity("Le modèle est requis."); isVehicleFormValid = false; }
-            if (plateInput && !plate) { plateInput.setCustomValidity("La plaque d'immatriculation est requise."); isVehicleFormValid = false; }
-            if (seatsInput && (isNaN(seats) || seats < 1 || seats > 8)) { seatsInput.setCustomValidity("Nombre de places invalide (doit être entre 1 et 8)."); isVehicleFormValid = false; }
+            if (vehicleBrandSelect && !brandId && vehicleBrandSelect.hasAttribute('required')) {
+                // Le message HTML5 "Veuillez sélectionner un élément dans la liste." sera affiché par reportValidity().
+                isVehicleFormValid = false;
+            }
+            if (modelInput && !model) {
+                modelInput.setCustomValidity("Le modèle est requis.");
+                isVehicleFormValid = false; }
+            if (plateInput && !plate) {
+                plateInput.setCustomValidity("La plaque d'immatriculation est requise.");
+                isVehicleFormValid = false; }
+            if (seatsInput && (isNaN(seats) || seats < 1 || seats > 8)) {
+                seatsInput.setCustomValidity("Nombre de places invalide (doit être entre 1 et 8).");
+                isVehicleFormValid = false; }
             if (regDateInput && registrationDate) {
                 const today = new Date().toISOString().split('T')[0];
                 if (registrationDate > today) { regDateInput.setCustomValidity("La date d'immatriculation ne peut pas être dans le futur."); isVehicleFormValid = false; }
             } else if (regDateInput && regDateInput.hasAttribute('required') && !registrationDate) {
-                regDateInput.setCustomValidity("La date d'immatriculation est requise."); isVehicleFormValid = false;
+                regDateInput.setCustomValidity("La date d'immatriculation est requise.");
+                isVehicleFormValid = false;
             }
 
             if (!isVehicleFormValid) {
@@ -499,10 +582,24 @@ fetch('http://ecoride.local/api/get_user_profile.php', {
                 return;
             }
 
+            const currentVehicleId = editingVehicleIdInput.value;
+
             const vehicleDataFromForm = {
                 id: currentVehicleId || `simulated-${Date.now()}`,
-                brand, model, color, plate, registrationDate, seats, isElectric
+                brandId, model, color, plate, registrationDate, seats, isElectric
             };
+
+            const vehicleDataToSend = { 
+                brand_id: brandId ? parseInt(brandId, 10) : null, 
+                model_name: model,
+                color: color,
+                license_plate: plate,
+                registration_date: registrationDate,
+                passenger_capacity: seats,
+                is_electric: isElectric,
+            };
+            console.log("Données du véhicule prêtes à être envoyées à l'API (avant if/else ajout/modif):", vehicleDataToSend);
+
 
             if (currentVehicleId) { 
                 console.log("MODIFICATION Véhicule (simulation):", vehicleDataFromForm);
@@ -522,31 +619,59 @@ fetch('http://ecoride.local/api/get_user_profile.php', {
                     alert("Véhicule modifié (simulation) !");
                 }
             } else { 
-                console.log("AJOUT Véhicule (simulation):", vehicleDataFromForm);
-                const template = document.getElementById('vehicle-item-template');
-                if (template) {
-                    const clone = template.content.cloneNode(true);
-                    const newVehicleElement = clone.querySelector('.vehicle-item');
-                    if (newVehicleElement) {
-                        newVehicleElement.setAttribute('data-vehicle-id', vehicleDataFromForm.id);
-                        newVehicleElement.setAttribute('data-brand', vehicleDataFromForm.brand);
-                        newVehicleElement.setAttribute('data-model', vehicleDataFromForm.model);
-                        newVehicleElement.setAttribute('data-plate', vehicleDataFromForm.plate);
-                        newVehicleElement.setAttribute('data-color', vehicleDataFromForm.color);
-                        newVehicleElement.setAttribute('data-reg-date', vehicleDataFromForm.registrationDate);
-                        newVehicleElement.setAttribute('data-seats', vehicleDataFromForm.seats.toString());
-                        newVehicleElement.setAttribute('data-is-electric', vehicleDataFromForm.isElectric.toString());
+                console.log("Préparation pour AJOUTER Véhicule via API. Données:", vehicleDataToSend);
+                
+                const submitButton = vehicleForm.querySelector('button[type="submit"]');
+                if (submitButton) submitButton.disabled = true;
 
-                        newVehicleElement.querySelector('.vehicle-brand-display').textContent = vehicleDataFromForm.brand;
-                        newVehicleElement.querySelector('.vehicle-model-display').textContent = vehicleDataFromForm.model;
-                        newVehicleElement.querySelector('.vehicle-plate-display').textContent = vehicleDataFromForm.plate;
-                        
-                        vehiclesList.appendChild(newVehicleElement);
-                        alert("Véhicule ajouté (simulation) !");
+                fetch('http://ecoride.local/api/add_vehicle.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(vehicleDataToSend)
+                })
+                .then(response => {
+                    return response.json().then(data => ({ ok: response.ok, status: response.status, body: data }))
+                        .catch(jsonError => {
+                            console.error("Add Vehicle: Erreur parsing JSON:", jsonError);
+                            return response.text().then(textData => {
+                                console.log("Add Vehicle: Réponse brute non-JSON:", textData);
+                                throw new Error(`Réponse non-JSON (statut ${response.status}) pour ajout véhicule: ${textData.substring(0,100)}...`);
+                            });
+                        });
+                })
+                .then(({ ok, status, body }) => {
+                    if (submitButton) submitButton.disabled = false;
+
+                    if (ok && body.success && body.vehicle) {
+                        alert(body.message || "Véhicule ajouté avec succès !");
+                        hideVehicleForm(); 
+
+                        console.log("Véhicule ajouté. Rechargement de la page Mon Compte pour voir la mise à jour.");
+                        if (typeof LoadContentPage === "function") {
+                            LoadContentPage(); 
+                        } else {
+                            window.location.reload(); 
+                        }
+
+                    } else {
+                        let errorMessage = body.message || "Erreur lors de l'ajout du véhicule.";
+                        if (body.errors) {
+                            for (const key in body.errors) {
+                                errorMessage += `\n- ${key}: ${body.errors[key]}`;
+                            }
+                        }
+                        alert(errorMessage);
+                        console.error("Erreur API Add Vehicle:", body);
                     }
-                }
+                })
+                .catch(error => {
+                    if (submitButton) submitButton.disabled = false;
+                    console.error("Erreur Fetch globale (Add Vehicle):", error);
+                    alert("Erreur de communication avec le serveur pour l'ajout du véhicule. " + error.message);
+                });
             }
-            hideVehicleForm(); 
         });
     }
 
