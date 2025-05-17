@@ -81,3 +81,39 @@ Content-Type: application/json
     "pref_animals": false,
     "pref_custom": "Musique rock bienvenue, mais pas trop fort svp !" 
 }
+
+### Test Ajout Véhicule (Succès)
+POST http://ecoride.local/api/add_vehicle.php
+Content-Type: application/json
+
+{
+    "brand_id": 2,
+    "model_name": "Twingo",
+    "color": "Jaune",
+    "license_plate": "NEW-CAR-01",
+    "registration_date": "2022-05-15",
+    "passenger_capacity": 3,
+    "is_electric": false,
+    "energy_type": "Essence"
+}
+
+### Test Ajout Véhicule (Échec - brand_id manquant)
+POST http://ecoride.local/api/add_vehicle.php
+Content-Type: application/json
+
+{
+    "model_name": "Modele Sans Marque",
+    "license_plate": "ERR-001",
+    "passenger_capacity": 4
+}
+
+### Test Ajout Véhicule (Échec - plaque dupliquée)
+POST http://ecoride.local/api/add_vehicle.php
+Content-Type: application/json
+
+{
+    "brand_id": 1,
+    "model_name": "Autre Modele",
+    "license_plate": "NEW-CAR-01", 
+    "passenger_capacity": 2
+}
