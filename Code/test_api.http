@@ -63,3 +63,11 @@ Content-Type: application/json
 
 ### Test de récupération de profil utilisateur 
 GET http://ecoride.local/api/account.php 
+
+### Test Mise à Jour Rôle Fonctionnel (Alice devient 'driver')
+POST http://ecoride.local/api/update_user_role.php
+Content-Type: application/json
+
+{
+    "role": "driver" 
+}

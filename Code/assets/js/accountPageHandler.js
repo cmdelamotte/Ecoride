@@ -7,7 +7,7 @@ import { LoadContentPage } from '../../router/Router.js';
  */
 function toggleDriverInfoSection(currentRole, driverInfoSectionElement) {
     if (driverInfoSectionElement) {
-        if (currentRole === 'driver' || currentRole === 'passenger-driver') {
+        if (currentRole === 'driver' || currentRole === 'passenger_driver') {
             driverInfoSectionElement.classList.remove('d-none');
         } else {
             driverInfoSectionElement.classList.add('d-none');
@@ -303,20 +303,78 @@ fetch('http://ecoride.local/api/get_user_profile.php', {
 
     // --- Ajout des écouteurs d'événements ---
     if (roleForm) {
-        roleForm.addEventListener('submit', function(event) {
-            event.preventDefault();
-            const formData = new FormData(roleForm);
-            const selectedRole = formData.get('user_role_form'); 
-            if (selectedRole) { 
-                sessionStorage.setItem('ecoRideUserRole', selectedRole);
-                alert(`Rôle mis à jour en : ${selectedRole} (simulation)`);
-                toggleDriverInfoSection(selectedRole);
-                if (typeof showAndHideElementsForRoles === "function") {
-                    showAndHideElementsForRoles();
+    roleForm.addEventListener('submit', function(event) {
+        event.preventDefault();
+        const formData = new FormData(roleForm);
+        const selectedRole = formData.get('user_role_form'); 
+
+        if (selectedRole) { 
+            console.log("accountPageHandler: Rôle fonctionnel sélectionné pour MàJ :", selectedRole);
+
+            // Optionnel : Désactiver le bouton de soumission du formulaire de rôle
+            const roleSubmitButton = roleForm.querySelector('button[type="submit"]');
+            if (roleSubmitButton) roleSubmitButton.disabled = true;
+
+            fetch('http://ecoride.local/api/update_user_role.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ role: selectedRole }) 
+            })
+            .then(response => {
+                console.log("Update Role Fetch: Statut Réponse:", response.status);
+                return response.json().then(data => ({ status: response.status, body: data, ok: response.ok }))
+                    .catch(jsonError => {
+                        console.error("Update Role: Erreur parsing JSON:", jsonError);
+                        return response.text().then(textData => {
+                            console.log("Update Role: Réponse brute non-JSON:", textData);
+                            throw new Error(`Réponse non-JSON du serveur (statut ${response.status}): ${textData.substring(0,200)}...`);
+                        });
+                    });
+            })
+            .then(({ status, body, ok }) => {
+                if (roleSubmitButton) roleSubmitButton.disabled = false; // Réactiver le bouton
+                console.log("Update Role: Réponse API:", body);
+
+                if (ok && body.success) {
+                    alert(body.message || 'Rôle mis à jour avec succès !');
+
+                    // Mettre à jour l'état local dans sessionStorage pour que l'UI reflète le changement
+                    // et que authManager.js ait le bon rôle pour la navbar
+                    sessionStorage.setItem('userFunctionalRole', body.new_functional_role); // L'API renvoie le nouveau rôle
+
+                    // Déterminer le primaryRoleForUI pour authManager
+                    let primaryRoleForUI = body.new_functional_role;
+                    // Récupérer les rôles système actuels (ils ne changent pas ici, mais on en a besoin pour la logique)
+                    const userRolesSystem = JSON.parse(sessionStorage.getItem('userRolesSystem') || '[]'); 
+                                                                                                    
+                    if (userRolesSystem.includes('ROLE_ADMIN')) {
+                        primaryRoleForUI = 'admin';
+                    } else if (userRolesSystem.includes('ROLE_EMPLOYEE')) {
+                        primaryRoleForUI = 'employee';
+                    }
+                    sessionStorage.setItem('ecoRideUserRole', primaryRoleForUI);
+
+                    // Mettre à jour l'affichage de la section chauffeur si nécessaire
+                    toggleDriverInfoSection(body.new_functional_role, driverInfoSection);
+
+                    if (typeof showAndHideElementsForRoles === "function") {
+                        showAndHideElementsForRoles(); // Mettre à jour la navbar
+                    }
+                } else {
+                    alert(body.message || `Erreur lors de la mise à jour du rôle (statut ${status}).`);
+                    console.error("Erreur API Update Role:", body);
                 }
-            }
-        });
-    }
+            })
+            .catch(error => {
+                if (roleSubmitButton) roleSubmitButton.disabled = false;
+                console.error("Erreur Fetch globale (Update Role):", error);
+                alert('Erreur de communication avec le serveur pour la mise à jour du rôle. ' + error.message);
+            });
+        }
+    });
+}
 
     if (deleteAccountBtn && confirmDeleteAccountModal && confirmDeleteAccountBtn) {
         deleteAccountBtn.addEventListener('click', () => {
