@@ -51,7 +51,10 @@ $brand_id = filter_var($input['brand_id'] ?? null, FILTER_VALIDATE_INT, ['option
 $model_name = trim($input['model_name'] ?? '');
 $color = isset($input['color']) ? trim($input['color']) : null;
 $license_plate = trim($input['license_plate'] ?? '');
-$registration_date = $input['registration_date'] ?? null; 
+$registration_date = $input['registration_date'] ?? null;
+if ($registration_date === '') {
+    $registration_date = null;
+} 
 $passenger_capacity = filter_var($input['passenger_capacity'] ?? 0, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1, 'max_range' => 8]]);
 $is_electric = filter_var($input['is_electric'] ?? false, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
 $energy_type = isset($input['energy_type']) ? trim($input['energy_type']) : null;

@@ -124,6 +124,7 @@ function displayUserVehicles(vehiclesData, vehiclesListElement) {
         const vehicleElement = clone.querySelector('.vehicle-item');
         if (vehicleElement) {
             vehicleElement.setAttribute('data-vehicle-id', vehicle.id);
+            vehicleElement.setAttribute('data-brand-id', String(vehicle.brand_id));
             vehicleElement.setAttribute('data-brand', vehicle.brand_name);
             vehicleElement.setAttribute('data-model', vehicle.model_name);
             vehicleElement.setAttribute('data-plate', vehicle.license_plate);
@@ -179,6 +180,7 @@ function showVehicleForm(isEditing = false, vehicleData = null) {
             if (brandSelect) brandSelect.value = vehicleData.brand_id || ""; 
             
             // Pré-remplissage des autres champs (comme avant)
+            if (brandSelect) brandSelect.value = vehicleData.brand_id || "";
             if (modelInput) modelInput.value = vehicleData.model_name || ""; // L'API renvoie model_name
             if (colorInput) colorInput.value = vehicleData.color || "";
             if (plateInput) plateInput.value = vehicleData.license_plate || "";
@@ -482,21 +484,24 @@ fetch('http://ecoride.local/api/get_user_profile.php', {
         vehiclesList.addEventListener('click', function(event) {
             const target = event.target;
             const vehicleItem = target.closest('.vehicle-item'); 
-            if (!vehicleItem) return;
+            if (!vehicleItem)
+                return;
 
             const vehicleId = vehicleItem.getAttribute('data-vehicle-id');
             
             if (target.classList.contains('edit-vehicle-btn') || target.closest('.edit-vehicle-btn')) {
-                if (!vehicleId) { console.error("ID de véhicule manquant pour Modifier."); return; }
+                if (!vehicleId) { 
+                    console.error("ID de véhicule manquant pour Modifier.");
+                    return; }
                 const vehicleDataForEdit = { 
                     id: vehicleId, 
-                    brand: vehicleItem.getAttribute('data-brand') || "", 
-                    model: vehicleItem.getAttribute('data-model') || "", 
-                    plate: vehicleItem.getAttribute('data-plate') || "",
+                    brand_id: vehicleItem.getAttribute('data-brand-id'),
+                    model_name: vehicleItem.getAttribute('data-model'),
+                    license_plate: vehicleItem.getAttribute('data-plate'),
                     color: vehicleItem.getAttribute('data-color') || "", 
-                    registrationDate: vehicleItem.getAttribute('data-reg-date') || "",    
-                    seats: parseInt(vehicleItem.getAttribute('data-seats'), 10) || 1,            
-                    isElectric: (vehicleItem.getAttribute('data-is-electric') === 'true') || false        
+                    registration_date: vehicleItem.getAttribute('data-reg-date'),
+                    passenger_capacity: parseInt(vehicleItem.getAttribute('data-seats'), 10) || 1,       
+                    is_electric: (vehicleItem.getAttribute('data-is-electric') === 'true') || false     
                 };
                 showVehicleForm(true, vehicleDataForEdit);
             } else if (target.classList.contains('delete-vehicle-btn') || target.closest('.delete-vehicle-btn')) {
@@ -602,22 +607,81 @@ fetch('http://ecoride.local/api/get_user_profile.php', {
 
 
             if (currentVehicleId) { 
-                console.log("MODIFICATION Véhicule (simulation):", vehicleDataFromForm);
-                const itemToUpdate = vehiclesList.querySelector(`.vehicle-item[data-vehicle-id="${vehicleDataFromForm.id}"]`);
-                if (itemToUpdate) {
-                    itemToUpdate.setAttribute('data-brand', vehicleDataFromForm.brand);
-                    itemToUpdate.setAttribute('data-model', vehicleDataFromForm.model);
-                    itemToUpdate.setAttribute('data-plate', vehicleDataFromForm.plate);
-                    itemToUpdate.setAttribute('data-color', vehicleDataFromForm.color);
-                    itemToUpdate.setAttribute('data-reg-date', vehicleDataFromForm.registrationDate);
-                    itemToUpdate.setAttribute('data-seats', vehicleDataFromForm.seats.toString());
-                    itemToUpdate.setAttribute('data-is-electric', vehicleDataFromForm.isElectric.toString());
-                    
-                    itemToUpdate.querySelector('.vehicle-brand-display').textContent = vehicleDataFromForm.brand;
-                    itemToUpdate.querySelector('.vehicle-model-display').textContent = vehicleDataFromForm.model;
-                    itemToUpdate.querySelector('.vehicle-plate-display').textContent = vehicleDataFromForm.plate;
-                    alert("Véhicule modifié (simulation) !");
-                }
+                console.log("Préparation pour MODIFIER Véhicule via API. Données:", vehicleDataToSend, "pour ID:", currentVehicleId);
+                
+                // L'objet vehicleDataToSend contient déjà les nouvelles valeurs.
+                // Ajout de l'ID du véhicule à mettre à jour, que l'API attend.
+                const dataToSendWithId = { 
+                    ...vehicleDataToSend, id: parseInt(currentVehicleId, 10) }; // Ajoute l'ID
+
+                const submitButton = vehicleForm.querySelector('button[type="submit"]');
+                if (submitButton) submitButton.disabled = true;
+
+                fetch('http://ecoride.local/api/update_vehicle.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(dataToSendWithId) // Envoie les données avec l'ID du véhicule
+                })
+                .then(response => {
+                    console.log("Update Vehicle Fetch: Statut Réponse:", response.status);
+                    return response.json().then(data => ({ ok: response.ok, status: response.status, body: data }))
+                        .catch(jsonError => {
+                            console.error("Update Vehicle Fetch: Erreur parsing JSON:", jsonError);
+                            return response.text().then(textData => {
+                                console.log("Update Vehicle Fetch: Réponse brute non-JSON:", textData);
+                                throw new Error(`Réponse non-JSON (statut ${response.status}) pour modif véhicule: ${textData.substring(0,100)}...`);
+                            });
+                        });
+                })
+                .then(({ ok, status, body }) => {
+                    if (submitButton) submitButton.disabled = false;
+                    console.log("Update Vehicle Fetch: Réponse API:", body);
+
+                    if (ok && body.success && body.vehicle) {
+                        alert(body.message || "Véhicule mis à jour avec succès !");
+                        
+                        // --- Mise à jour de l'affichage du véhicule modifié dans la liste ---
+                        const itemToUpdate = vehiclesList.querySelector(`.vehicle-item[data-vehicle-id="${currentVehicleId}"]`);
+                        if (itemToUpdate) {
+                            // Met à jour les data-attributes et le texte affiché avec les données renvoyées par l'API
+                            // body.vehicle contient les données à jour du véhicule
+                            itemToUpdate.setAttribute('data-brand-id', String(body.vehicle.brand_id));
+                            itemToUpdate.setAttribute('data-brand', body.vehicle.brand_name);
+                            itemToUpdate.setAttribute('data-model', body.vehicle.model_name);
+                            itemToUpdate.setAttribute('data-plate', body.vehicle.license_plate);
+                            itemToUpdate.setAttribute('data-color', body.vehicle.color || "");
+                            itemToUpdate.setAttribute('data-reg-date', body.vehicle.registration_date || "");
+                            itemToUpdate.setAttribute('data-seats', String(body.vehicle.passenger_capacity));
+                            itemToUpdate.setAttribute('data-is-electric', String(body.vehicle.is_electric));
+
+                            itemToUpdate.querySelector('.vehicle-brand-display').textContent = body.vehicle.brand_name;
+                            itemToUpdate.querySelector('.vehicle-model-display').textContent = body.vehicle.model_name;
+                            itemToUpdate.querySelector('.vehicle-plate-display').textContent = body.vehicle.license_plate;
+                        } else {
+                            console.warn("L'élément véhicule à mettre à jour n'a pas été trouvé dans le DOM. Un rechargement peut être nécessaire.");
+                            // Alternative : recharger toute la liste pour être sûr
+                            // if (typeof LoadContentPage === "function") LoadContentPage(); else window.location.reload();
+                        }
+                        hideVehicleForm();
+                    } else {
+                        // Gérer les erreurs renvoyées par l'API (ex: validation serveur, plaque dupliquée)
+                        let errorMessage = body.message || "Erreur lors de la modification du véhicule.";
+                        if (body.errors) {
+                            for (const key in body.errors) {
+                                errorMessage += `\n- ${key}: ${body.errors[key]}`;
+                            }
+                        }
+                        alert(errorMessage);
+                        console.error("Erreur API Update Vehicle:", body);
+                    }
+                })
+                .catch(error => {
+                    if (submitButton) submitButton.disabled = false;
+                    console.error("Erreur Fetch globale (Update Vehicle):", error);
+                    alert('Erreur de communication avec le serveur pour la modification du véhicule. ' + error.message);
+                });
             } else { 
                 console.log("Préparation pour AJOUTER Véhicule via API. Données:", vehicleDataToSend);
                 
