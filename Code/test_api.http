@@ -18,7 +18,7 @@ Content-Type: application/json
 
 {
     "identifier": "bob_passenger", 
-    "password": "password123" 
+    "password": "newPassword456!" 
 }
 
 ### Test Connexion Utilisateur (Succès)
@@ -237,4 +237,44 @@ Content-Type: application/json
     "phone": "0611223344",
     "birthdate": "1992-07-20",
     "currentPassword": "password123"
+}
+
+### Test Changement Mot de Passe (Bob - Succès)
+POST http://ecoride.local/api/update_password.php
+Content-Type: application/json
+
+{
+    "oldPassword": "password123",
+    "newPassword": "newPassword456!", 
+    "confirmNewPassword": "newPassword456!"
+}
+
+### Test Changement Mot de Passe (Échec - Ancien MDP Incorrect)
+POST http://ecoride.local/api/update_password.php
+Content-Type: application/json
+
+{
+    "oldPassword": "WRONGoldPassword",
+    "newPassword": "anotherNewPassword789!",
+    "confirmNewPassword": "anotherNewPassword789!"
+}
+
+### Test Changement Mot de Passe (Échec - Confirmation MDP Incorrecte)
+POST http://ecoride.local/api/update_password.php
+Content-Type: application/json
+
+{
+    "oldPassword": "newPassword456!",  // Le nouveau mot de passe actuel d'Alice
+    "newPassword": "verySecurePassword1!",
+    "confirmNewPassword": "DIFFERENTPassword1!" 
+}
+
+### Test Changement Mot de Passe (Échec - Nouveau MDP trop simple)
+POST http://ecoride.local/api/update_password.php
+Content-Type: application/json
+
+{
+    "oldPassword": "newPassword456!", 
+    "newPassword": "short",
+    "confirmNewPassword": "short"
 }
