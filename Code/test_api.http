@@ -26,8 +26,8 @@ POST http://ecoride.local/api/login.php
 Content-Type: application/json
 
 {
-    "identifier": "alice_driver_passenger", 
-    "password": "password123" 
+    "identifier": "alice_duval", 
+    "password": "Password123*" 
 }
 
 ### Test Connexion Utilisateur (Admin - Succès)
@@ -299,3 +299,20 @@ POST http://ecoride.local/api/delete_account.php
 Content-Type: application/json
 
 {}
+
+### Test Publication de Trajet (Succès)
+POST http://ecoride.local/api/publish_ride.php
+Content-Type: application/json
+
+{
+    "departure_city": "Rennes",
+    "arrival_city": "Nantes",
+    "departure_address": "Place de la Mairie, Rennes",
+    "arrival_address": "Château des Ducs, Nantes",
+    "departure_datetime": "2025-05-25T14:00",
+    "estimated_arrival_datetime": "2025-05-25T15:30", 
+    "vehicle_id": 1, 
+    "seats_offered": 1,
+    "price_per_seat": 10,
+    "driver_message": "Voyage direct, musique à la demande !" 
+}
