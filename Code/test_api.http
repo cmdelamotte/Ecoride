@@ -316,3 +316,6 @@ Content-Type: application/json
     "price_per_seat": 10,
     "driver_message": "Voyage direct, musique à la demande !" 
 }
+
+### Test Recherche Trajets (Brest vers Vannes)
+GET http://ecoride.local/api/search_rides.php?departure_city=Brest&arrival_city=Vannes&date=2025-05-21&seats=1
