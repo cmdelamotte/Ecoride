@@ -18,7 +18,7 @@ Content-Type: application/json
 
 {
     "identifier": "bob_passenger", 
-    "password": "password123" 
+    "password": "newPassword456!" 
 }
 
 ### Test Connexion Utilisateur (Succès)
@@ -193,6 +193,109 @@ Content-Type: application/json
 
 ### Test Suppression Véhicule (Échec - ID Manquant)
 POST http://ecoride.local/api/delete_vehicle.php
+Content-Type: application/json
+
+{}
+
+### Test Modification Infos Personnelles (Alice - Succès)
+POST http://ecoride.local/api/update_personal_info.php
+Content-Type: application/json
+
+{
+    "firstName": "AliceUpdated",
+    "lastName": "MartinUpdated",
+    "username": "alice_updated_nick",
+    "email": "alice.martin.updated@email.com",
+    "phone": "0699887766",
+    "birthdate": "1992-07-21",
+    "currentPassword": "password123"
+}
+
+### Test Modification Infos Personnelles (Échec - Mauvais Mot de Passe Actuel)
+POST http://ecoride.local/api/update_personal_info.php
+Content-Type: application/json
+
+{
+    "firstName": "AliceNePasChanger",
+    "lastName": "MartinNePasChanger",
+    "username": "alice_dontchange",
+    "email": "alice.dontchange@email.com",
+    "phone": "0600000000",
+    "birthdate": "1992-07-20",
+    "currentPassword": "WRONGpassword123"
+}
+
+### Test Modification Infos Personnelles (Échec - Email déjà utilisé)
+POST http://ecoride.local/api/update_personal_info.php
+Content-Type: application/json
+
+{
+    "firstName": "Alice",
+    "lastName": "Martin",
+    "username": "alice_unique_temp",
+    "email": "bob.dupont@email.com",
+    "phone": "0611223344",
+    "birthdate": "1992-07-20",
+    "currentPassword": "password123"
+}
+
+### Test Changement Mot de Passe (Bob - Succès)
+POST http://ecoride.local/api/update_password.php
+Content-Type: application/json
+
+{
+    "oldPassword": "password123",
+    "newPassword": "newPassword456!", 
+    "confirmNewPassword": "newPassword456!"
+}
+
+### Test Changement Mot de Passe (Échec - Ancien MDP Incorrect)
+POST http://ecoride.local/api/update_password.php
+Content-Type: application/json
+
+{
+    "oldPassword": "WRONGoldPassword",
+    "newPassword": "anotherNewPassword789!",
+    "confirmNewPassword": "anotherNewPassword789!"
+}
+
+### Test Changement Mot de Passe (Échec - Confirmation MDP Incorrecte)
+POST http://ecoride.local/api/update_password.php
+Content-Type: application/json
+
+{
+    "oldPassword": "newPassword456!",  // Le nouveau mot de passe actuel d'Alice
+    "newPassword": "verySecurePassword1!",
+    "confirmNewPassword": "DIFFERENTPassword1!" 
+}
+
+### Test Changement Mot de Passe (Échec - Nouveau MDP trop simple)
+POST http://ecoride.local/api/update_password.php
+Content-Type: application/json
+
+{
+    "oldPassword": "newPassword456!", 
+    "newPassword": "short",
+    "confirmNewPassword": "short"
+}
+
+### Connexion Utilisateur (Pour Test Suppression Compte - todelete_user1)
+POST http://ecoride.local/api/login.php
+Content-Type: application/json
+
+{
+    "identifier": "todelete_user1", 
+    "password": "password123" 
+}
+
+### Test Suppression Compte Utilisateur (Succès - todelete_user1)
+POST http://ecoride.local/api/delete_account.php
+Content-Type: application/json
+
+{}
+
+### Test Suppression Compte Utilisateur (Échec - Non Authentifié)
+POST http://ecoride.local/api/delete_account.php
 Content-Type: application/json
 
 {}

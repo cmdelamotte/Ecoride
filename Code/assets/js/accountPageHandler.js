@@ -1,11 +1,8 @@
 import { getRole, showAndHideElementsForRoles, signout as authManagerSignout } from './authManager.js';
 import { LoadContentPage } from '../../router/Router.js'; 
 
-// ===================================================================================
-// SECTION DES FONCTIONS HELPER (Auxiliaires)
-// (Place toggleDriverInfoSection, preselectUserRole, showVehicleForm, hideVehicleForm, 
-// displayUserVehicles, ET la nouvelle fonction populateBrandSelect ici)
-// ===================================================================================
+
+// -- SECTION DES FONCTIONS HELPER --
 
 /**
  * Affiche ou masque la section des informations du chauffeur.
@@ -176,10 +173,9 @@ function showVehicleForm(isEditing = false, vehicleData = null) {
             editingVehicleIdInput.value = vehicleData.id || "";
             
             // Pré-remplissage du <select> pour la marque
-            // vehicleData.brand_id contiendra l'ID de la marque (venant de l'API ou des data-attributes)
             if (brandSelect) brandSelect.value = vehicleData.brand_id || ""; 
             
-            // Pré-remplissage des autres champs (comme avant)
+            // Pré-remplissage des autres champs
             if (brandSelect) brandSelect.value = vehicleData.brand_id || "";
             if (modelInput) modelInput.value = vehicleData.model_name || ""; // L'API renvoie model_name
             if (colorInput) colorInput.value = vehicleData.color || "";
@@ -340,7 +336,7 @@ fetch('http://ecoride.local/api/get_user_profile.php', {
 
             // Pré-remplissage des préférences du chauffeur
             if (currentFunctionalRole === 'driver' || currentFunctionalRole === 'passenger_driver') {
-                if (prefSmokerInput) prefSmokerInput.checked = userData.driver_pref_smoker; // Devrait être un booléen du PHP
+                if (prefSmokerInput) prefSmokerInput.checked = userData.driver_pref_smoker; // booléen du PHP
                 if (prefAnimalsInput) prefAnimalsInput.checked = userData.driver_pref_animals; // Idem
                 if (prefCustomTextarea) prefCustomTextarea.value = userData.driver_pref_custom || '';
             }
@@ -365,7 +361,7 @@ fetch('http://ecoride.local/api/get_user_profile.php', {
                 window.history.pushState({}, "", "/404");
                 LoadContentPage(); 
             } else {
-                // Fallback si LoadContentPage n'est pas dispo
+                // Fallback
                 window.location.href = "/404"; 
             }
         }
@@ -387,7 +383,7 @@ fetch('http://ecoride.local/api/get_user_profile.php', {
         if (selectedRole) { 
             console.log("accountPageHandler: Rôle fonctionnel sélectionné pour MàJ :", selectedRole);
 
-            // Optionnel : Désactiver le bouton de soumission du formulaire de rôle
+            // Désactive le bouton de soumission du formulaire de rôle
             const roleSubmitButton = roleForm.querySelector('button[type="submit"]');
             if (roleSubmitButton) roleSubmitButton.disabled = true;
 
@@ -452,21 +448,99 @@ fetch('http://ecoride.local/api/get_user_profile.php', {
     });
 }
 
-    if (deleteAccountBtn && confirmDeleteAccountModal && confirmDeleteAccountBtn) {
+if (deleteAccountBtn && confirmDeleteAccountModal && confirmDeleteAccountBtn) {
         deleteAccountBtn.addEventListener('click', () => {
-            if(confirmDeleteAccountModal) confirmDeleteAccountModal.show(); 
+            if (confirmDeleteAccountModal) confirmDeleteAccountModal.show();
         });
+
+        // Listener pour le bouton de confirmation de suppression de compte
         confirmDeleteAccountBtn.addEventListener('click', () => {
-            console.log("Suppression du compte confirmée (simulation).");
-            if(confirmDeleteAccountModal) confirmDeleteAccountModal.hide(); 
-            alert("Votre compte a été supprimé (simulation).");
-            if (typeof authManagerSignout === "function") {
-                authManagerSignout(); 
-            } else { 
-                console.error("authManagerSignout non disponible."); 
-                sessionStorage.clear(); 
-                window.location.href = "/";
+            console.log("accountPageHandler: Confirmation de suppression de compte. Appel API...");
+
+            // Désactiver le bouton pour éviter double clic
+            confirmDeleteAccountBtn.disabled = true;
+
+            fetch('http://ecoride.local/api/delete_account.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json' 
+                    // Le cookie de session PHPSESSID sera envoyé automatiquement
+                },
+                // Implémenter la demande supplémentaire de mot de passe ici
+            })
+            .then(response => {
+                console.log("Delete Account Fetch: Statut Réponse:", response.status);
+                return response.json().then(data => ({ ok: response.ok, status: response.status, body: data }))
+                    .catch(jsonError => {
+                        console.error("Delete Account Fetch: Erreur parsing JSON:", jsonError);
+                        return response.text().then(textData => {
+                            console.log("Delete Account Fetch: Réponse brute non-JSON:", textData);
+                            throw new Error(`Réponse non-JSON (statut ${response.status}) pour suppression compte: ${textData.substring(0,100)}...`);
+                        });
+                    });
+            })
+.then(({ ok, status, body }) => {
+            console.log("Delete Account Fetch: Réponse API:", body);
+
+            if (ok && body.success) {
+                alert(body.message || "Votre compte a été supprimé avec succès. Vous allez être déconnecté.");
+                
+                // --- Nettoyage de la modale avant redirection ---
+                if (confirmDeleteAccountModal && typeof confirmDeleteAccountModal.hide === 'function') {
+                    // S'assurer que la modale est cachée
+                    confirmDeleteAccountModal.hide();
+
+                    // Suppression manuelle du backdrop de Bootstrap
+                    setTimeout(() => {
+                        const backdrop = document.querySelector('.modal-backdrop');
+                        if (backdrop) {
+                            backdrop.remove();
+                        }
+                        // Bootstrap ajoute aussi parfois 'modal-open' au body, ce qui peut bloquer le scroll
+                        document.body.classList.remove('modal-open');
+                        // Il peut aussi ajouter du padding-right, on le remet à null
+                        document.body.style.overflow = ''; 
+                        document.body.style.paddingRight = '';
+
+                        // Maintenant on peut appeler signout
+                        if (typeof authManagerSignout === "function") {
+                            authManagerSignout(); 
+                        } else {
+                            sessionStorage.clear();
+                            window.location.href = "/";
+                        }
+                    }, 100); // Un petit délai (100ms) pour laisser le temps à hide() de Bootstrap.
+
+                } else { // Fallback si la modale n'est pas gérable via son instance
+                    if (typeof authManagerSignout === "function") {
+                        authManagerSignout(); 
+                    } else {
+                        sessionStorage.clear();
+                        window.location.href = "/";
+                    }
+                }
+
+            } else {
+                alert(body.message || `Erreur lors de la suppression du compte (statut ${status}).`);
+                console.error("Erreur API Delete Account:", body);
+                if (confirmDeleteAccountBtn) confirmDeleteAccountBtn.disabled = false;
+                if (confirmDeleteAccountModal && typeof confirmDeleteAccountModal.hide === 'function') {
+                    confirmDeleteAccountModal.hide(); 
+                }
             }
+        })
+        .catch(error => {
+            console.error("Erreur Fetch globale (Delete Account):", error);
+            alert('Erreur de communication avec le serveur pour la suppression du compte. ' + error.message);
+            if (confirmDeleteAccountBtn) confirmDeleteAccountBtn.disabled = false;
+            if (confirmDeleteAccountModal && typeof confirmDeleteAccountModal.hide === 'function') {
+                confirmDeleteAccountModal.hide();
+            }
+        })
+        .finally(() => { // Ce finally est peut-être redondant si on gère déjà la fermeture partout
+            // vehicleIdToDelete = null; // Tu n'as pas de vehicleIdToDelete pour la suppression de compte
+            // if(confirmDeleteAccountModal) confirmDeleteAccountModal.hide(); // Déjà fait
+        });
         });
     }
 
@@ -683,7 +757,7 @@ fetch('http://ecoride.local/api/get_user_profile.php', {
                             });
                         });
                 })
-                .then(({ ok, status, body }) => {
+                .then(({ ok, body }) => {
                     if (submitButton) submitButton.disabled = false;
                     console.log("Update Vehicle Fetch: Réponse API:", body);
 
@@ -709,8 +783,6 @@ fetch('http://ecoride.local/api/get_user_profile.php', {
                             itemToUpdate.querySelector('.vehicle-plate-display').textContent = body.vehicle.license_plate;
                         } else {
                             console.warn("L'élément véhicule à mettre à jour n'a pas été trouvé dans le DOM. Un rechargement peut être nécessaire.");
-                            // Alternative : recharger toute la liste pour être sûr
-                            // if (typeof LoadContentPage === "function") LoadContentPage(); else window.location.reload();
                         }
                         hideVehicleForm();
                     } else {

@@ -319,3 +319,12 @@ VALUES
   'new', 
   TIMESTAMPADD(DAY, -14, NOW() + INTERVAL 2 HOUR) -- Soumis peu après son avis
 );
+
+-- -----------------------------------------------------
+-- Création de User pour tester la suppression
+-- -----------------------------------------------------
+
+INSERT INTO `Users` 
+(`first_name`, `last_name`, `username`, `email`, `password_hash`, `phone_number`, `birth_date`, `profile_picture_path`, `address`, `credits`, `account_status`, `driver_pref_smoker`, `driver_pref_animals`, `driver_pref_custom`, `functional_role`) 
+VALUES
+('ToDelete', 'UserOne', 'todelete_user1', 'todelete1@example.com', '$2y$10$6BFo8Wiveqnj9iMG/GzNP.MxSw2PHy9Y/17cjxqYJm4ohhg2Q1TnO', '0600000015', '2000-01-01', NULL, NULL, 0.00, 'active', FALSE, FALSE, NULL, 'passenger');
