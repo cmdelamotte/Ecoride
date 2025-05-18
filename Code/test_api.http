@@ -278,3 +278,24 @@ Content-Type: application/json
     "newPassword": "short",
     "confirmNewPassword": "short"
 }
+
+### Connexion Utilisateur (Pour Test Suppression Compte - todelete_user1)
+POST http://ecoride.local/api/login.php
+Content-Type: application/json
+
+{
+    "identifier": "todelete_user1", 
+    "password": "password123" 
+}
+
+### Test Suppression Compte Utilisateur (Succès - todelete_user1)
+POST http://ecoride.local/api/delete_account.php
+Content-Type: application/json
+
+{}
+
+### Test Suppression Compte Utilisateur (Échec - Non Authentifié)
+POST http://ecoride.local/api/delete_account.php
+Content-Type: application/json
+
+{}
