@@ -176,15 +176,11 @@ footer a[href^="mailto:"] {
 .banner-title {
     font-family: var(--font-family-heading);
     font-weight: var(--font-weight-bold);
-    /* display-4 de Bootstrap gère la taille, sinon : */
-    /* font-size: 2.8rem; */
     text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
 }
 
 .banner-subtitle {
     font-family: var(--font-family-text);
-    /* lead de Bootstrap gère style, sinon : */
-    /* font-size: 1.25rem; */
     text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
 }
 
@@ -385,4 +381,10 @@ footer a[href^="mailto:"] {
 .rating-stars > i.selected,
 .rating-stars:hover > i.hover-selected { 
     color: var(--bs-warning);
+}
+
+/* Style de labels */
+
+.label-custom{
+    color: black;
 }
