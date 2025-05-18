@@ -1,4 +1,4 @@
-import { LoadContentPage } from '../../router/Router.js'; // Pour la redirection éventuelle
+import { LoadContentPage } from '../../router/Router.js';
 
 export function initializePublishRidePage() {
     const publishForm = document.getElementById('publish-ride-form');
@@ -12,6 +12,7 @@ export function initializePublishRidePage() {
     const arrivalLocationInput = document.getElementById('arrival-location');
     const departureDateInput = document.getElementById('departure-date');
     const departureTimeInput = document.getElementById('departure-time');
+    const arrivalTimeInput = document.getElementById('arrival-time');
     const availableSeatsInput = document.getElementById('available-seats');
     const pricePerSeatInput = document.getElementById('price-per-seat');
     const rideVehicleSelect = document.getElementById('ride-vehicle'); 
@@ -42,7 +43,6 @@ async function populateVehicleSelect(vehicleSelectElement) {
                 });
             } else {
                 setVehicleSelectMessage("Aucun véhicule trouvé. Ajoutez-en un via 'Mon Compte'.");
-                // Optionnel: désactiver le formulaire de publication si aucun véhicule
             }
         } catch (error) {
             console.error("Erreur chargement des véhicules:", error);
@@ -55,7 +55,7 @@ async function populateVehicleSelect(vehicleSelectElement) {
     }
 
     // Listeners 'input'/'change' pour effacer les messages d'erreur custom et globaux
-    [departureLocationInput, arrivalLocationInput, departureDateInput, departureTimeInput, 
+    [departureLocationInput, arrivalLocationInput, departureDateInput, departureTimeInput, arrivalTimeInput, 
     availableSeatsInput, pricePerSeatInput, rideVehicleSelect, rideMessageTextarea]
     .forEach(input => {
         if (input) {
@@ -95,6 +95,7 @@ async function populateVehicleSelect(vehicleSelectElement) {
         const arrivalLocation = arrivalLocationInput?.value.trim();
         const rideDateValue = departureDateInput?.value; // AAAA-MM-JJ
         const rideTimeValue = departureTimeInput?.value; // HH:MM
+        const rideArrivalTimeValue = arrivalTimeInput?.value;
         const availableSeatsValue = availableSeatsInput?.value.trim();
         const pricePerSeatValue = pricePerSeatInput?.value.trim();
         const vehicleId = rideVehicleSelect?.value;
@@ -102,15 +103,39 @@ async function populateVehicleSelect(vehicleSelectElement) {
 
         // Validations JS
         let departureDateTimeString = null;
+        let estimatedArrivalDateTimeString = null;
         if (rideDateValue && rideTimeValue) {
-            departureDateTimeString = `${rideDateValue}T${rideTimeValue}`; // Format ISO partiel
-            const selectedDateTime = new Date(departureDateTimeString);
+            departureDateTimeString = `${rideDateValue}T${rideTimeValue}`; 
+            const selectedDepartureDateTime = new Date(departureDateTimeString);
             const minDepartureTime = new Date(new Date().getTime() + 15 * 60000); 
-            if (selectedDateTime < minDepartureTime) {
-                departureDateInput.setCustomValidity("Départ doit être dans au moins 15 mins.");
+            if (selectedDepartureDateTime < minDepartureTime) {
+                departureDateInput.setCustomValidity("Le départ ne peut pas être dans le passé.");
+                isFormValidOverall = false;
+            } 
+
+        // Validation et construction de estimatedArrivalDateTimeString
+            if (rideArrivalTimeValue) {
+                estimatedArrivalDateTimeString = `${rideDateValue}T${rideArrivalTimeValue}`; // On utilise la MÊME DATE que le départ
+                const selectedArrivalDateTime = new Date(estimatedArrivalDateTimeString);
+                if (selectedArrivalDateTime <= selectedDepartureDateTime) {
+                    arrivalTimeInput.setCustomValidity("L'heure d'arrivée doit être après l'heure de départ.");
+                    isFormValidOverall = false;
+                }
+            } else if (arrivalTimeInput && arrivalTimeInput.hasAttribute('required')) {
+                // Si requis et vide, checkValidity() devrait l'attraper, mais on peut forcer
+                arrivalTimeInput.setCustomValidity("L'heure d'arrivée est requise.");
                 isFormValidOverall = false;
             }
-        } // Les 'required' sont gérés par checkValidity()
+        } else { // Si date de départ ou heure de départ sont vides (et requis)
+            if (departureDateInput && departureDateInput.hasAttribute('required') && !rideDateValue) {
+                departureDateInput.setCustomValidity("Date de départ requise.");
+                isFormValidOverall = false;
+            }
+            if (departureTimeInput && departureTimeInput.hasAttribute('required') && !rideTimeValue) {
+                departureTimeInput.setCustomValidity("Heure de départ requise.");
+                isFormValidOverall = false;
+            }
+        }
 
         if (availableSeatsInput && availableSeatsValue) {
             const seats = parseInt(availableSeatsValue, 10);
@@ -144,21 +169,17 @@ async function populateVehicleSelect(vehicleSelectElement) {
         
         // Le formulaire est valide côté client, préparation des données pour l'API
         const rideData = {
-            departure_city: departureLocation, // L'API attend departure_city et arrival_city
+            departure_city: departureLocation,
             arrival_city: arrivalLocation, 
             departure_address: departureLocation, // Placeholder
             arrival_address: arrivalLocation,     // Placeholder
             departure_datetime: departureDateTimeString, // Format AAAA-MM-JJTHH:MM
-            // estimated_arrival_datetime: ... // L'API le calcule ou attend du JS
+            estimated_arrival_datetime: estimatedArrivalDateTimeString,
             vehicle_id: parseInt(vehicleId, 10),
             seats_offered: parseInt(availableSeatsValue, 10),
             price_per_seat: parseFloat(pricePerSeatValue),
             driver_message: message
         };
-        // Note: L'API s'attend à `departure_city` et `arrival_city` distincts de `departure_address` et `arrival_address`.
-        // Il faudra que ton formulaire HTML ou ton JS fasse cette distinction.
-        // Pour l'instant, j'ai mis les mêmes pour `_city` et `_address`.
-        // L'API s'attend aussi à `estimated_arrival_datetime`. Si le JS ne l'envoie pas, le PHP mettra un +3h.
 
         console.log("publishRidePageHandler: Envoi du trajet à l'API :", rideData);
         const submitButton = publishForm.querySelector('button[type="submit"]');
@@ -176,7 +197,6 @@ async function populateVehicleSelect(vehicleSelectElement) {
         .then(response => {
                     console.log("Publish Ride Fetch: Statut Réponse:", response.status); // Bon pour le log
                     // Essayer de parser en JSON. Si ça échoue, c'est que la réponse n'était pas du JSON valide
-                    // (ex: erreur PHP qui a affiché du HTML, ou réponse vide, etc.)
                     return response.json()
                         .then(data => ({ 
                             ok: response.ok,
@@ -198,6 +218,7 @@ async function populateVehicleSelect(vehicleSelectElement) {
         .then(({ ok, body }) => {
             if (submitButton) submitButton.disabled = false;
             console.log("Publish Ride Fetch: Réponse API:", body);
+            
 
             if (ok && body.success && body.ride) {
                 if (globalMessageDiv) {
@@ -215,19 +236,53 @@ async function populateVehicleSelect(vehicleSelectElement) {
                         window.location.href = "/your-rides";
                     }
                 }, 1500);
-            } else {
-                let errorMessage = body.message || "Erreur lors de la publication du trajet.";
-                if (body.errors) {
-                    for (const key in body.errors) { errorMessage += `\n- ${key}: ${body.errors[key]}`; }
-                }
-                if (globalMessageDiv) {
-                    globalMessageDiv.textContent = errorMessage.replace(/\n/g, ' ');
-                    globalMessageDiv.className = 'alert alert-danger';
-                } else {
-                    alert(errorMessage);
-                }
-                console.error('Erreur API Publish Ride:', body);
-            }
+            } else { // Erreur renvoyée par l'API (validation ou autre)
+                        let globalErrorMessageForDiv = body.message || "Erreur lors de la publication du trajet.";
+                        let specificFieldErrorsHandled = false;
+
+                        if (body.errors) {
+                            console.log("Erreurs de validation du serveur reçues:", body.errors);
+                            for (const key in body.errors) {
+                                let inputElement = null;
+                                if (key === 'departure_city') inputElement = departureLocationInput; 
+                                else if (key === 'arrival_city') inputElement = arrivalLocationInput;
+                                else if (key === 'departure_datetime') inputElement = departureDateInput; 
+                                else if (key === 'estimated_arrival_datetime') inputElement = arrivalTimeInput;
+                                else if (key === 'vehicle_id') inputElement = rideVehicleSelect;
+                                else if (key === 'seats_offered') inputElement = availableSeatsInput;
+                                else if (key === 'price_per_seat') inputElement = pricePerSeatInput;
+                                else if (key === 'driver_message') inputElement = rideMessageTextarea;
+
+                                if (inputElement && typeof inputElement.setCustomValidity === 'function') {
+                                    inputElement.setCustomValidity(body.errors[key]);
+                                    specificFieldErrorsHandled = true;
+                                }
+                            }
+                        }
+
+                        if (globalMessageDiv) {
+                            if (specificFieldErrorsHandled) {
+                                // Si des erreurs ont été mappées aux champs, on peut mettre un message global plus simple
+                                globalMessageDiv.textContent = "Veuillez corriger les erreurs indiquées sur les champs.";
+                                publishForm.reportValidity(); // Demande au formulaire d'afficher toutes les bulles d'erreur custom
+                            } else {
+                                // Si aucune erreur de champ spécifique n'a été mappée, affiche le message global plus détaillé
+                                globalMessageDiv.textContent = globalErrorMessageForDiv.replace(/\n/g, ' ');
+                            }
+                            globalMessageDiv.className = 'alert alert-danger mt-3'; // Assure la visibilité
+                            globalMessageDiv.classList.remove('d-none'); 
+                        } else if (!specificFieldErrorsHandled) { 
+                            // S'il n'y a pas de div globale et pas d'erreur de champ spécifique, fallback sur alert
+                            alert(globalErrorMessageForDiv);
+                        }
+                        // Si des erreurs ont été mises sur les champs, un seul appel à reportValidity() sur le formulaire
+                        // devrait les faire apparaître (selon le comportement du navigateur).
+                        if (specificFieldErrorsHandled) {
+                            publishForm.reportValidity();
+                        }
+
+                        console.error('Erreur API Publish Ride:', body);
+                    }
         })
         .catch(error => {
             if (submitButton) submitButton.disabled = false;
