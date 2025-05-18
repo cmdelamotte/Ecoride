@@ -27,17 +27,31 @@
                             </div>
                         </div>
 
-                        <div class="col-md-6">
+                        <div class="col-12">
+                            <label for="departure-date" class="label-custom mb-1">Date de départ</label>
                             <div class="form-input-custom d-flex align-items-center">
                                 <i class="bi bi-calendar3 me-2"></i>
-                                <input type="text" class="form-control-custom flex-grow-1" id="departure-date" placeholder="Date de départ" onfocus="(this.type='date')" onblur="if(!this.value) {this.type='text';}" aria-label="Date de départ" required>
+                                <input type="date" class="form-control-custom flex-grow-1" id="departure-date" name="departure_date" aria-label="Date de départ" required>
                             </div>
                         </div>
 
-                        <div class="col-md-6">
-                            <div class="form-input-custom d-flex align-items-center">
-                                <i class="bi bi-clock me-2"></i>
-                                <input type="time" class="form-control-custom flex-grow-1" id="departure-time" aria-label="Heure de départ" required>
+                        <div class="col-12">
+                            <div class="row gx-3">
+                                <div class="col-md-6">
+                                    <label for="departure-time" class="label-custom mb-1">Heure de départ</label>
+                                    <div class="form-input-custom d-flex align-items-center">
+                                        <i class="bi bi-clock me-2"></i>
+                                        <input type="time" class="form-control-custom flex-grow-1" id="departure-time" name="departure_time" aria-label="Heure de départ" required>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label for="arrival-time" class="label-custom mb-1">Heure d'arrivée estimée</label>
+                                    <div class="form-input-custom d-flex align-items-center">
+                                        <i class="bi bi-alarm me-2"></i>
+                                        <input type="time" class="form-control-custom flex-grow-1" id="arrival-time" name="arrival_time" aria-label="Heure d'arrivée estimée" required>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
