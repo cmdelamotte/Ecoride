@@ -172,11 +172,6 @@ function createRideCardElement(rideData) {
         const departure = new Date(rideData.departure_time.replace(' ', 'T'));
         const arrival = new Date(rideData.estimated_arrival_time.replace(' ', 'T'));
         const durationMs = arrival - departure;
-        
-        console.log("🕒 Départ brut :", rideData.departure_time);
-        console.log("🕒 Arrivée brut :", rideData.estimated_arrival_time);
-        console.log("🧠 Date objets :", departure, arrival);
-        console.log("🧮 Durée ms :", durationMs);
 
         if (durationMs > 0) {
             const hours = Math.floor(durationMs / (1000 * 60 * 60));
@@ -575,6 +570,67 @@ export function initializeRidesSearchPage() {
         }
     } else {
         console.warn("RidesSearchPageHandler: Formulaire 'filter-form' non trouvé.");
+    }
+
+    const confirmBookingButton = document.getElementById('confirm-booking-btn');
+    const confirmationModalElement = document.getElementById('confirmationModal'); // Pour pouvoir la cacher
+
+    if (confirmBookingButton && confirmationModalElement) {
+        confirmBookingButton.addEventListener('click', async () => { // La fonction devient async
+            const rideIdToBook = confirmBookingButton.getAttribute('data-ride-id');
+            const seatsToBook = 1; // Pour l'instant, on réserve toujours 1 place
+
+            if (!rideIdToBook) {
+                alert("Erreur : ID du trajet non trouvé pour la réservation.");
+                bootstrap.Modal.getInstance(confirmationModalElement)?.hide(); // Cacher la modale
+                return;
+            }
+
+            console.log(`RidesSearchPageHandler: Tentative de réservation pour ride_id: ${rideIdToBook}, places: ${seatsToBook}`);
+            
+            confirmBookingButton.disabled = true; // Désactiver pendant l'appel
+
+            try {
+                const response = await fetch('http://ecoride.local/api/book_ride.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        ride_id: parseInt(rideIdToBook, 10),
+                        seats_to_book: seatsToBook
+                    })
+                });
+
+                const data = await response.json().catch(async (jsonError) => {
+                    const errorText = await response.text().catch(() => "Impossible de lire le corps de l'erreur JSON.");
+                    console.error("Erreur parsing JSON (book_ride):", jsonError, "Réponse brute:", errorText);
+                    throw new Error(`Réponse non-JSON (statut ${response.status}): ${errorText.substring(0,200)}`);
+                });
+
+                console.log("RidesSearchPageHandler: Réponse API book_ride:", data);
+
+                if (response.ok && data.success) {
+                    alert(data.message || "Réservation confirmée avec succès !");
+
+                    // Rafraîchir la liste des trajets pour mettre à jour les places disponibles
+                    fetchAndDisplayRides(); 
+
+                } else {
+                    // Afficher le message d'erreur spécifique de l'API
+                    alert(data.message || `Erreur lors de la réservation (statut ${response.status}).`);
+                }
+
+            } catch (error) {
+                console.error("Erreur Fetch globale (book_ride):", error);
+                alert("Erreur de communication lors de la tentative de réservation. " + error.message);
+            } finally {
+                confirmBookingButton.disabled = false; // Réactiver le bouton
+                const modalInstance = bootstrap.Modal.getInstance(confirmationModalElement);
+                if (modalInstance) modalInstance.hide(); // Toujours cacher la modale
+            }
+        });
+    } else {
+        if (!confirmBookingButton) console.warn("Bouton #confirm-booking-btn non trouvé pour la réservation.");
+        if (!confirmationModalElement) console.warn("Modale #confirmationModal non trouvée.");
     }
         // APPEL INITIAL POUR CHARGER LES RÉSULTATS BASÉS SUR L'URL ACTUELLE
     fetchAndDisplayRides(); 
