@@ -573,7 +573,7 @@ export function initializeRidesSearchPage() {
     }
 
     const confirmBookingButton = document.getElementById('confirm-booking-btn');
-    const confirmationModalElement = document.getElementById('confirmationModal'); // Pour pouvoir la cacher
+    const confirmationModalElement = document.getElementById('confirmationModal'); 
 
     if (confirmBookingButton && confirmationModalElement) {
         confirmBookingButton.addEventListener('click', async () => { // La fonction devient async

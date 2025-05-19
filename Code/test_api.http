@@ -388,3 +388,21 @@ Content-Type: application/json
     "ride_id": 1,
     "seats_to_book": 3
 }
+
+### Connexion Utilisateur (Alice)
+POST http://ecoride.local/api/login.php
+Content-Type: application/json
+
+{ "identifier": "alice_driver_passenger", "password": "password123" }
+
+### Récupérer l'historique des trajets d'Alice
+GET http://ecoride.local/api/get_user_rides_history.php
+
+### Connexion Utilisateur (Bob)
+POST http://ecoride.local/api/login.php
+Content-Type: application/json
+
+{ "identifier": "bob_passenger", "password": "password123" }
+
+### Récupérer l'historique des trajets de Bob
+GET http://ecoride.local/api/get_user_rides_history.php
