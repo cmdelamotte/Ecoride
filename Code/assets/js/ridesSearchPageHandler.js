@@ -93,16 +93,28 @@ function createRideCardElement(rideData) {
         return null; 
     }
     
-    // Rendre les ID uniques pour le collapse (TRÈS IMPORTANT)
-    const uniqueRideIdSuffix = `_ride_${rideData.ride_id}`;
+    // Rendre les ID uniques pour le collapse 
+    const uniqueRideIdSuffix = `_ride_${rideData.ride_id}`; // rideData est l'objet du trajet en cours
     const detailsButton = cardElement.querySelector('.ride-details-button');
-    const collapseElement = cardElement.querySelector('.collapse');
+    
+    // 1. Sélectionne l'élément qui va devenir le "collapse" par une classe stable
+    const collapseElement = cardElement.querySelector('.collapse'); // Assure-toi que ton div.collapse a bien cette classe
 
-    if (detailsButton && collapseElement) {
+    if (collapseElement) {
+        // 2. Assigne un ID unique
         const newCollapseId = `detailsCollapse${uniqueRideIdSuffix}`;
-        detailsButton.setAttribute('data-bs-target', `#${newCollapseId}`);
-        detailsButton.setAttribute('aria-controls', newCollapseId);
         collapseElement.id = newCollapseId;
+
+        // 3. Mets à jour le bouton "Détails" pour qu'il cible ce nouvel ID
+        if (detailsButton) {
+            detailsButton.setAttribute('data-bs-target', `#${newCollapseId}`);
+            detailsButton.setAttribute('aria-controls', newCollapseId);
+            detailsButton.setAttribute('data-ride-id', rideData.ride_id); // Tu l'as déjà
+        } else {
+            console.error("Bouton Détails (.ride-details-button) non trouvé pour trajet", rideData.ride_id);
+        }
+    } else {
+        console.error("Div .collapse non trouvée dans le template pour trajet ID", rideData.ride_id);
     }
 
     // Remplir les informations de la carte
@@ -117,10 +129,8 @@ function createRideCardElement(rideData) {
     const seatsAvailableEl = cardElement.querySelector('.ride-available-seats');
 
     // Détails dans le collapse
-    // const driverReviewsContainer = cardElement.querySelector('.driver-reviews-container'); // On le fera plus tard
     const carModelEl = cardElement.querySelector('.ride-car-model');
     const carEnergyEl = cardElement.querySelector('.ride-car-energy');
-    const driverPreferencesTextEl = cardElement.querySelector('.driver-preferences-text');
     const participateButton = cardElement.querySelector('.participate-button');
     const carRegYearEl = cardElement.querySelector('.ride-car-registration-year');
     const departureAddressDetailEl = cardElement.querySelector('.ride-departure-address-details');
@@ -207,21 +217,13 @@ function createRideCardElement(rideData) {
         carRegYearEl.textContent = 'N/A';
     }
 
-    // Pour les préférences, il faudrait récupérer driver_pref_smoker, driver_pref_animals, driver_pref_custom de l'API de détails du trajet,
-    // car search_rides ne les renvoie pas pour l'instant. On les mettra à jour au clic sur "Détails".
-    if (driverPreferencesTextEl) driverPreferencesTextEl.innerHTML = "Préférences à charger..."; 
 
-
-    if (detailsButton) {
-        detailsButton.setAttribute('data-ride-id', rideData.ride_id);
-        detailsButton.addEventListener('click', (e) => {
-            // Le collapse est géré par Bootstrap via data-bs-target.
-            // Ici, on pourra charger des infos plus détaillées pour la section collapse (ex: les vrais avis).
-            console.log("Clic Détails pour trajet ID:", rideData.ride_id, "Section à afficher:", collapseElement.id);
-            // TODO: Plus tard, appeler une API pour getRideDetails(rideData.ride_id) et peupler
-            // le contenu de collapseElement (avis, préférences détaillées, etc.)
+    if (detailsButton && collapseElement) { // Vérifie les deux
+        detailsButton.addEventListener('click', async () => { 
+            // À L'INTÉRIEUR du listener, collapseElement est celui défini ci-dessus et a un ID
+            console.log("Clic sur Détails pour trajet ID:", rideData.ride_id, "Section à afficher/peupler:", collapseElement.id);
         });
-    }
+        }
 
     if (participateButton) {
         participateButton.setAttribute('data-ride-id', rideData.ride_id);
@@ -241,6 +243,86 @@ function createRideCardElement(rideData) {
 
         });
     }
+    (async () => {
+    try {
+        const detailsRes = await fetch(`http://ecoride.local/api/get_ride_details.php?ride_id=${rideData.ride_id}`);
+        if (!detailsRes.ok) throw new Error(`Erreur API détails trajet (statut ${detailsRes.status})`);
+
+        const detailsData = await detailsRes.json();
+        if (!detailsData.success) throw new Error("Réponse API échec: " + (detailsData.message || "inconnue"));
+
+        // === Préférences chauffeur ===
+        const prefs = detailsData.details?.driver_preferences || {};
+        const prefsContainer = cardElement.querySelector('.driver-preferences-text');
+        const noPrefsMsg = cardElement.querySelector('.no-prefs-message');
+        if (prefsContainer) {
+            prefsContainer.innerHTML = ''; // Reset
+
+            let hasPref = false;
+
+            if (prefs.smoker !== undefined) {
+                hasPref = true;
+                const smokeText = prefs.smoker ? 'Accepte les fumeurs' : 'Non-fumeur';
+                const el = document.createElement('p');
+                el.classList.add('mb-1');
+                el.textContent = smokeText;
+                prefsContainer.appendChild(el);
+            }
+
+            if (prefs.animals !== undefined) {
+                hasPref = true;
+                const animalText = prefs.animals ? 'Accepte les animaux' : 'N’accepte pas les animaux';
+                const el = document.createElement('p');
+                el.classList.add('mb-1');
+                el.textContent = animalText;
+                prefsContainer.appendChild(el);
+            }
+
+            if (prefs.custom && prefs.custom.trim() !== '') {
+                hasPref = true;
+                const el = document.createElement('p');
+                el.classList.add('mb-1');
+                el.textContent = prefs.custom;
+                prefsContainer.appendChild(el);
+            }
+
+            if (!hasPref && noPrefsMsg) {
+                noPrefsMsg.classList.remove('d-none');
+            }
+        }
+
+        // === Avis chauffeur ===
+        const reviewsContainer = cardElement.querySelector('.driver-reviews-container');
+        const reviewTemplate = document.getElementById('driver-review-item-template');
+
+        if (reviewsContainer && reviewTemplate) {
+            const reviews = detailsData.details?.reviews || [];
+
+            reviews.forEach(review => {
+                const reviewClone = reviewTemplate.content.cloneNode(true);
+                const authorEl = reviewClone.querySelector('.review-author');
+                const dateEl = reviewClone.querySelector('.review-date');
+                const starsEl = reviewClone.querySelector('.review-stars');
+                const commentEl = reviewClone.querySelector('.review-comment');
+
+                if (authorEl) authorEl.textContent = review.author_username || "Utilisateur";
+                if (dateEl) {
+                    const date = new Date(review.submission_date.replace(' ', 'T'));
+                    dateEl.textContent = date.toLocaleDateString('fr-FR');
+                }
+                if (starsEl) {
+                    const stars = parseInt(review.rating, 10);
+                    starsEl.innerHTML = '★'.repeat(stars) + '☆'.repeat(5 - stars);
+                }
+                if (commentEl) commentEl.textContent = review.comment || "";
+
+                reviewsContainer.appendChild(reviewClone);
+            });
+        }
+    } catch (err) {
+        console.warn(`Erreur lors de la récupération des détails du trajet ${rideData.ride_id} :`, err);
+    }
+})();
     return cardElement; 
 }
 
@@ -257,10 +339,15 @@ async function fetchAndDisplayRides() {
     }
 
     loadingIndicator.classList.remove('d-none');
+
     rideResultsContainer.innerHTML = ''; 
     noResultsMessage.classList.add('d-none');
 
     const queryParams = new URLSearchParams(window.location.search);
+    if (!queryParams.get('departure') || !queryParams.get('destination')) {
+        loadingIndicator.classList.add('d-none');
+        return; // Ne rien faire si pas de recherche
+    }
     // On récupère les paramètres de recherche principaux depuis l'URL
     let apiUrl = 'http://ecoride.local/api/search_rides.php?' + 
                 `departure_city=${encodeURIComponent(queryParams.get('departure') || '')}` +
@@ -287,7 +374,9 @@ async function fetchAndDisplayRides() {
 
     try {
         const response = await fetch(apiUrl);
-        loadingIndicator.classList.add('d-none'); 
+        setTimeout(() => {
+        loadingIndicator.classList.add('d-none');
+        }, 1000);
 
         if (!response.ok) { 
             const errorText = await response.text().catch(() => "Impossible de lire le corps de l'erreur.");

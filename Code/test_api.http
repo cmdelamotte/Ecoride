@@ -319,3 +319,12 @@ Content-Type: application/json
 
 ### Test Recherche Trajets (Brest vers Vannes)
 GET http://ecoride.local/api/search_rides.php?departure_city=Brest&arrival_city=Vannes&date=2025-05-21&seats=1
+
+### Test Récupération Détails Trajet (Ride ID 4 - Carole)
+GET http://ecoride.local/api/get_ride_details.php?ride_id=4
+
+### Test Récupération Détails Trajet (Ride ID 1 - Alice)
+GET http://ecoride.local/api/get_ride_details.php?ride_id=1
+
+### Test Récupération Détails Trajet (ID Invalide)
+GET http://ecoride.local/api/get_ride_details.php?ride_id=9999
