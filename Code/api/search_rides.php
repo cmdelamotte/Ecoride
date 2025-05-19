@@ -67,19 +67,22 @@ try {
 
     // Construction de la base de la requête SQL
     $sqlBase = "SELECT 
-                    r.id as ride_id, r.departure_city, r.arrival_city, 
+                    r.id as ride_id, r.departure_city, r.arrival_city, r.departure_address, r.arrival_address, 
                     r.departure_time, r.estimated_arrival_time, r.price_per_seat,
                     r.is_eco_ride,
                     u.username as driver_username, u.profile_picture_path as driver_photo,
-                    v.model_name as vehicle_model, br.name as vehicle_brand,
+                    v.model_name as vehicle_model,
+                    br.name as vehicle_brand,
+                    v.energy_type as vehicle_energy,
+                    v.registration_date as vehicle_registration_date,
                     (r.seats_offered - COALESCE(SUM(b.seats_booked), 0)) as seats_available
-                FROM Rides r
-                JOIN Users u ON r.driver_id = u.id
-                JOIN Vehicles v ON r.vehicle_id = v.id
-                JOIN Brands br ON v.brand_id = br.id
-                LEFT JOIN Bookings b ON r.id = b.ride_id AND b.booking_status = 'confirmed'
-                WHERE r.ride_status = 'planned' 
-                AND r.departure_time >= :search_date_start ";
+                    FROM Rides r
+                    JOIN Users u ON r.driver_id = u.id
+                    JOIN Vehicles v ON r.vehicle_id = v.id
+                    JOIN Brands br ON v.brand_id = br.id
+                    LEFT JOIN Bookings b ON r.id = b.ride_id AND b.booking_status = 'confirmed'
+                    WHERE r.ride_status = 'planned' 
+                    AND r.departure_time >= :search_date_start ";
 
     $queryParams = []; 
     $whereConditions = []; 
@@ -107,7 +110,7 @@ try {
         $sqlBase .= " AND " . implode(" AND ", $whereConditions);
     }
 
-    $sqlBase .= " GROUP BY r.id, u.id, v.id, br.id "; 
+    $sqlBase .= " GROUP BY r.id, u.id, v.id, br.id, v.energy_type, v.registration_date ";
 
     if ($seatsNeeded > 0) {
         $sqlBase .= " HAVING seats_available >= :seats_needed"; 

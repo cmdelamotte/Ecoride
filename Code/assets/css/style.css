@@ -388,3 +388,8 @@ footer a[href^="mailto:"] {
 .label-custom{
     color: black;
 }
+
+.form-check-input:disabled + .form-check-label {
+    opacity: 1;
+    color: var(--text-color);
+}
