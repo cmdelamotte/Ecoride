@@ -1,5 +1,3 @@
-// assets/js/yourRidesPageHandler.js
-
 // Fonction helper pour mettre à jour l'affichage des étoiles de notation
 function updateStarDisplay(starsContainer, ratingValue) {
     if (!starsContainer) return;
@@ -17,7 +15,6 @@ function updateStarDisplay(starsContainer, ratingValue) {
 function initializeReviewModal() {
     const reviewModalElement = document.getElementById('reviewModal');
     if (!reviewModalElement) {
-        // console.warn("Modal #reviewModal introuvable pour initialisation."); // Commentaire gardé si utile pour futur debug
         return;
     }
 
@@ -46,7 +43,7 @@ function initializeReviewModal() {
             if (driverNameSpan) driverNameSpan.textContent = driverName || "[Chauffeur]";
             
             const ratingLabel = reviewModalElement.querySelector('label[for="review-rating"]'); 
-            if (ratingLabel) { // Mise à jour plus concise du label
+            if (ratingLabel) {
                 ratingLabel.textContent = `Votre note pour ${driverName || "[PseudoChauffeur]"}:`;
             }
         } else {
@@ -139,9 +136,8 @@ function initializeReviewModal() {
             
             if (!isFormValidOverall) {
                 reviewForm.reportValidity(); 
-                // console.log("Validation du formulaire d'avis échouée."); // Commenté
             } else {
-                console.log("Avis soumis (simulation) :", { // Gardé un log utile
+                console.log("Avis soumis (simulation) :", {
                     rideId: currentRideId, rating, tripExperience, reviewComment, 
                     reportComment: (tripExperience === 'bad' ? reportComment : null) 
                 });
@@ -159,21 +155,21 @@ function initializeReviewModal() {
 }
 
 // Données factices pour les trajets de l'utilisateur
-let userRides = [
-    { id: 'RIDE001', depart: 'Paris', arrivee: 'Lyon', date: '2025-05-20', heure: '08:00', role: 'Chauffeur', statut: 'À venir', dureeEstimee: '4h30', vehicule: 'Peugeot 208 (AA-123-BB)', passagersInscrits: 2, passagersMax: 3, gainEstime: 45, estEco: true, driverName: 'MoiChauffeur', driverRating: null },
-    // === TRAJET PASSAGER À VENIR/CONFIRMÉ POUR TEST ===
-    { id: 'RIDE006', depart: 'Bordeaux', arrivee: 'Toulouse', date: '2025-05-22', heure: '10:00', role: 'Passager', statut: 'Terminé', dureeEstimee: '2h30', vehicule: 'Volkswagen Golf', prixPaye: 18, estEco: false, driverName: 'SuperConducteur', driverRating: '4.9' },
-    // =================================================
-    { id: 'RIDE002', depart: 'Rennes', arrivee: 'Nantes', date: '2025-05-18', heure: '14:30', role: 'Passager', statut: 'Confirmé', dureeEstimee: '1h15', vehicule: 'Renault Clio', prixPaye: 10, estEco: false, driverName: 'ChauffeurCool', driverRating: '4.8' },
-    { id: 'RIDE003', depart: 'Lille', arrivee: 'Bordeaux', date: '2025-05-01', heure: '09:00', role: 'Chauffeur', statut: 'Terminé', dureeEstimee: '7h00', vehicule: 'Tesla Model 3', passagersTransportes: 3, gainObtenu: 60, estEco: true, driverName: 'MoiChauffeur', driverRating: null },
-    { id: 'RIDE004', depart: 'Marseille', arrivee: 'Nice', date: '2025-04-25', heure: '11:00', role: 'Passager', statut: 'Terminé', dureeEstimee: '2h00', vehicule: 'Fiat 500', prixPaye: 12, estEco: false, driverName: 'Soleil Conducteur', driverRating: '4.2' },
-    { id: 'RIDE005', depart: 'Brest', arrivee: 'Quimper', date: '2025-05-19', heure: '10:00', role: 'Chauffeur', statut: 'En cours', dureeEstimee: '1h00', vehicule: 'Citroën C3', passagersInscrits: 1, passagersMax: 2, gainEstime: 10, estEco: false, driverName: 'MoiChauffeur', driverRating: null },
-];
+// let userRides = [
+//     { id: 'RIDE001', depart: 'Paris', arrivee: 'Lyon', date: '2025-05-20', heure: '08:00', role: 'Chauffeur', statut: 'À venir', dureeEstimee: '4h30', vehicule: 'Peugeot 208 (AA-123-BB)', passagersInscrits: 2, passagersMax: 3, gainEstime: 45, estEco: true, driverName: 'MoiChauffeur', driverRating: null },
+//     // === TRAJET PASSAGER À VENIR/CONFIRMÉ POUR TEST ===
+//     { id: 'RIDE006', depart: 'Bordeaux', arrivee: 'Toulouse', date: '2025-05-22', heure: '10:00', role: 'Passager', statut: 'Terminé', dureeEstimee: '2h30', vehicule: 'Volkswagen Golf', prixPaye: 18, estEco: false, driverName: 'SuperConducteur', driverRating: '4.9' },
+//     // =================================================
+//     { id: 'RIDE002', depart: 'Rennes', arrivee: 'Nantes', date: '2025-05-18', heure: '14:30', role: 'Passager', statut: 'Confirmé', dureeEstimee: '1h15', vehicule: 'Renault Clio', prixPaye: 10, estEco: false, driverName: 'ChauffeurCool', driverRating: '4.8' },
+//     { id: 'RIDE003', depart: 'Lille', arrivee: 'Bordeaux', date: '2025-05-01', heure: '09:00', role: 'Chauffeur', statut: 'Terminé', dureeEstimee: '7h00', vehicule: 'Tesla Model 3', passagersTransportes: 3, gainObtenu: 60, estEco: true, driverName: 'MoiChauffeur', driverRating: null },
+//     { id: 'RIDE004', depart: 'Marseille', arrivee: 'Nice', date: '2025-04-25', heure: '11:00', role: 'Passager', statut: 'Terminé', dureeEstimee: '2h00', vehicule: 'Fiat 500', prixPaye: 12, estEco: false, driverName: 'Soleil Conducteur', driverRating: '4.2' },
+//     { id: 'RIDE005', depart: 'Brest', arrivee: 'Quimper', date: '2025-05-19', heure: '10:00', role: 'Chauffeur', statut: 'En cours', dureeEstimee: '1h00', vehicule: 'Citroën C3', passagersInscrits: 1, passagersMax: 2, gainEstime: 10, estEco: false, driverName: 'MoiChauffeur', driverRating: null },
+// ];
 
 // Fonction pour créer l'élément HTML d'une carte de trajet
 function createRideCardElement(rideData) {
     const template = document.getElementById('ride-card-template');
-    if (!template) return null; // Simplification du console.error
+    if (!template) return null;
 
     const clone = template.content.cloneNode(true);
     const cardElement = clone.querySelector('.ride-card');
@@ -182,7 +178,7 @@ function createRideCardElement(rideData) {
         const el = cardElement.querySelector(selector);
         if (el) el.textContent = text || '';
     };
-    const setClassAndText = (selector, text, baseClass, specificClass) => { // Simplifié
+    const setClassAndText = (selector, text, baseClass, specificClass) => {
         const el = cardElement.querySelector(selector);
         if (el) {
             el.textContent = text || '';
@@ -202,7 +198,7 @@ function createRideCardElement(rideData) {
     setText('.ride-status-text', rideData.statut);
 
     setClassAndText('.ride-role', rideData.role, 
-        rideData.role === 'Chauffeur' ? 'bg-primary' : 'bg-success'); // Simplifié
+        rideData.role === 'Chauffeur' ? 'bg-primary' : 'bg-success'); 
     toggleElement('.ride-eco-badge', rideData.estEco);
 
     if (rideData.role === 'Chauffeur') {
@@ -256,63 +252,89 @@ function createRideCardElement(rideData) {
     return cardElement;
 }
 
-function renderAllRides() {
+function renderAllRides(drivenRides = [], bookedRides = []) {
     const currentRideHighlightDiv = document.getElementById('current-ride-highlight');
     const upcomingRidesContainer = document.querySelector('#upcoming-rides .rides-list-container');
     const pastRidesContainer = document.querySelector('#past-rides .rides-list-container');
     const allRidesContainer = document.querySelector('#all-rides .rides-list-container');
     const noRidesMessageGlobal = document.getElementById('no-rides-message'); 
 
-    if (!currentRideHighlightDiv || !upcomingRidesContainer || !pastRidesContainer || !allRidesContainer || !noRidesMessageGlobal) return;
+    if (!currentRideHighlightDiv || !upcomingRidesContainer || !pastRidesContainer || !allRidesContainer || !noRidesMessageGlobal) {
+        console.error("Éléments DOM manquants pour l'affichage de l'historique.");
+        return;
+    }
     
     currentRideHighlightDiv.innerHTML = ''; currentRideHighlightDiv.classList.add('d-none');
     upcomingRidesContainer.innerHTML = ''; pastRidesContainer.innerHTML = ''; allRidesContainer.innerHTML = '';
     noRidesMessageGlobal.classList.add('d-none'); 
 
-    let hasUpcomingRide = false;
-    let hasPastRide = false;
+    let allUserRidesForDisplay = [...drivenRides, ...bookedRides];
 
-    userRides.forEach(ride => {
-        const rideCard = createRideCardElement(ride);
+    if (allUserRidesForDisplay.length === 0) {
+        noRidesMessageGlobal.classList.remove('d-none');
+        return; // Pas de trajets à afficher
+    }
+
+    // Logique pour peupler les différents onglets (À VENIR, PASSÉS, TOUS)
+    // Pour simplifier, on va d'abord peupler l'onglet "Tous les trajets"
+
+    allUserRidesForDisplay.sort((a, b) => new Date(b.departure_time) - new Date(a.departure_time)); // Plus récent en premier
+
+    allUserRidesForDisplay.forEach(ride => {
+        // API renvoie: ride_id, departure_city, arrival_city, departure_time, price_per_seat, seats_available, etc.
+        //            driver_username, vehicle_model, vehicle_brand, is_eco_ride, ride_status, user_role_in_ride
+        
+        // Adaptation des clés pour correspondre à ce que createRideCardElement attend
+        const cardData = {
+            id: ride.ride_id,
+            depart: ride.departure_city,
+            arrivee: ride.arrival_city,
+            date: new Date(ride.departure_time).toLocaleDateString([], {day:'2-digit', month:'2-digit', year:'numeric'}),
+            heure: new Date(ride.departure_time).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
+            role: ride.user_role_in_ride === 'driver' ? 'Chauffeur' : 'Passager',
+            statut: ride.ride_status, // L'API devrait renvoyer un statut clair
+            dureeEstimee: ride.estimated_arrival_time ? calculateDuration(ride.departure_time, ride.estimated_arrival_time) : 'N/A',
+            vehicule: `${ride.vehicle_brand || ''} ${ride.vehicle_model || ''}`.trim(),
+            estEco: ride.is_eco_ride,
+            driverName: ride.driver_username, 
+            // driverRating: ride.driver_average_rating, // L'API ne renvoie pas ça pour l'instant
+            // gainEstime: ride.price_per_seat * (ride.seats_offered - ride.seats_available), // Calcul simple
+            passagersInscrits: ride.seats_offered - ride.seats_available, // Calcul
+            passagersMax: ride.seats_offered,
+            price_per_seat: ride.price_per_seat // Pour le calcul du prix affiché
+        };
+        // Ajustement du prix affiché en fonction du rôle
+        if (cardData.role === 'Chauffeur') {
+            cardData.gainEstime = parseFloat(ride.price_per_seat) * (cardData.passagersInscrits > 0 ? cardData.passagersInscrits : 0) ;
+        } else {
+            cardData.prixPaye = parseFloat(ride.price_per_seat);
+        }
+
+
+        const rideCard = createRideCardElement(cardData);
         if (!rideCard) return;
 
-        // Toujours ajouter une copie à l'onglet "Tous les trajets"
-        if (allRidesContainer) allRidesContainer.appendChild(rideCard.cloneNode(true));
-
-        if (ride.statut === 'En cours') {
-            currentRideHighlightDiv.appendChild(rideCard); // L'original va ici
-            currentRideHighlightDiv.classList.remove('d-none');
-            // Option: ajouter aussi une copie à "À venir" si on veut qu'il y apparaisse
-            // if (upcomingRidesContainer) upcomingRidesContainer.appendChild(rideCard.cloneNode(true));
-            hasUpcomingRide = true; 
-        } else if (ride.statut === 'À venir' || ride.statut === 'Confirmé') {
-            if (upcomingRidesContainer) upcomingRidesContainer.appendChild(rideCard);
-            hasUpcomingRide = true;
-        } else if (ride.statut === 'Terminé' || ride.statut === 'Annulé Chauffeur' || ride.statut === 'Annulé Passager') {
-            const pastCard = rideCard.cloneNode(true); 
-            pastCard.classList.add('opacity-75');
-            if (pastRidesContainer) pastRidesContainer.appendChild(pastCard);
-            hasPastRide = true;
-        }
+        // Logique d'affichage dans les bons onglets (simplifiée pour l'instant).
+        if (allRidesContainer) allRidesContainer.appendChild(rideCard);
     });
-    
-    if (upcomingRidesContainer && upcomingRidesContainer.children.length === 0) upcomingRidesContainer.innerHTML = '<p class="text-center text-muted mt-3">Aucun trajet à venir.</p>';
-    if (pastRidesContainer && pastRidesContainer.children.length === 0) pastRidesContainer.innerHTML = '<p class="text-center text-muted mt-3">Aucun trajet passé.</p>';
-    if (allRidesContainer && allRidesContainer.children.length === 0) allRidesContainer.innerHTML = '<p class="text-center text-muted mt-3">Aucun trajet dans votre historique.</p>';
-    
-    if (userRides.length === 0 && currentRideHighlightDiv.classList.contains('d-none')) {
-        noRidesMessageGlobal.classList.remove('d-none');
+}
+
+function calculateDuration(start, end) {
+    const departure = new Date(start.replace(' ', 'T'));
+    const arrival = new Date(end.replace(' ', 'T'));
+    const durationMs = arrival - departure;
+    if (durationMs > 0) {
+        const hours = Math.floor(durationMs / (1000 * 60 * 60));
+        const minutes = Math.floor((durationMs % (1000 * 60 * 60)) / (1000 * 60));
+        return `${hours}h${minutes < 10 ? '0' : ''}${minutes}`;
     }
+    return "N/A";
 }
 
 function handleRideAction(event) {
     const target = event.target;
-    // Si le clic est sur le bouton d'avis, laisser Bootstrap gérer via data-attributes
-    // Si c'est un autre bouton d'action, il doit avoir data-ride-id
     const reviewButtonTrigger = target.closest('button.action-leave-review');
     if (reviewButtonTrigger) {
-        // Laisser Bootstrap ouvrir la modale grâce aux attributs data-bs-toggle et data-bs-target sur le bouton.
-        // L'event 'show.bs.modal' dans initializeReviewModal s'occupera de peupler les données.
         return; 
     }
 
@@ -343,15 +365,66 @@ function handleRideAction(event) {
     renderAllRides(); 
 }
 
-export function initializeYourRidesPage() {
-    // console.log("YourRidesPageHandler: Initialisation de la page Mes Trajets.");
+export async function initializeYourRidesPage() {
+        console.log("YourRidesPageHandler: Initialisation de la page Mes Trajets.");
     
-    initializeReviewModal(); 
-    renderAllRides(); 
+    initializeReviewModal();
 
+    const currentRideHighlightDiv = document.getElementById('current-ride-highlight');
+    const upcomingRidesContainer = document.querySelector('#upcoming-rides .rides-list-container');
+    const pastRidesContainer = document.querySelector('#past-rides .rides-list-container');
+    const allRidesContainer = document.querySelector('#all-rides .rides-list-container');
+    const noRidesMessageGlobal = document.getElementById('no-rides-message');
+
+    if (!currentRideHighlightDiv || !upcomingRidesContainer || !pastRidesContainer || !allRidesContainer || !noRidesMessageGlobal) {
+        console.error("Conteneurs DOM pour l'historique non trouvés.");
+        if (noRidesMessageGlobal) {
+            noRidesMessageGlobal.textContent = "Erreur lors du chargement de la page.";
+            noRidesMessageGlobal.classList.remove('d-none');
+        }
+        return;
+    }
+    
+    // Afficher un indicateur de chargement
+    noRidesMessageGlobal.classList.add('d-none');
+    currentRideHighlightDiv.innerHTML = '<p class="text-center text-muted mt-3">Chargement de vos trajets...</p>'; // Ou un spinner
+    currentRideHighlightDiv.classList.remove('d-none');
+
+
+    try {
+        const response = await fetch('http://ecoride.local/api/get_user_rides_history.php');
+        if (!response.ok) {
+            if (response.status === 401) { // Non authentifié
+                 window.location.href = "/login"; // Redirection simple
+                return;
+            }
+            throw new Error(`Erreur API (statut ${response.status})`);
+        }
+        const data = await response.json();
+
+        currentRideHighlightDiv.innerHTML = ''; // Vider le chargement
+        currentRideHighlightDiv.classList.add('d-none'); // Cacher par défaut
+
+        if (data.success) {
+            // Appeler une version de renderAllRides qui prend les données de l'API
+            displayFetchedRides(data.driven_rides || [], data.booked_rides || []);
+        } else {
+            console.error("Erreur API get_user_rides_history:", data.message);
+            noRidesMessageGlobal.textContent = data.message || "Impossible de charger votre historique.";
+            noRidesMessageGlobal.classList.remove('d-none');
+        }
+    } catch (error) {
+        currentRideHighlightDiv.innerHTML = ''; 
+        currentRideHighlightDiv.classList.add('d-none');
+        console.error("Erreur Fetch globale (get_user_rides_history):", error);
+        noRidesMessageGlobal.textContent = "Erreur de communication pour charger l'historique.";
+        noRidesMessageGlobal.classList.remove('d-none');
+    }
+
+    // Listeners pour les actions et les onglets 
     const ridesHistorySection = document.querySelector('.rides-history-section');
     if (ridesHistorySection) {
-        ridesHistorySection.addEventListener('click', handleRideAction);
+        ridesHistorySection.addEventListener('click', handleRideAction); // handleRideAction devra être adapté pour appeler des API
     }
 
     const rideTabs = document.querySelectorAll('#ridesTabs button[data-bs-toggle="tab"]');
@@ -378,4 +451,86 @@ export function initializeYourRidesPage() {
             }
         });
     });
+}
+
+function displayFetchedRides(drivenRides, bookedRides) {
+    const upcomingRidesContainer = document.querySelector('#upcoming-rides .rides-list-container');
+    const pastRidesContainer = document.querySelector('#past-rides .rides-list-container');
+    const allRidesContainer = document.querySelector('#all-rides .rides-list-container');
+    const noRidesMessageGlobal = document.getElementById('no-rides-message');
+    const currentRideHighlightDiv = document.getElementById('current-ride-highlight');
+
+    // Vider les conteneurs
+    upcomingRidesContainer.innerHTML = '';
+    pastRidesContainer.innerHTML = '';
+    allRidesContainer.innerHTML = '';
+    currentRideHighlightDiv.innerHTML = '';
+    currentRideHighlightDiv.classList.add('d-none');
+    noRidesMessageGlobal.classList.add('d-none');
+
+    const allRides = [...drivenRides, ...bookedRides];
+    if (allRides.length === 0) {
+        noRidesMessageGlobal.classList.remove('d-none');
+        return;
+    }
+
+    allRides.sort((a, b) => new Date(b.departure_time) - new Date(a.departure_time)); // Plus récent en premier
+
+    allRides.forEach(apiRideData => {
+        // Adapter les données de l'API aux clés attendues par createRideCardElement
+        const cardData = {
+            id: apiRideData.ride_id,
+            depart: apiRideData.departure_city,
+            arrivee: apiRideData.arrival_city,
+            // L'API renvoie déjà departure_time au format YYYY-MM-DD HH:MM:SS
+            // On va adapter createRideCardElement pour qu'il prenne directement departure_time et estimated_arrival_time.
+            // Pour l'instant, on va essayer de reconstruire date/heure pour le createRideCardElement actuel.
+            date: apiRideData.departure_time ? new Date(apiRideData.departure_time.replace(' ', 'T')).toLocaleDateString([], {day:'2-digit', month:'2-digit', year:'numeric'}) : 'N/A',
+            heure: apiRideData.departure_time ? new Date(apiRideData.departure_time.replace(' ', 'T')).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : 'N/A',
+            role: apiRideData.user_role_in_ride === 'driver' ? 'Chauffeur' : 'Passager',
+            statut: apiRideData.ride_status,
+            dureeEstimee: apiRideData.estimated_arrival_time ? calculateDuration(apiRideData.departure_time, apiRideData.estimated_arrival_time) : 'N/A',
+            vehicule: `${apiRideData.vehicle_brand || ''} ${apiRideData.vehicle_model || ''}`.trim(),
+            estEco: apiRideData.is_eco_ride,
+            driverName: apiRideData.driver_username, 
+            driverRating: null, // L'API get_user_rides_history ne renvoie pas la note moyenne
+            
+            // Pour Chauffeur:
+            passagersInscrits: apiRideData.seats_offered - apiRideData.seats_available,
+            passagersMax: apiRideData.seats_offered,
+            gainEstime: apiRideData.role === 'driver' ? (parseFloat(apiRideData.price_per_seat) * (apiRideData.seats_offered - apiRideData.seats_available)) : null,
+            
+            // Pour Passager:
+            prixPaye: apiRideData.role === 'passenger' ? parseFloat(apiRideData.price_per_seat) : null,
+        };
+
+        const rideCard = createRideCardElement(cardData);
+        if (!rideCard) return;
+
+        // Logique d'affichage dans les bons onglets
+        if (allRidesContainer) allRidesContainer.appendChild(rideCard.cloneNode(true));
+        
+        const now = new Date();
+        const departureDateTime = new Date(apiRideData.departure_time.replace(' ', 'T'));
+        const arrivalDateTime = apiRideData.estimated_arrival_time ? new Date(apiRideData.estimated_arrival_time.replace(' ', 'T')) : null;
+
+        if (apiRideData.ride_status === 'ongoing' || (apiRideData.ride_status === 'planned' && departureDateTime <= now && (!arrivalDateTime || now < arrivalDateTime) )) {
+            // En cours (ou aurait dû démarrer et pas encore arrivé)
+            currentRideHighlightDiv.appendChild(rideCard);
+            currentRideHighlightDiv.classList.remove('d-none');
+        } else if (apiRideData.ride_status === 'planned' && departureDateTime > now) {
+            // À venir
+            if (upcomingRidesContainer) upcomingRidesContainer.appendChild(rideCard);
+        } else {
+            // Passé (completed, cancelled_driver, cancelled_passenger)
+            const pastCard = rideCard.cloneNode(true);
+            pastCard.classList.add('opacity-75');
+            if (pastRidesContainer) pastRidesContainer.appendChild(pastCard);
+        }
+    });
+    
+    // Afficher les messages "aucun trajet" si les conteneurs sont vides
+    if (upcomingRidesContainer && upcomingRidesContainer.children.length === 0) upcomingRidesContainer.innerHTML = '<p class="text-center text-muted mt-3">Aucun trajet à venir.</p>';
+    if (pastRidesContainer && pastRidesContainer.children.length === 0) pastRidesContainer.innerHTML = '<p class="text-center text-muted mt-3">Aucun trajet passé.</p>';
+    if (allRidesContainer && allRidesContainer.children.length === 0) allRidesContainer.innerHTML = '<p class="text-center text-muted mt-3">Aucun trajet dans votre historique.</p>';
 }
