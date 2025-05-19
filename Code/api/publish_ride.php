@@ -46,8 +46,8 @@ $input = json_decode($inputJSON, TRUE);
 // Récupération des données
 $departure_city = trim($input['departure_city'] ?? '');
 $arrival_city = trim($input['arrival_city'] ?? '');
-$departure_address = isset($input['departure_address']) ? trim($input['departure_address']) : null;
-$arrival_address = isset($input['arrival_address']) ? trim($input['arrival_address']) : null;
+$departure_address = trim($input['departure_address'] ?? '');
+$arrival_address = trim($input['arrival_address'] ?? '');
 $departure_datetime_input_str = $input['departure_datetime'] ?? '';
 $estimated_arrival_datetime_input_str = $input['estimated_arrival_datetime'] ?? '';
 $vehicle_id = filter_var($input['vehicle_id'] ?? null, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
@@ -106,6 +106,18 @@ if (empty($departure_city)) { $errors['departure_city'] = "Ville de départ requ
 if (empty($arrival_city)) { $errors['arrival_city'] = "Ville d'arrivée requise."; }
 if (!empty($departure_city) && !empty($arrival_city) && strtolower($departure_city) === strtolower($arrival_city)) {
     $errors['arrival_city'] = "La ville d'arrivée doit être différente de la ville de départ.";
+}
+
+if (empty($departure_address)) { 
+    $errors['departure_address'] = "L'adresse de départ précise est requise."; 
+} elseif (strlen($departure_address) > 255) { 
+    $errors['departure_address'] = "L'adresse de départ est trop longue (max 255 caractères).";
+}
+
+if (empty($arrival_address)) { 
+    $errors['arrival_address'] = "L'adresse d'arrivée précise est requise."; 
+} elseif (strlen($arrival_address) > 255) {
+    $errors['arrival_address'] = "L'adresse d'arrivée est trop longue (max 255 caractères).";
 }
 
 // Véhicule

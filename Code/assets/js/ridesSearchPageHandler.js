@@ -3,7 +3,7 @@ import { LoadContentPage } from '../../router/Router.js';
 
 /**
  * Met à jour l'affichage de la valeur du slider de durée.
- * @param {string} valueString - La valeur actuelle du slider (ex: "3.5").
+ * @param {string} valueString - La valeur actuelle du slider
  */
 function updateDurationOutputDisplay(valueString) {
     const outputElement = document.getElementById('duration-output');
@@ -86,8 +86,7 @@ function createRideCardElement(rideData) {
     }
 
     const clone = templateElement.content.cloneNode(true);
-    // L'élément racine du clone EST maintenant la carte elle-même (<div class="card...">)
-    const cardElement = clone.querySelector('.ride-card'); // Ou simplement clone.firstElementChild si c'est le seul
+    const cardElement = clone.querySelector('.ride-card');
 
     if (!cardElement) {
         console.error("Élément '.ride-card' non trouvé dans le template cloné.");
@@ -129,12 +128,10 @@ function createRideCardElement(rideData) {
     // const seatsInModalEl = cardElement.querySelector('.ride-available-seats-modal'); // La modale est globale
 
     if (departureAddressDetailEl) {
-        // Affiche l'adresse précise si elle existe, sinon la ville, sinon N/A
-        departureAddressDetailEl.textContent = rideData.departure_address || rideData.departure_city || 'Non spécifiée'; 
+        departureAddressDetailEl.textContent = rideData.departure_address; 
     }
     if (arrivalAddressDetailEl) {
-        // Affiche l'adresse précise si elle existe, sinon la ville, sinon N/A
-        arrivalAddressDetailEl.textContent = rideData.arrival_address || rideData.arrival_city || 'Non spécifiée';
+        arrivalAddressDetailEl.textContent = rideData.arrival_address;
     }
 
     // --- Remplissage des données principales de la carte ---
@@ -145,15 +142,15 @@ function createRideCardElement(rideData) {
         driverPhotoEl.src = "././img/default-profile.png" ; // Chemin vers une image par défaut
         driverPhotoEl.alt = 'Photo de profil par défaut';
     }
-    if (driverUsernameEl) driverUsernameEl.textContent = rideData.driver_username || 'Chauffeur Anonyme';
+    if (driverUsernameEl) driverUsernameEl.textContent = rideData.driver_username;
     
     // Note moyenne du chauffeur (l'API search_rides ne la renvoie pas encore, ce sera pour les détails)
     if (driverRatingEl) driverRatingEl.textContent = rideData.driver_average_rating ? `${parseFloat(rideData.driver_average_rating).toFixed(1)} (${rideData.driver_review_count || 0} avis)` : 'N/A';
     else if (driverRatingEl) driverRatingEl.textContent = 'N/A';
 
 
-    if (departureLocationEl) departureLocationEl.textContent = rideData.departure_city || 'N/A'; // Utilise departure_city pour l'instant
-    if (arrivalLocationEl) arrivalLocationEl.textContent = rideData.arrival_city || 'N/A';     // Utilise arrival_city
+    if (departureLocationEl) departureLocationEl.textContent = rideData.departure_city || 'N/A'; 
+    if (arrivalLocationEl) arrivalLocationEl.textContent = rideData.arrival_city || 'N/A';
 
     if (departureTimeEl && rideData.departure_time) {
         const depDate = new Date(rideData.departure_time.replace(' ', 'T'));
@@ -200,7 +197,7 @@ function createRideCardElement(rideData) {
     // --- Remplissage des détails dans le "collapse" ---
     if (carModelEl) carModelEl.textContent = `${rideData.vehicle_brand || ''} ${rideData.vehicle_model || ''}`.trim();
         if (carEnergyEl) {
-        carEnergyEl.textContent = rideData.vehicle_energy || 'N/A'; // Utilise la nouvelle donnée
+        carEnergyEl.textContent = rideData.vehicle_energy || 'N/A';
     }
     
     if (carRegYearEl && rideData.vehicle_registration_date) {
@@ -228,8 +225,6 @@ function createRideCardElement(rideData) {
 
     if (participateButton) {
         participateButton.setAttribute('data-ride-id', rideData.ride_id);
-        // La logique pour peupler la modale et gérer la réservation sera dans un autre listener
-        // qui s'active quand la modale est montrée, ou au clic ici.
         participateButton.addEventListener('click', () => {
             // Mettre à jour les infos dans la modale #confirmationModal
             document.getElementById('modal-ride-departure-location').textContent = rideData.departure_city;
@@ -246,8 +241,6 @@ function createRideCardElement(rideData) {
 
         });
     }
-    
-    // C'est l'élément englobant <div class="col-12..."> qui est retourné et ajouté au DOM
     return cardElement; 
 }
 
@@ -445,6 +438,5 @@ export function initializeRidesSearchPage() {
         console.warn("RidesSearchPageHandler: Formulaire 'filter-form' non trouvé.");
     }
         // APPEL INITIAL POUR CHARGER LES RÉSULTATS BASÉS SUR L'URL ACTUELLE
-    fetchAndDisplayRides(); // << NOUVEL APPEL ICI
-    // Le TODO pour l'appel fetch initial des résultats est toujours là
+    fetchAndDisplayRides(); 
 }
