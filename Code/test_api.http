@@ -328,3 +328,63 @@ GET http://ecoride.local/api/get_ride_details.php?ride_id=1
 
 ### Test Récupération Détails Trajet (ID Invalide)
 GET http://ecoride.local/api/get_ride_details.php?ride_id=9999
+
+### Connexion Utilisateur (Bob - pour réserver)
+POST http://ecoride.local/api/login.php
+Content-Type: application/json
+
+{
+    "identifier": "bob_passenger", 
+    "password": "password123" 
+}
+
+### Test Réservation Trajet (Bob réserve 1 place pour trajet ID 1 d'Alice - Succès)
+# Prérequis: Bob connecté, Trajet ID 1 est 'planned', a des places, Bob a assez de crédits.
+POST http://ecoride.local/api/book_ride.php
+Content-Type: application/json
+
+{
+    "ride_id": 1,
+    "seats_to_book": 1
+}
+
+### Test Réservation Trajet (Bob essaie de réserver 3 places pour trajet ID 1 - Échec si pas assez de crédits)
+# Coût = 15 * 3 = 45. Bob a 20 - (15*1) = 5 crédits. Devrait échouer.
+POST http://ecoride.local/api/book_ride.php
+Content-Type: application/json
+
+{
+    "ride_id": 1,
+    "seats_to_book": 3 
+}
+
+
+### Test Réservation Trajet (Alice essaie de réserver son propre trajet ID 1 - Échec)
+POST http://ecoride.local/api/login.php
+Content-Type: application/json
+
+{   
+    "identifier": "alice_driver_passenger",
+    "password": "password123"
+}
+
+### Puis :
+POST http://ecoride.local/api/book_ride.php
+Content-Type: application/json
+
+{
+    "ride_id": 1,
+    "seats_to_book": 1
+}
+
+### Test Réservation Trajet (Pas assez de places disponibles sur trajet ID 1)
+# Si Alice offre 3 places, Bob en a pris 1. Il en reste 2.
+# Un autre utilisateur (connecté) essaie de prendre 3 places.
+# (Nécessite de se connecter avec un autre passager)
+POST http://ecoride.local/api/book_ride.php
+Content-Type: application/json
+
+{
+    "ride_id": 1,
+    "seats_to_book": 3
+}
