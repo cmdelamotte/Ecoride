@@ -172,6 +172,12 @@ function createRideCardElement(rideData) {
         const departure = new Date(rideData.departure_time.replace(' ', 'T'));
         const arrival = new Date(rideData.estimated_arrival_time.replace(' ', 'T'));
         const durationMs = arrival - departure;
+        
+        console.log("🕒 Départ brut :", rideData.departure_time);
+        console.log("🕒 Arrivée brut :", rideData.estimated_arrival_time);
+        console.log("🧠 Date objets :", departure, arrival);
+        console.log("🧮 Durée ms :", durationMs);
+
         if (durationMs > 0) {
             const hours = Math.floor(durationMs / (1000 * 60 * 60));
             const minutes = Math.floor((durationMs % (1000 * 60 * 60)) / (1000 * 60));
@@ -357,8 +363,6 @@ async function fetchAndDisplayRides() {
                 `&date=${encodeURIComponent(queryParams.get('date') || '')}` +
                 `&seats=${encodeURIComponent(queryParams.get('seats') || '1')}`;
 
-    // Ajouter les paramètres de filtres à apiUrl s'ils sont présents dans l'URL
-    // (car filterForm.submit les ajoute à l'URL avant d'appeler LoadContentPage qui relance fetchAndDisplayRides)
     ['maxPrice', 'maxDuration', 'animalsAllowed', 'minRating', 'ecoOnly'].forEach(filterKey => {
         if (queryParams.has(filterKey) && queryParams.get(filterKey) !== '') {
             // Convertir les booléens pour l'API si besoin (ecoOnly, animalsAllowed)
