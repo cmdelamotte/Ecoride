@@ -13,17 +13,32 @@
                     <div class="row g-3">
 
                         <div class="col-12">
-                                <label for="departure-location" class="form-label visually-hidden">Lieu de départ</label>
+                            <label for="departure-location" class="form-label visually-hidden">Ville de Départ</label>
                             <div class="form-input-custom d-flex align-items-center">
                                 <i class="bi bi-geo-alt me-2"></i>
-                                <input type="text" class="form-control-custom flex-grow-1" id="departure-location" placeholder="Lieu de départ" aria-label="Lieu de départ" required>
+                                <input type="text" class="form-control-custom flex-grow-1" id="departure-location" name="departure_city" placeholder="Ville de Départ" aria-label="Ville de départ" required>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <label for="departure-address" class="form-label visually-hidden">Adresse de départ</label>
+                            <div class="form-input-custom d-flex align-items-center">
+                                <i class="bi bi-signpost-split me-2"></i>
+                                <input type="text" class="form-control-custom flex-grow-1" id="departure-address" name="departure_address" placeholder="Adresse précise de départ" aria-label="Adresse précise de départ" required>
                             </div>
                         </div>
 
                         <div class="col-12">
+                            <label for="arrival-location" class="form-label visually-hidden">Ville de Destination</label>
                             <div class="form-input-custom d-flex align-items-center">
                                 <i class="bi bi-flag me-2"></i>
-                                <input type="text" class="form-control-custom flex-grow-1" id="arrival-location" placeholder="Lieu d'arrivée" aria-label="Lieu d'arrivée" required>
+                                <input type="text" class="form-control-custom flex-grow-1" id="arrival-location" name="arrival_city" placeholder="Ville de Destination" aria-label="Ville de Destination" required>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <label for="arrival-address" class="form-label visually-hidden">Adresse de destination</label>
+                            <div class="form-input-custom d-flex align-items-center">
+                                <i class="bi bi-pin-map-fill me-2"></i>
+                                <input type="text" class="form-control-custom flex-grow-1" id="arrival-address" name="arrival_address" placeholder="Adresse précise de destination" aria-label="Adresse précise de destination" required>
                             </div>
                         </div>
 
@@ -66,7 +81,7 @@
                             <div class="form-input-custom d-flex align-items-center">
                                 <i class="bi bi-coin me-2"></i> <input type="number" class="form-control-custom flex-grow-1" id="price-per-seat" placeholder="Prix par passager (crédits)" aria-label="Prix par passager en crédits" min="0" required>
                             </div>
-                            <small class="form-text text-muted ms-1">La plateforme prélève 2 crédits sur ce montant.</small>
+                            <small class="form-text text-muted ms-1">La plateforme prélève 2 crédits par trajet.</small>
                         </div>
 
                         <div class="col-12">

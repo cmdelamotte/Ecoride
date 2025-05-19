@@ -17,7 +17,9 @@ export function initializePublishRidePage() {
     const pricePerSeatInput = document.getElementById('price-per-seat');
     const rideVehicleSelect = document.getElementById('ride-vehicle'); 
     const rideMessageTextarea = document.getElementById('ride-message'); 
-    const globalMessageDiv = document.getElementById('publish-ride-message-global'); 
+    const globalMessageDiv = document.getElementById('publish-ride-message-global');
+    const departureAddressInput = document.getElementById('departure-address');
+    const arrivalAddressInput = document.getElementById('arrival-address')
 
 async function populateVehicleSelect(vehicleSelectElement) {
         if (!vehicleSelectElement) return;
@@ -55,7 +57,7 @@ async function populateVehicleSelect(vehicleSelectElement) {
     }
 
     // Listeners 'input'/'change' pour effacer les messages d'erreur custom et globaux
-    [departureLocationInput, arrivalLocationInput, departureDateInput, departureTimeInput, arrivalTimeInput, 
+    [departureLocationInput, arrivalLocationInput, departureAddressInput, arrivalAddressInput, departureDateInput, departureTimeInput, arrivalTimeInput, 
     availableSeatsInput, pricePerSeatInput, rideVehicleSelect, rideMessageTextarea]
     .forEach(input => {
         if (input) {
@@ -80,7 +82,7 @@ async function populateVehicleSelect(vehicleSelectElement) {
             globalMessageDiv.classList.remove('alert-danger', 'alert-success', 'alert-info');
         }
         // Réinitialiser les setCustomValidity pour tous les champs avant une nouvelle validation
-        [departureLocationInput, arrivalLocationInput, departureDateInput, 
+        [departureLocationInput, arrivalLocationInput, departureAddressInput, arrivalAddressInput, departureDateInput, 
         departureTimeInput, availableSeatsInput, pricePerSeatInput, rideVehicleSelect]
         .forEach(input => { if (input) input.setCustomValidity(""); });
 
@@ -91,8 +93,10 @@ async function populateVehicleSelect(vehicleSelectElement) {
         }
 
         // Récupération des valeurs
-        const departureLocation = departureLocationInput?.value.trim();
-        const arrivalLocation = arrivalLocationInput?.value.trim();
+        const departureCity = departureLocationInput?.value.trim();
+        const arrivalCity = arrivalLocationInput?.value.trim();
+        const departureAddress = departureAddressInput?.value.trim();
+        const arrivalAddress = arrivalAddressInput?.value.trim();    
         const rideDateValue = departureDateInput?.value; // AAAA-MM-JJ
         const rideTimeValue = departureTimeInput?.value; // HH:MM
         const rideArrivalTimeValue = arrivalTimeInput?.value;
@@ -102,6 +106,36 @@ async function populateVehicleSelect(vehicleSelectElement) {
         const message = rideMessageTextarea?.value.trim();
 
         // Validations JS
+
+        if (departureLocationInput && departureCity.length < 2) { 
+                departureLocationInput.setCustomValidity("La ville de départ doit contenir au moins 2 caractères.");
+                isFormValidOverall = false;
+            } else if (departureLocationInput) {
+                departureLocationInput.setCustomValidity("");
+            }
+
+        if (arrivalLocationInput && arrivalCity.length < 2) {
+                arrivalLocationInput.setCustomValidity("La ville d'arrivée doit contenir au moins 2 caractères.");
+                isFormValidOverall = false;
+            } else if (arrivalLocationInput) {
+                arrivalLocationInput.setCustomValidity("");
+            }
+
+        if (departureCity && arrivalCity && departureCity.toLowerCase() === arrivalCity.toLowerCase()) {
+                arrivalLocationInput.setCustomValidity("La ville d'arrivée doit être différente du lieu de départ.");
+                isFormValidOverall = false;
+            }
+
+
+        if (departureAddressInput && departureAddress.length < 5) {
+            departureAddressInput.setCustomValidity("L'adresse de départ précise doit contenir au moins 5 caractères.");
+            isFormValidOverall = false;
+        }
+        if (arrivalAddressInput && arrivalAddress.length < 5) {
+            arrivalAddressInput.setCustomValidity("L'adresse d'arrivée précise doit contenir au moins 5 caractères.");
+            isFormValidOverall = false;
+        }
+
         let departureDateTimeString = null;
         let estimatedArrivalDateTimeString = null;
         if (rideDateValue && rideTimeValue) {
@@ -169,10 +203,10 @@ async function populateVehicleSelect(vehicleSelectElement) {
         
         // Le formulaire est valide côté client, préparation des données pour l'API
         const rideData = {
-            departure_city: departureLocation,
-            arrival_city: arrivalLocation, 
-            departure_address: departureLocation, // Placeholder
-            arrival_address: arrivalLocation,     // Placeholder
+            departure_city: departureCity,
+            arrival_city: arrivalCity, 
+            departure_address: departureAddress, // Placeholder
+            arrival_address: arrivalAddress,     // Placeholder
             departure_datetime: departureDateTimeString, // Format AAAA-MM-JJTHH:MM
             estimated_arrival_datetime: estimatedArrivalDateTimeString,
             vehicle_id: parseInt(vehicleId, 10),
