@@ -332,6 +332,7 @@ async function fetchAndDisplayRides() {
     const rideResultsContainer = document.getElementById('ride-results-container');
     const noResultsMessage = document.getElementById('no-results-message');
     const loadingIndicator = document.getElementById('loading-indicator');
+    const otherRidesBar = document.getElementById('other-rides-bar');
 
     if (!rideResultsContainer || !noResultsMessage || !loadingIndicator) {
         console.error("DOM manquant pour affichage résultats recherche.");
@@ -346,6 +347,7 @@ async function fetchAndDisplayRides() {
     const queryParams = new URLSearchParams(window.location.search);
     if (!queryParams.get('departure') || !queryParams.get('destination')) {
         loadingIndicator.classList.add('d-none');
+        otherRidesBar.classList.add('d-none')
         return; // Ne rien faire si pas de recherche
     }
     // On récupère les paramètres de recherche principaux depuis l'URL
@@ -389,17 +391,28 @@ async function fetchAndDisplayRides() {
         });
         console.log("fetchAndDisplayRides: Données reçues:", data);
 
-        if (data.success && data.rides && data.rides.length > 0) {
-            data.rides.forEach(ride => {
-                const rideCard = createRideCardElement(ride); 
-                if (rideCard) {
-                    rideResultsContainer.appendChild(rideCard);
-                }
-            });
-        } else {
-            noResultsMessage.textContent = data.message || "Aucun trajet ne correspond à vos critères de recherche.";
-            noResultsMessage.classList.remove('d-none');
+if (data.success && data.rides && data.rides.length > 0) {
+    data.rides.forEach(ride => {
+        // FILTRAGE côté client ici
+        if (!applyClientSideFilters(ride)) return;  // Si le trajet ne passe pas les filtres, on le saute
+
+        const rideCard = createRideCardElement(ride); 
+        if (rideCard) {
+            rideResultsContainer.appendChild(rideCard);
         }
+    });
+
+    // Si aucun résultat n’est affiché après filtrage
+    if (rideResultsContainer.children.length === 0) {
+        noResultsMessage.textContent = "Aucun trajet ne correspond à vos critères de recherche.";
+        noResultsMessage.classList.remove('d-none');
+    }
+
+} else {
+    noResultsMessage.textContent = data.message || "Aucun trajet ne correspond à vos critères de recherche.";
+    noResultsMessage.classList.remove('d-none');
+}
+
     } catch (error) {
         loadingIndicator.classList.add('d-none');
         console.error("Erreur Fetch globale (search_rides):", error);
@@ -407,6 +420,39 @@ async function fetchAndDisplayRides() {
         noResultsMessage.classList.remove('d-none');
     }
 }
+
+function applyClientSideFilters(ride) {
+    const urlParams = new URLSearchParams(window.location.search);
+    const maxPrice = parseFloat(urlParams.get('maxPrice')) || Infinity;
+    const maxDuration = parseFloat(urlParams.get('maxDuration')) || Infinity;
+    const animalsAllowed = urlParams.get('animalsAllowed'); // peut valoir "", "true", "false"
+    const minRating = parseFloat(urlParams.get('minRating')) || 0;
+    const ecoOnly = urlParams.get('ecoOnly') === 'true';
+
+    // Prix
+    if (ride.price_per_seat > maxPrice) return false;
+
+    // Durée
+    if (ride.departure_time && ride.estimated_arrival_time) {
+        const dep = new Date(ride.departure_time);
+        const arr = new Date(ride.estimated_arrival_time);
+        const durationHours = (arr - dep) / (1000 * 60 * 60);
+        if (durationHours > maxDuration) return false;
+    }
+
+    // Animaux
+    if (animalsAllowed === 'true' && ride.driver_pref_animals !== true) return false;
+    if (animalsAllowed === 'false' && ride.driver_pref_animals !== false) return false;
+
+    // Note
+    if (ride.driver_average_rating && parseFloat(ride.driver_average_rating) < minRating) return false;
+
+    // Éco
+    if (ecoOnly && !ride.is_eco_ride) return false;
+
+    return true;
+}
+
 
 
 export function initializeRidesSearchPage() {
