@@ -5,10 +5,16 @@ if (session_status() == PHP_SESSION_NONE) {
 }
 
 require_once 'config/database.php';
-// Pour les emails plus tard:
-// require_once 'path/to/PHPMailer/src/Exception.php'; /* ... etc ... */
-// use PHPMailer\PHPMailer\PHPMailer;
-// use PHPMailer\PHPMailer\Exception;
+
+// Charger les classes PHPMailer
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\SMTP;
+use PHPMailer\PHPMailer\Exception;
+
+
+require_once __DIR__ . '/../lib/PHPMailer/Exception.php';
+require_once __DIR__ . '/../lib/PHPMailer/PHPMailer.php';
+require_once __DIR__ . '/../lib/PHPMailer/SMTP.php';
 
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
@@ -33,7 +39,6 @@ if (!isset($_SESSION['user_id'])) {
 }
 
 $current_user_id = (int)$_SESSION['user_id'];
-
 $inputJSON = file_get_contents('php://input');
 $input = json_decode($inputJSON, TRUE);
 
@@ -46,14 +51,21 @@ if (!$ride_id) {
 }
 
 $pdo = getPDOConnection();
-$response = ['success' => false, 'message' => 'Une erreur est survenue.'];
-$platform_commission_per_seat = 2.00; // Commission de la plateforme par place réservée
+$response = ['success' => false, 'message' => 'Une erreur est survenue lors de la finalisation du trajet.'];
+$platform_commission_per_seat = 2.00; 
 
 try {
     $pdo->beginTransaction();
 
     // 1. Vérifier si l'utilisateur est le chauffeur et si le trajet est 'ongoing'
-    $stmtCheck = $pdo->prepare("SELECT driver_id, ride_status, price_per_seat FROM Rides WHERE id = :ride_id FOR UPDATE");
+    // On récupère aussi les infos du trajet pour l'email
+    $stmtCheck = $pdo->prepare(
+        "SELECT r.driver_id, r.ride_status, r.price_per_seat, r.departure_city, r.arrival_city, r.departure_time, 
+                u_driver.username as driver_username
+                FROM Rides r
+                JOIN Users u_driver ON r.driver_id = u_driver.id
+                WHERE r.id = :ride_id FOR UPDATE"
+    );
     $stmtCheck->bindParam(':ride_id', $ride_id, PDO::PARAM_INT);
     $stmtCheck->execute();
     $ride = $stmtCheck->fetch(PDO::FETCH_ASSOC);
@@ -69,7 +81,7 @@ try {
         throw new Exception($response['message']);
     }
     if ($ride['ride_status'] !== 'ongoing') {
-        $response['message'] = "Ce trajet ne peut pas être marqué comme terminé (statut actuel: " . $ride['ride_status'] . "). Il doit être 'En cours'.";
+        $response['message'] = "Ce trajet ne peut pas être marqué comme terminé (statut actuel: " . htmlspecialchars($ride['ride_status']) . "). Il doit être 'En cours'.";
         http_response_code(400);
         throw new Exception($response['message']);
     }
@@ -82,7 +94,6 @@ try {
     $stmtUpdateRide->execute();
 
     // 3. Calculer les gains du chauffeur et mettre à jour ses crédits
-    // On compte le nombre de places effectivement réservées et confirmées
     $stmtBookedSeats = $pdo->prepare("SELECT SUM(seats_booked) as total_confirmed_seats FROM Bookings WHERE ride_id = :ride_id AND booking_status = 'confirmed'");
     $stmtBookedSeats->bindParam(':ride_id', $ride_id, PDO::PARAM_INT);
     $stmtBookedSeats->execute();
@@ -90,25 +101,25 @@ try {
     
     $total_passengers = $booked_info ? (int)$booked_info['total_confirmed_seats'] : 0;
     $earnings_for_driver = 0;
+    $gross_earnings = 0;
 
     if ($total_passengers > 0) {
         $price_per_seat = (float)$ride['price_per_seat'];
         $gross_earnings = $price_per_seat * $total_passengers;
-        // La commission est de 2 crédits PAR PLACE pour la plateforme
         $total_commission = $platform_commission_per_seat * $total_passengers;
         $earnings_for_driver = $gross_earnings - $total_commission;
 
-        if ($earnings_for_driver > 0) {
+        if ($earnings_for_driver > 0) { // On ne crédite que si le gain net est positif
             $stmtAddCredits = $pdo->prepare("UPDATE Users SET credits = credits + :earnings WHERE id = :driver_id");
             $stmtAddCredits->bindParam(':earnings', $earnings_for_driver);
-            $stmtAddCredits->bindParam(':driver_id', $current_user_id, PDO::PARAM_INT);
+            $stmtAddCredits->bindParam(':driver_id', $current_user_id, PDO::PARAM_INT); // current_user_id est le chauffeur
             $stmtAddCredits->execute();
         }
     }
     
     // 4. Récupérer les emails des passagers confirmés pour envoyer une notification d'avis
     $stmtPassengers = $pdo->prepare(
-        "SELECT u.email, u.username 
+        "SELECT u.email as passenger_email, u.username as passenger_username 
                 FROM Bookings b JOIN Users u ON b.user_id = u.id 
                 WHERE b.ride_id = :ride_id AND b.booking_status = 'confirmed'"
     );
@@ -116,23 +127,60 @@ try {
     $stmtPassengers->execute();
     $passengers = $stmtPassengers->fetchAll(PDO::FETCH_ASSOC);
 
-    // TODO: Mettre en place l'envoi d'email réel avec PHPMailer ici
+    $rideDetailsForEmail = htmlspecialchars($ride['departure_city'] ?? 'N/A') . 
+                            " -> " . htmlspecialchars($ride['arrival_city'] ?? 'N/A') . 
+                            " du " . (isset($ride['departure_time']) ? (new DateTime($ride['departure_time']))->format('d/m/Y à H:i') : 'Date inconnue');
+    $driverUsernameForEmail = htmlspecialchars($ride['driver_username'] ?? 'Votre chauffeur');
+    $linkToYourRides = "http://ecoride.local/your-rides"; // Lien vers la page de l'historique
+
     foreach ($passengers as $passenger) {
-        error_log("FINISH_RIDE: Email à envoyer au passager " . $passenger['email'] . " (" . $passenger['username'] . ") pour laisser un avis sur le trajet ID " . $ride_id);
-        // $mail = new PHPMailer(true);
-        // try { /* ... config et envoi ... */ } catch (Exception $e_mail) { error_log("Erreur email: " . $mail->ErrorInfo); }
+        if (isset($passenger['passenger_email']) && filter_var($passenger['passenger_email'], FILTER_VALIDATE_EMAIL)) {
+            $mail = new PHPMailer(true);
+            try {
+                $mail->isSMTP();
+                $mail->Host       = 'smtp.gmail.com';
+                $mail->SMTPAuth   = true;
+                $mail->Username   = 'ecoride.ecf.dev@gmail.com';
+                $mail->Password   = 'nskmypmjzjmflaws';
+                $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
+                $mail->Port       = 465;
+                $mail->CharSet    = 'UTF-8';
+
+                $mail->setFrom('ecoride.ecf.dev@gmail.com', 'EcoRide Notifications');
+                $mail->addAddress($passenger['passenger_email'], htmlspecialchars($passenger['passenger_username'] ?? 'Passager'));
+
+                $mail->isHTML(true);
+                $mail->Subject = 'Votre trajet EcoRide est terminé ! Laissez un avis.';
+                $mail->Body    = "Bonjour " . htmlspecialchars($passenger['passenger_username'] ?? 'Passager') . ",<br><br>" .
+                                "Votre covoiturage pour le trajet " . $rideDetailsForEmail . 
+                                " avec le chauffeur " . $driverUsernameForEmail . " est maintenant terminé.<br><br>" .
+                                "Nous espérons que tout s'est bien passé ! <br>" .
+                                "N'hésitez pas à laisser un avis sur votre expérience en vous rendant sur votre espace \"Mes Trajets\" : " .
+                                "<a href=\"" . $linkToYourRides . "\">" . $linkToYourRides . "</a><br><br>" .
+                                "Merci d'utiliser EcoRide !";
+                $mail->AltBody = "Bonjour " . htmlspecialchars($passenger['passenger_username'] ?? 'Passager') . ",\n\n" .
+                                "Votre covoiturage pour le trajet " . $rideDetailsForEmail . 
+                                " avec le chauffeur " . $driverUsernameForEmail . " est maintenant terminé.\n\n" .
+                                "Nous espérons que tout s'est bien passé ! \n" .
+                                "N'hésitez pas à laisser un avis sur votre expérience en vous rendant sur votre espace \"Mes Trajets\" : " .
+                                $linkToYourRides . "\n\n" .
+                                "Merci d'utiliser EcoRide !";
+                $mail->send();
+                error_log("FINISH_RIDE: Email de demande d'avis envoyé à " . $passenger['passenger_email'] . " pour trajet ID " . $ride_id);
+            } catch (Exception $e_mail) {
+                error_log("Erreur PHPMailer (finish_ride.php) envoi à " . $passenger['passenger_email'] . ": " . $mail->ErrorInfo . " || Exception: " . $e_mail->getMessage());
+            }
+        }
     }
 
     $pdo->commit();
 
     $response['success'] = true;
-    $response['message'] = "Trajet marqué comme terminé ! Gains (avant commission): " . ($total_passengers * (float)$ride['price_per_seat']) . " crédits. Gains nets chauffeur: " . $earnings_for_driver . " crédits. Les passagers seront invités à laisser un avis.";
+    $response['message'] = "Trajet marqué comme terminé ! Gains nets chauffeur calculés: " . number_format($earnings_for_driver, 2) . " crédits. Les passagers seront invités à laisser un avis.";
     http_response_code(200);
 
 } catch (Exception $e) {
-    if (isset($pdo) && $pdo->inTransaction()) {
-        $pdo->rollBack();
-    }
+    if (isset($pdo) && $pdo->inTransaction()) { $pdo->rollBack(); }
     if (http_response_code() < 400) { http_response_code(500); }
     error_log("Erreur (finish_ride.php): RideID $ride_id, UserID $current_user_id - " . $e->getMessage());
     if (empty($response['message']) || http_response_code() == 500) {
