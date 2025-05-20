@@ -196,19 +196,6 @@ function initializeReviewModal() {
     });
 }
 
-// Données factices pour les trajets de l'utilisateur
-// let userRides = [
-//     { id: 'RIDE001', depart: 'Paris', arrivee: 'Lyon', date: '2025-05-20', heure: '08:00', role: 'Chauffeur', statut: 'À venir', dureeEstimee: '4h30', vehicule: 'Peugeot 208 (AA-123-BB)', passagersInscrits: 2, passagersMax: 3, gainEstime: 45, estEco: true, driverName: 'MoiChauffeur', driverRating: null },
-//     // === TRAJET PASSAGER À VENIR/CONFIRMÉ POUR TEST ===
-//     { id: 'RIDE006', depart: 'Bordeaux', arrivee: 'Toulouse', date: '2025-05-22', heure: '10:00', role: 'Passager', statut: 'Terminé', dureeEstimee: '2h30', vehicule: 'Volkswagen Golf', prixPaye: 18, estEco: false, driverName: 'SuperConducteur', driverRating: '4.9' },
-//     // =================================================
-//     { id: 'RIDE002', depart: 'Rennes', arrivee: 'Nantes', date: '2025-05-18', heure: '14:30', role: 'Passager', statut: 'Confirmé', dureeEstimee: '1h15', vehicule: 'Renault Clio', prixPaye: 10, estEco: false, driverName: 'ChauffeurCool', driverRating: '4.8' },
-//     { id: 'RIDE003', depart: 'Lille', arrivee: 'Bordeaux', date: '2025-05-01', heure: '09:00', role: 'Chauffeur', statut: 'Terminé', dureeEstimee: '7h00', vehicule: 'Tesla Model 3', passagersTransportes: 3, gainObtenu: 60, estEco: true, driverName: 'MoiChauffeur', driverRating: null },
-//     { id: 'RIDE004', depart: 'Marseille', arrivee: 'Nice', date: '2025-04-25', heure: '11:00', role: 'Passager', statut: 'Terminé', dureeEstimee: '2h00', vehicule: 'Fiat 500', prixPaye: 12, estEco: false, driverName: 'Soleil Conducteur', driverRating: '4.2' },
-//     { id: 'RIDE005', depart: 'Brest', arrivee: 'Quimper', date: '2025-05-19', heure: '10:00', role: 'Chauffeur', statut: 'En cours', dureeEstimee: '1h00', vehicule: 'Citroën C3', passagersInscrits: 1, passagersMax: 2, gainEstime: 10, estEco: false, driverName: 'MoiChauffeur', driverRating: null },
-// ];
-
-// Fonction pour créer l'élément HTML d'une carte de trajet
 function createRideCardElement(rideData) {
     const template = document.getElementById('ride-card-template');
     if (!template) return null;
@@ -247,15 +234,15 @@ function createRideCardElement(rideData) {
         toggleElement('.driver-view-passengers-info', true);
         setText('.ride-passengers-current', rideData.passagersInscrits ?? '0');
         setText('.ride-passengers-max', rideData.passagersMax ?? 'N/A');
-        setText('.price-label', 'Gain estimé/obtenu :');
-        setText('.ride-price-amount', rideData.gainEstime ?? rideData.gainObtenu ?? 'N/A');
+        setText('.price-label', 'Gain net estimé du trajet :');
+        setText('.ride-price-amount', rideData.gainEstime !== null ? rideData.gainEstime.toFixed(2) : 'N/A')
         toggleElement('.passenger-view-driver-info', false); 
     } else { 
         toggleElement('.passenger-view-driver-info', true);
         setText('.ride-driver-name', rideData.driverName || 'N/A');
         setText('.ride-driver-rating', rideData.driverRating || 'N/A');
         setText('.price-label', 'Prix payé :');
-        setText('.ride-price-amount', rideData.prixPaye ?? 'N/A');
+        setText('.ride-price-amount', rideData.prixPaye !== null ? rideData.prixPaye.toFixed(2) : 'N/A');
         toggleElement('.driver-view-passengers-info', false); 
     }
     toggleElement('.ride-price-info', true);
@@ -598,6 +585,26 @@ function displayFetchedRides(drivenRides, bookedRides) {
             // Pour Passager:
             prixPaye: apiRideData.role === 'passenger' ? parseFloat(apiRideData.price_per_seat) : null,
         };
+        const platformCommissionPerSeat = 2.00; // La commission de la plateforme par place
+        cardData.price_per_seat = parseFloat(apiRideData.price_per_seat);
+        
+        if (cardData.role === 'Chauffeur') {
+            let netEarningsEstimate = 0;
+            if (cardData.passagersInscrits > 0 && cardData.price_per_seat) {
+                const grossEarnings = cardData.price_per_seat * cardData.passagersInscrits;
+                const totalCommission = platformCommissionPerSeat * cardData.passagersInscrits;
+                netEarningsEstimate = grossEarnings - totalCommission;
+            }
+            cardData.gainEstime = netEarningsEstimate; 
+            cardData.prixPaye = null; 
+        } else { // Passager
+            if (apiRideData.seats_booked && cardData.price_per_seat) { // seats_booked vient de la jointure Bookings pour les booked_rides
+                cardData.prixPaye = cardData.price_per_seat * parseInt(apiRideData.seats_booked, 10);
+            } else {
+                cardData.prixPaye = cardData.price_per_seat; // Pour un trajet où il est passager, le prix par siège est son coût
+            }
+            cardData.gainEstime = null; // Pas pertinent pour le passager
+        }
 
         console.log("Données pour la carte (avant createRideCardElement):", cardData);
         const rideCard = createRideCardElement(cardData);
