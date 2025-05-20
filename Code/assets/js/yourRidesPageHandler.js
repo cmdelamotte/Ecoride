@@ -137,13 +137,61 @@ function initializeReviewModal() {
             if (!isFormValidOverall) {
                 reviewForm.reportValidity(); 
             } else {
-                console.log("Avis soumis (simulation) :", {
-                    rideId: currentRideId, rating, tripExperience, reviewComment, 
-                    reportComment: (tripExperience === 'bad' ? reportComment : null) 
+                // Le formulaire est valide côté client, on prépare les données pour l'API
+                const reviewData = {
+                    ride_id: parseInt(currentRideId, 10), // currentRideId est déjà défini quand la modale s'ouvre
+                    rating: rating,
+                    comment: reviewComment,
+                    trip_experience_good: (tripExperience === 'good'), // Convertit "good" en true, "bad" en false
+                    report_comment: (tripExperience === 'bad' ? reportComment : null) // N'envoie report_comment que si pertinent
+                };
+
+                console.log("yourRidesPageHandler: Envoi de l'avis/signalement à l'API :", reviewData);
+                const submitReviewButton = reviewForm.querySelector('button[type="submit"]'); // Si tu as un bouton de soumission
+                if (submitReviewButton) submitReviewButton.disabled = true;
+                // TODO: Afficher un message/spinner de chargement dans la modale
+
+                fetch('http://ecoride.local/api/submit_review.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(reviewData)
+                })
+                .then(response => {
+                    console.log("Submit Review Fetch: Statut Réponse:", response.status);
+                    return response.json().then(data => ({ ok: response.ok, status: response.status, body: data }))
+                        .catch(jsonError => {
+                            console.error("Submit Review: Erreur parsing JSON:", jsonError);
+                            return response.text().then(textData => {
+                                console.log("Submit Review: Réponse brute non-JSON:", textData);
+                                throw new Error(`Réponse non-JSON (statut ${response.status}) pour soumission avis: ${textData.substring(0,100)}...`);
+                            });
+                        });
+                })
+                .then(({ ok, status, body }) => {
+                    if (submitReviewButton) submitReviewButton.disabled = false;
+                    console.log("Submit Review: Réponse API:", body);
+                    const modalInstance = bootstrap.Modal.getInstance(reviewModalElement);
+
+                    if (ok && body.success) {
+                        alert(body.message || "Avis soumis avec succès et en attente de modération !");
+                        if (modalInstance) modalInstance.hide();
+                        // Optionnel: Rafraîchir l'historique des trajets si tu veux y afficher un statut "Avis soumis"
+                        // renderAllRides(); // Ou mieux, refaire un fetch si les données ont changé
+                    } else {
+                        // Afficher l'erreur de l'API (pourrait être "Avis déjà soumis", etc.)
+                        let errorMessage = body.message || "Erreur lors de la soumission de l'avis.";
+                        if (body.errors) {
+                            for (const key in body.errors) { errorMessage += `\n- ${key}: ${body.errors[key]}`; }
+                        }
+                        alert(errorMessage); // Ou affiche dans une div d'erreur de la modale
+                        console.error('Erreur API Submit Review:', body);
+                    }
+                })
+                .catch(error => {
+                    if (submitReviewButton) submitReviewButton.disabled = false;
+                    console.error('Erreur Fetch globale (Submit Review):', error);
+                    alert('Erreur de communication lors de la soumission de l\'avis. ' + error.message);
                 });
-                alert("Avis soumis avec succès (simulation) !");
-                const modalInstance = bootstrap.Modal.getInstance(reviewModalElement);
-                if (modalInstance) modalInstance.hide(); 
             }
         });
     }
@@ -224,17 +272,17 @@ function createRideCardElement(rideData) {
     actionsContainer.innerHTML = ''; 
 
     if (rideData.role === 'Chauffeur') {
-        if (rideData.statut === 'À venir') {
+        if (rideData.statut === 'planned') {
             actionsContainer.innerHTML = `
                 <button class="btn primary-btn btn-sm mb-1 w-100 action-start-ride" data-ride-id="${rideData.id}">Démarrer le trajet</button>
                 <button class="btn btn-outline-danger btn-sm w-100 action-cancel-ride-driver" data-ride-id="${rideData.id}">Annuler ce trajet</button>`;
-        } else if (rideData.statut === 'En cours') {
+        } else if (rideData.statut === 'ongoing') {
             actionsContainer.innerHTML = `<button class="btn primary-btn btn-sm mb-1 w-100 action-finish-ride" data-ride-id="${rideData.id}">Arrivée à destination</button>`;
         }
     } else if (rideData.role === 'Passager') {
-        if (rideData.statut === 'Confirmé' || rideData.statut === 'À venir') {
+        if (rideData.statut === 'planned') {
             actionsContainer.innerHTML = `<button class="btn btn-outline-danger btn-sm w-100 action-cancel-booking" data-ride-id="${rideData.id}">Annuler ma réservation</button>`;
-        } else if (rideData.statut === 'Terminé') {
+        } else if (rideData.statut === 'completed') {
             const reviewButton = document.createElement('button');
             reviewButton.className = 'btn secondary-btn btn-sm w-100 action-leave-review';
             reviewButton.textContent = 'Laisser un avis';
@@ -504,6 +552,7 @@ function displayFetchedRides(drivenRides, bookedRides) {
             prixPaye: apiRideData.role === 'passenger' ? parseFloat(apiRideData.price_per_seat) : null,
         };
 
+        console.log("Données pour la carte (avant createRideCardElement):", cardData);
         const rideCard = createRideCardElement(cardData);
         if (!rideCard) return;
 

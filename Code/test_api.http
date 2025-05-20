@@ -406,3 +406,43 @@ Content-Type: application/json
 
 ### Récupérer l'historique des trajets de Bob
 GET http://ecoride.local/api/get_user_rides_history.php
+
+### Connexion Utilisateur (Bob - pour laisser un avis)
+POST http://ecoride.local/api/login.php
+Content-Type: application/json
+
+{ "identifier": "bob_passenger", "password": "password123" }
+
+### Test Soumission Avis (Positif - Bob sur Alice pour Trajet ID 1)
+POST http://ecoride.local/api/submit_review.php
+Content-Type: application/json
+
+{
+    "ride_id": 2, 
+    "rating": 5,
+    "comment": "Super trajet avec Alice, très sympa !",
+    "trip_experience_good": true 
+}
+
+### Test Soumission Avis (Négatif avec Signalement - Bob sur Carole pour Trajet ID 2, si trajet terminé)
+# Prérequis: Trajet ID 2 (Marseille-Nice, chauffeur Carole ID 5) est 'completed' et Bob y a participé.
+POST http://ecoride.local/api/submit_review.php
+Content-Type: application/json
+
+{
+    "ride_id": 2,
+    "rating": 1,
+    "comment": "Trajet correct mais chauffeur désagréable.",
+    "trip_experience_good": false,
+    "report_comment": "Le chauffeur a été très impoli et a conduit dangereusement."
+}
+
+### Test Soumission Avis (Echec - note manquante)
+POST http://ecoride.local/api/submit_review.php
+Content-Type: application/json
+
+{ 
+    "ride_id": 2,
+    "comment": "Pas de note",
+    "trip_experience_good": true
+}
