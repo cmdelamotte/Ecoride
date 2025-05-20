@@ -537,3 +537,15 @@ POST http://ecoride.local/api/cancel_ride_booking.php
 Content-Type: application/json
 
 { "ride_id": 1 }
+
+### Connexion Alice (pour terminer trajet)
+POST http://ecoride.local/api/login.php
+Content-Type: application/json
+
+{ "identifier": "alice_duval", "password": "password123" }
+
+### Alice termine son Trajet ID 1
+POST http://ecoride.local/api/finish_ride.php
+Content-Type: application/json
+
+{ "ride_id": 1 }
