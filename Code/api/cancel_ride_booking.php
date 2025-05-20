@@ -1,5 +1,4 @@
 <?php
-// Fichier: api/cancel_ride_booking.php
 
 if (session_status() == PHP_SESSION_NONE) {
     session_start();
@@ -70,9 +69,9 @@ try {
     if ($departureTime <= new DateTime() && $ride['ride_status'] !== 'planned') {
         // On peut permettre l'annulation d'un trajet 'ongoing' par le chauffeur, mais pas par le passager
         if ($ride['driver_id'] != $current_user_id || $ride['ride_status'] !== 'ongoing') {
-             $response['message'] = "Ce trajet ne peut plus être annulé (déjà passé, en cours pour passager, ou terminé).";
-             http_response_code(400);
-             throw new Exception("Trajet non annulable.");
+            $response['message'] = "Ce trajet ne peut plus être annulé (déjà passé, en cours pour passager, ou terminé).";
+            http_response_code(400);
+            throw new Exception("Trajet non annulable.");
         }
     }
     
@@ -154,7 +153,7 @@ try {
         $stmtRefundPassenger->execute();
 
         // Mettre à jour le statut de la réservation du passager
-        $stmtUpdateMyBooking = $pdo->prepare("UPDATE Bookings SET booking_status = 'cancelled_passenger' WHERE id = :booking_id");
+        $stmtUpdateMyBooking = $pdo->prepare("UPDATE Bookings SET booking_status = 'cancelled_by_passenger' WHERE id = :booking_id");
         $stmtUpdateMyBooking->bindParam(':booking_id', $myBooking['id'], PDO::PARAM_INT);
         $stmtUpdateMyBooking->execute();
 

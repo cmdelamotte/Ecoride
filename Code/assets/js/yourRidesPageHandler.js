@@ -371,38 +371,70 @@ function calculateDuration(start, end) {
     return "N/A";
 }
 
-function handleRideAction(event) {
+async function handleRideAction(event) {
     const target = event.target;
     const reviewButtonTrigger = target.closest('button.action-leave-review');
-    if (reviewButtonTrigger) {
-        return; 
-    }
+    if (reviewButtonTrigger) return; 
 
     const actionButton = target.closest('button[data-ride-id]'); 
     if (!actionButton) return;
 
     const rideId = actionButton.getAttribute('data-ride-id');
-    const rideIndex = userRides.findIndex(r => r.id === rideId);
-    if (rideIndex === -1) return;
+    if (!rideId) return;
 
-    let actionAlertMessage = "";
+    let actionConfirmMessage = "Êtes-vous sûr ?"; // Message par défaut
+    let apiEndpoint = null;
+    let httpMethod = 'POST'; // La plupart des actions de modification
+    let requestBody = { ride_id: parseInt(rideId, 10) }; // Corps de base
 
     if (actionButton.classList.contains('action-start-ride')) {
-        userRides[rideIndex].statut = 'En cours';
-        actionAlertMessage = `Trajet ${rideId} démarré (simulation) !`;
+        apiEndpoint = 'http://ecoride.local/api/start_ride.php'; // API à créer
+        actionConfirmMessage = `Démarrer le trajet ID ${rideId} ?`;
     } else if (actionButton.classList.contains('action-finish-ride')) {
-        userRides[rideIndex].statut = 'Terminé';
-        actionAlertMessage = `Trajet ${rideId} terminé (simulation) ! Les passagers seront notifiés.`;
+        apiEndpoint = 'http://ecoride.local/api/finish_ride.php'; // API à créer
+        actionConfirmMessage = `Marquer le trajet ID ${rideId} comme terminé ?`;
     } else if (actionButton.classList.contains('action-cancel-ride-driver')) {
-        userRides[rideIndex].statut = 'Annulé Chauffeur'; 
-        actionAlertMessage = `Trajet ${rideId} annulé par le chauffeur (simulation) !`;
+        apiEndpoint = 'http://ecoride.local/api/cancel_ride_booking.php';
+        actionConfirmMessage = `Annuler le trajet ID ${rideId} ? (Passagers remboursés).`;
     } else if (actionButton.classList.contains('action-cancel-booking')) {
-        userRides[rideIndex].statut = 'Annulé Passager'; 
-        actionAlertMessage = `Réservation pour le trajet ${rideId} annulée (simulation) !`;
+        apiEndpoint = 'http://ecoride.local/api/cancel_ride_booking.php';
+        actionConfirmMessage = `Annuler votre réservation pour le trajet ID ${rideId} ?`;
     }
 
-    if (actionAlertMessage) alert(actionAlertMessage);
-    renderAllRides(); 
+    if (!apiEndpoint) { // Si l'action n'a pas encore d'API définie (ex: start/finish)
+        alert(`Action pour trajet ${rideId} non implémentée (simulation).`);
+        return;
+    }
+
+    if (!confirm(actionConfirmMessage)) return;
+
+    actionButton.disabled = true;
+    try {
+        const response = await fetch(apiEndpoint, {
+            method: httpMethod,
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(requestBody)
+        });
+        const data = await response.json().catch(async () => ({ 
+            success: false, 
+            message: `Réponse serveur non-JSON (statut ${response.status}): ` + (await response.text()).substring(0,100)
+        }));
+
+        if (response.ok && data.success) {
+            alert(data.message || "Action effectuée !");
+            if (window.location.pathname === '/your-rides' && typeof LoadContentPage === "function") {
+                LoadContentPage(); 
+            } else {
+                window.location.reload(); 
+            }
+        } else {
+            alert(data.message || `Erreur lors de l'action (statut ${response.status}).`);
+        }
+    } catch (error) {
+        alert("Erreur de communication : " + error.message);
+    } finally {
+        actionButton.disabled = false;
+    }
 }
 
 export async function initializeYourRidesPage() {

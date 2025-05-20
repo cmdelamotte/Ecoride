@@ -470,4 +470,4 @@ Content-Type: application/json
 POST http://ecoride.local/api/cancel_ride_booking.php
 Content-Type: application/json
 
-{ "ride_id": 1 }
+{ "ride_id": 5 }
