@@ -46,9 +46,7 @@ function initializeReviewModal() {
             if (ratingLabel) {
                 ratingLabel.textContent = `Votre note pour ${driverName || "[PseudoChauffeur]"}:`;
             }
-        } else {
-            // console.warn("EVENT show.bs.modal: event.relatedTarget est null ou undefined."); // Gardé si utile
-        }
+        } 
 
         if (reviewForm) reviewForm.reset(); 
         if (ratingValueHiddenInput) {
@@ -97,7 +95,7 @@ function initializeReviewModal() {
         if (reportProblemSection && tripBadRadio && reportCommentTextarea) {
             const showProblemSection = tripBadRadio.checked;
             reportProblemSection.classList.toggle('d-none', !showProblemSection);
-            if (!showProblemSection) { // Si on cache la section (l'utilisateur a coché "Oui")
+            if (!showProblemSection) {
                 reportCommentTextarea.value = ''; 
                 reportCommentTextarea.setCustomValidity(""); 
             }
@@ -147,9 +145,8 @@ function initializeReviewModal() {
                 };
 
                 console.log("yourRidesPageHandler: Envoi de l'avis/signalement à l'API :", reviewData);
-                const submitReviewButton = reviewForm.querySelector('button[type="submit"]'); // Si tu as un bouton de soumission
+                const submitReviewButton = reviewForm.querySelector('button[type="submit"]');
                 if (submitReviewButton) submitReviewButton.disabled = true;
-                // TODO: Afficher un message/spinner de chargement dans la modale
 
                 fetch('http://ecoride.local/api/submit_review.php', {
                     method: 'POST',
@@ -175,10 +172,7 @@ function initializeReviewModal() {
                     if (ok && body.success) {
                         alert(body.message || "Avis soumis avec succès et en attente de modération !");
                         if (modalInstance) modalInstance.hide();
-                        // Optionnel: Rafraîchir l'historique des trajets si tu veux y afficher un statut "Avis soumis"
-                        // renderAllRides(); // Ou mieux, refaire un fetch si les données ont changé
                     } else {
-                        // Afficher l'erreur de l'API (pourrait être "Avis déjà soumis", etc.)
                         let errorMessage = body.message || "Erreur lors de la soumission de l'avis.";
                         if (body.errors) {
                             for (const key in body.errors) { errorMessage += `\n- ${key}: ${body.errors[key]}`; }
@@ -344,9 +338,7 @@ function renderAllRides(drivenRides = [], bookedRides = []) {
             dureeEstimee: ride.estimated_arrival_time ? calculateDuration(ride.departure_time, ride.estimated_arrival_time) : 'N/A',
             vehicule: `${ride.vehicle_brand || ''} ${ride.vehicle_model || ''}`.trim(),
             estEco: ride.is_eco_ride,
-            driverName: ride.driver_username, 
-            // driverRating: ride.driver_average_rating, // L'API ne renvoie pas ça pour l'instant
-            // gainEstime: ride.price_per_seat * (ride.seats_offered - ride.seats_available), // Calcul simple
+            driverName: ride.driver_username,
             passagersInscrits: ride.seats_offered - ride.seats_available, // Calcul
             passagersMax: ride.seats_offered,
             price_per_seat: ride.price_per_seat // Pour le calcul du prix affiché
@@ -530,9 +522,6 @@ function displayFetchedRides(drivenRides, bookedRides) {
             id: apiRideData.ride_id,
             depart: apiRideData.departure_city,
             arrivee: apiRideData.arrival_city,
-            // L'API renvoie déjà departure_time au format YYYY-MM-DD HH:MM:SS
-            // On va adapter createRideCardElement pour qu'il prenne directement departure_time et estimated_arrival_time.
-            // Pour l'instant, on va essayer de reconstruire date/heure pour le createRideCardElement actuel.
             date: apiRideData.departure_time ? new Date(apiRideData.departure_time.replace(' ', 'T')).toLocaleDateString([], {day:'2-digit', month:'2-digit', year:'numeric'}) : 'N/A',
             heure: apiRideData.departure_time ? new Date(apiRideData.departure_time.replace(' ', 'T')).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : 'N/A',
             role: apiRideData.user_role_in_ride === 'driver' ? 'Chauffeur' : 'Passager',
