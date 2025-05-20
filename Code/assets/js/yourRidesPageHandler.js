@@ -584,6 +584,7 @@ function displayFetchedRides(drivenRides, bookedRides) {
             
             // Pour Passager:
             prixPaye: apiRideData.role === 'passenger' ? parseFloat(apiRideData.price_per_seat) : null,
+            seats_booked: apiRideData.seats_booked || 0,
         };
         const platformCommissionPerSeat = 2.00; // La commission de la plateforme par place
         cardData.price_per_seat = parseFloat(apiRideData.price_per_seat);
@@ -598,6 +599,21 @@ function displayFetchedRides(drivenRides, bookedRides) {
             cardData.gainEstime = netEarningsEstimate; 
             cardData.prixPaye = null; 
         } else { // Passager
+        let pricePaid = 0;
+
+        if (
+            cardData.seats_booked &&
+            cardData.price_per_seat &&
+            !isNaN(cardData.seats_booked) &&
+            !isNaN(cardData.price_per_seat)
+        ) {
+            pricePaid = parseFloat(cardData.seats_booked) * parseFloat(cardData.price_per_seat);
+        } else {
+            console.warn(`  - Impossible de calculer le prix payé : données manquantes`);
+        }
+
+        cardData.pricePaid = pricePaid.toFixed(2);
+        console.log(`  - Prix payé FINAL: ${cardData.pricePaid} crédits`);
             if (apiRideData.seats_booked && cardData.price_per_seat) { // seats_booked vient de la jointure Bookings pour les booked_rides
                 cardData.prixPaye = cardData.price_per_seat * parseInt(apiRideData.seats_booked, 10);
             } else {
