@@ -374,66 +374,92 @@ function calculateDuration(start, end) {
 async function handleRideAction(event) {
     const target = event.target;
     const reviewButtonTrigger = target.closest('button.action-leave-review');
-    if (reviewButtonTrigger) return; 
+    if (reviewButtonTrigger) {
+        // Laisser Bootstrap gérer la modale d'avis, le listener 'show.bs.modal' dans initializeReviewModal s'en occupe.
+        return; 
+    }
 
     const actionButton = target.closest('button[data-ride-id]'); 
     if (!actionButton) return;
 
     const rideId = actionButton.getAttribute('data-ride-id');
-    if (!rideId) return;
-
-    let actionConfirmMessage = "Êtes-vous sûr ?"; // Message par défaut
-    let apiEndpoint = null;
-    let httpMethod = 'POST'; // La plupart des actions de modification
-    let requestBody = { ride_id: parseInt(rideId, 10) }; // Corps de base
-
-    if (actionButton.classList.contains('action-start-ride')) {
-        apiEndpoint = 'http://ecoride.local/api/start_ride.php'; // API à créer
-        actionConfirmMessage = `Démarrer le trajet ID ${rideId} ?`;
-    } else if (actionButton.classList.contains('action-finish-ride')) {
-        apiEndpoint = 'http://ecoride.local/api/finish_ride.php'; // API à créer
-        actionConfirmMessage = `Marquer le trajet ID ${rideId} comme terminé ?`;
-    } else if (actionButton.classList.contains('action-cancel-ride-driver')) {
-        apiEndpoint = 'http://ecoride.local/api/cancel_ride_booking.php';
-        actionConfirmMessage = `Annuler le trajet ID ${rideId} ? (Passagers remboursés).`;
-    } else if (actionButton.classList.contains('action-cancel-booking')) {
-        apiEndpoint = 'http://ecoride.local/api/cancel_ride_booking.php';
-        actionConfirmMessage = `Annuler votre réservation pour le trajet ID ${rideId} ?`;
-    }
-
-    if (!apiEndpoint) { // Si l'action n'a pas encore d'API définie (ex: start/finish)
-        alert(`Action pour trajet ${rideId} non implémentée (simulation).`);
+    if (!rideId) {
+        console.error("handleRideAction: rideId manquant sur le bouton d'action.");
         return;
     }
 
-    if (!confirm(actionConfirmMessage)) return;
+    let apiEndpoint = null;
+    let successAlertMessage = ""; // Message pour l'alerte de succès
+    let confirmMessage = "Êtes-vous sûr de vouloir effectuer cette action ?"; // Message de confirmation par défaut
 
-    actionButton.disabled = true;
+    // Déterminer l'API et les messages en fonction du bouton cliqué
+    if (actionButton.classList.contains('action-start-ride')) {
+        apiEndpoint = 'http://ecoride.local/api/start_ride.php';
+        confirmMessage = `Démarrer le trajet ID ${rideId} ?`;
+    } else if (actionButton.classList.contains('action-finish-ride')) {
+        apiEndpoint = 'http://ecoride.local/api/finish_ride.php';
+        confirmMessage = `Marquer le trajet ID ${rideId} comme terminé ?`;
+    } else if (actionButton.classList.contains('action-cancel-ride-driver') || actionButton.classList.contains('action-cancel-booking')) {
+        apiEndpoint = 'http://ecoride.local/api/cancel_ride_booking.php';
+        if (actionButton.classList.contains('action-cancel-ride-driver')) {
+            confirmMessage = `Annuler le trajet ID ${rideId} ? Les passagers seront remboursés.`;
+        } else {
+            confirmMessage = `Annuler votre réservation pour le trajet ID ${rideId} ? Vous serez remboursé.`;
+        }
+    }
+
+    if (!apiEndpoint) {
+        console.warn(`handleRideAction: Aucune API définie pour le bouton cliqué sur trajet ${rideId}. Action simulée ou à implémenter.`);
+        return;
+    }
+
+    // Demander confirmation avant l'action
+    if (!confirm(confirmMessage)) {
+        return;
+    }
+
+    actionButton.disabled = true; // Désactiver le bouton pendant l'appel
+
     try {
         const response = await fetch(apiEndpoint, {
-            method: httpMethod,
+            method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(requestBody)
+            body: JSON.stringify({ ride_id: parseInt(rideId, 10) }) // L'API attend ride_id
         });
-        const data = await response.json().catch(async () => ({ 
-            success: false, 
-            message: `Réponse serveur non-JSON (statut ${response.status}): ` + (await response.text()).substring(0,100)
-        }));
+
+        // Gestion robuste de la réponse JSON
+        let data;
+        const responseText = await response.text();
+        try {
+            data = JSON.parse(responseText);
+        } catch (jsonError) {
+            console.error(`Erreur parsing JSON (action sur trajet ${rideId}):`, jsonError, "Réponse brute:", responseText);
+            throw new Error(`Réponse serveur non-JSON (statut ${response.status}): ${responseText.substring(0, 200)}`);
+        }
+
+        console.log(`handleRideAction: Réponse API pour ${apiEndpoint} sur ride_id ${rideId}:`, data);
 
         if (response.ok && data.success) {
-            alert(data.message || "Action effectuée !");
-            if (window.location.pathname === '/your-rides' && typeof LoadContentPage === "function") {
-                LoadContentPage(); 
-            } else {
-                window.location.reload(); 
+            alert(data.message || "Action effectuée avec succès !");
+            if (typeof initializeYourRidesPage === "function") {
+                if (window.location.pathname === '/your-rides' && typeof LoadContentPage === "function") {
+                    console.log("Rafraîchissement de l'historique des trajets...");
+                    LoadContentPage(); 
+                } else {
+                    console.warn("Impossible de rafraîchir dynamiquement, rechargement de la page.");
+                    window.location.reload(); 
+                }
             }
         } else {
+            // Erreur logique renvoyée par l'API (ex: "Trajet déjà démarré", "Pas le chauffeur")
             alert(data.message || `Erreur lors de l'action (statut ${response.status}).`);
         }
+
     } catch (error) {
-        alert("Erreur de communication : " + error.message);
+        console.error(`Erreur Fetch globale (action sur trajet ${rideId}):`, error);
+        alert("Erreur de communication avec le serveur : " + error.message);
     } finally {
-        actionButton.disabled = false;
+        actionButton.disabled = false; // Réactiver le bouton
     }
 }
 
