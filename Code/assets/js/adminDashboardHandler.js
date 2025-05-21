@@ -1,41 +1,34 @@
-// La variable currentEmployees est au niveau du module pour être accessible par toutes les fonctions.
 let currentEmployees = [
     { id: 'EMP001', nom: 'Dupont', prenom: 'Jean', email: 'jean.dupont@ecoride.pro', statut: 'Actif' },
     { id: 'EMP002', nom: 'Martin', prenom: 'Sophie', email: 'sophie.martin@ecoride.pro', statut: 'Suspendu' },
-    { id: 'EMP003', nom: 'Petit', prenom: 'Lucas', email: 'lucas.petit@ecoride.pro', statut: 'Actif' },
-    { id: 'EMP004', nom: 'Durand', prenom: 'Alice', email: 'alice.durand@ecoride.pro', statut: 'Actif' },
 ];
-
-// Données factices pour les Utilisateurs (Clients)
 let currentUsers = [
     { id: 'USR101', pseudo: 'ClientTest', email: 'client.test@email.com', credits: 15, statut: 'Actif' },
     { id: 'USR102', pseudo: 'PassagerX', email: 'passager.x@email.com', credits: 0, statut: 'Suspendu' },
-    { id: 'USR103', pseudo: 'EcoVoyageur', email: 'eco.voyageur@mail.net', credits: 55, statut: 'Actif' },
 ];
 
+// Références aux instances des graphiques pour pouvoir les détruire et les recréer si besoin
+let ridesChartInstance = null;
+let creditsChartInstance = null;
 
+// Fonctions d'Affichage 
 function displayEmployeesTable(employeesData) {
     const tableBody = document.getElementById('employees-table-body');
-    const template = document.getElementById('employee-row-template'); 
-    const noEmployeesMessage = document.getElementById('no-employees-message'); 
+    const template = document.getElementById('employee-row-template');
+    const noEmployeesMessage = document.getElementById('no-employees-message');
 
     if (!tableBody || !template || !noEmployeesMessage) {
         console.error("Éléments de la table des employés, template, ou message pour table vide introuvables.");
         return;
     }
-
-    tableBody.innerHTML = ''; 
-
+    tableBody.innerHTML = '';
     if (!employeesData || employeesData.length === 0) {
-        noEmployeesMessage.classList.remove('d-none'); 
+        noEmployeesMessage.classList.remove('d-none');
         return;
     }
-    
-    noEmployeesMessage.classList.add('d-none'); 
-
+    noEmployeesMessage.classList.add('d-none');
     employeesData.forEach(employee => {
-        const clone = template.content.cloneNode(true); 
-        
+        const clone = template.content.cloneNode(true);
         const idCell = clone.querySelector('th[data-label="ID_Employé"]');
         const nomCell = clone.querySelector('td[data-label="Nom"]');
         const prenomCell = clone.querySelector('td[data-label="Prénom"]');
@@ -49,103 +42,79 @@ function displayEmployeesTable(employeesData) {
         if (nomCell) nomCell.textContent = employee.nom;
         if (prenomCell) prenomCell.textContent = employee.prenom;
         if (emailCell) emailCell.textContent = employee.email;
-        
         if (statusBadge) {
             statusBadge.textContent = employee.statut;
-            if (employee.statut === 'Actif') statusBadge.className = 'badge bg-success'; 
-            else if (employee.statut === 'Suspendu') statusBadge.className = 'badge bg-danger';
-            else statusBadge.className = 'badge bg-secondary'; 
+            statusBadge.className = employee.statut === 'Actif' ? 'badge bg-success' : 'badge bg-danger';
         }
-
         if (suspendButton && reactivateButton) {
-            if (employee.statut === 'Actif') {
-                suspendButton.classList.remove('d-none');
-                reactivateButton.classList.add('d-none');
-            } else if (employee.statut === 'Suspendu') {
-                suspendButton.classList.add('d-none');
-                reactivateButton.classList.remove('d-none');
-            }
+            const isActive = employee.statut === 'Actif';
+            suspendButton.classList.toggle('d-none', !isActive);
+            reactivateButton.classList.toggle('d-none', isActive);
             suspendButton.setAttribute('data-employee-id', employee.id);
             reactivateButton.setAttribute('data-employee-id', employee.id);
         }
-        
-        tableBody.appendChild(clone); 
+        tableBody.appendChild(clone);
     });
 }
 
 function displayUsersTable(usersData) {
-    const tableBody = document.getElementById('users-table-body'); 
-    const template = document.getElementById('user-row-template');    
-    const noUsersMessage = document.getElementById('no-users-message'); 
+    const tableBody = document.getElementById('users-table-body');
+    const template = document.getElementById('user-row-template');
+    const noUsersMessage = document.getElementById('no-users-message');
 
     if (!tableBody || !template || !noUsersMessage) {
         console.error("Éléments de la table des utilisateurs, template, ou message pour table vide introuvables.");
         return;
     }
-
-    tableBody.innerHTML = ''; 
-
+    tableBody.innerHTML = '';
     if (!usersData || usersData.length === 0) {
         noUsersMessage.classList.remove('d-none');
         return;
     }
-    
     noUsersMessage.classList.add('d-none');
-
     usersData.forEach(user => {
         const clone = template.content.cloneNode(true);
-        
         const idCell = clone.querySelector('th[data-label="ID_Utilisateur"]');
         const pseudoCell = clone.querySelector('td[data-label="Pseudo"]');
         const emailCell = clone.querySelector('td[data-label="Email"]');
         const creditsCell = clone.querySelector('td[data-label="Crédits"]');
         const statusBadge = clone.querySelector('td[data-label="Statut"] .badge');
         const actionCell = clone.querySelector('td[data-label="Actions"]');
-        const suspendButton = actionCell.querySelector('.user-action-suspend'); 
+        const suspendButton = actionCell.querySelector('.user-action-suspend');
         const reactivateButton = actionCell.querySelector('.user-action-reactivate');
 
         if (idCell) idCell.textContent = user.id;
         if (pseudoCell) pseudoCell.textContent = user.pseudo;
         if (emailCell) emailCell.textContent = user.email;
         if (creditsCell) creditsCell.textContent = user.credits;
-        
         if (statusBadge) {
             statusBadge.textContent = user.statut;
-            if (user.statut === 'Actif') statusBadge.className = 'badge bg-success';
-            else if (user.statut === 'Suspendu') statusBadge.className = 'badge bg-danger';
-            else statusBadge.className = 'badge bg-secondary';
+            statusBadge.className = user.statut === 'Actif' ? 'badge bg-success' : 'badge bg-danger';
         }
-
         if (suspendButton && reactivateButton) {
-            if (user.statut === 'Actif') {
-                suspendButton.classList.remove('d-none');
-                reactivateButton.classList.add('d-none');
-            } else if (user.statut === 'Suspendu') {
-                suspendButton.classList.add('d-none');
-                reactivateButton.classList.remove('d-none');
-            }
+            const isActive = user.statut === 'Actif';
+            suspendButton.classList.toggle('d-none', !isActive);
+            reactivateButton.classList.toggle('d-none', isActive);
             suspendButton.setAttribute('data-user-id', user.id);
             reactivateButton.setAttribute('data-user-id', user.id);
         }
-        
         tableBody.appendChild(clone);
     });
 }
 
-// === DÉBUT AJOUT GRAPHIQUES ET STATS ===
-// Fonction pour mettre à jour le total des crédits
+
+// Fonctions pour les STATISTIQUES et GRAPHIQUES
+
 function updateTotalCreditsDisplay(totalCredits) {
     const totalCreditsElement = document.getElementById('admin-total-credits');
     if (totalCreditsElement) {
-        // Formate le nombre avec des séparateurs de milliers pour la lisibilité et ajoute "crédits"
-        totalCreditsElement.textContent = totalCredits.toLocaleString('fr-FR') + ' crédits'; 
+        totalCreditsElement.textContent = (totalCredits !== null ? parseFloat(totalCredits).toFixed(2) : 'N/A') + ' crédits';
     } else {
         console.warn("Élément #admin-total-credits introuvable.");
     }
 }
 
-// Fonction pour créer le graphique "Covoiturages / Jour"
-function createRidesPerDayChart() {
+function createOrUpdateRidesPerDayChart(ridesData) {
     const canvasElement = document.getElementById('ridesPerDayChart');
     if (!canvasElement) {
         console.error("Canvas #ridesPerDayChart introuvable !");
@@ -153,18 +122,22 @@ function createRidesPerDayChart() {
     }
     const ctx = canvasElement.getContext('2d');
 
-    // Données factices pour "Covoiturages / Jour"
-    const rideLabels = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
-    const rideDataValues = [12, 19, 3, 5, 22, 30, 15]; 
+    // Préparer les données pour Chart.js
+    const labels = ridesData.map(item => new Date(item.date + 'T00:00:00').toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })); // Format '15 Mai'
+    const dataValues = ridesData.map(item => item.count);
 
-    new Chart(ctx, {
-        type: 'bar', 
+    if (ridesChartInstance) {
+        ridesChartInstance.destroy(); // Détruire l'ancienne instance avant d'en créer une nouvelle
+    }
+
+    ridesChartInstance = new Chart(ctx, {
+        type: 'bar',
         data: {
-            labels: rideLabels,
+            labels: labels,
             datasets: [{
-                label: 'Nombre de Covoiturages',
-                data: rideDataValues,
-                backgroundColor: 'rgba(54, 162, 235, 0.6)', 
+                label: 'Nombre de Covoiturages Terminés',
+                data: dataValues,
+                backgroundColor: 'rgba(54, 162, 235, 0.6)',
                 borderColor: 'rgba(54, 162, 235, 1)',
                 borderWidth: 1
             }]
@@ -173,19 +146,18 @@ function createRidesPerDayChart() {
             responsive: true,
             maintainAspectRatio: false,
             scales: {
-                y: { beginAtZero: true, title: { display: true, text: 'Nb. Covoiturages' } },
+                y: { beginAtZero: true, title: { display: true, text: 'Nb. Covoiturages' }, ticks: { stepSize: 1 } },
                 x: { title: { display: true, text: 'Jour' } }
             },
             plugins: {
-                legend: { display: false }, // Cachée car un seul dataset
-                title: { display: true, text: 'Covoiturages de la Semaine' }
+                legend: { display: false },
+                title: { display: true, text: 'Covoiturages Terminés par Jour (30 derniers jours)' }
             }
         }
     });
 }
 
-// Fonction pour créer le graphique "Crédits Gagnés / Jour"
-function createCreditsGainedPerDayChart() {
+function createOrUpdateCreditsGainedPerDayChart(revenueData) {
     const canvasElement = document.getElementById('creditsGainedPerDayChart');
     if (!canvasElement) {
         console.error("Canvas #creditsGainedPerDayChart introuvable !");
@@ -193,21 +165,25 @@ function createCreditsGainedPerDayChart() {
     }
     const ctx = canvasElement.getContext('2d');
 
-    const creditLabels = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
-    const creditDataValues = [50, 75, 20, 40, 110, 150, 90];
+    const labels = revenueData.map(item => new Date(item.date + 'T00:00:00').toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' }));
+    const dataValues = revenueData.map(item => parseFloat(item.totalRevenue).toFixed(2));
 
-    new Chart(ctx, {
-        type: 'line', 
+    if (creditsChartInstance) {
+        creditsChartInstance.destroy();
+    }
+
+    creditsChartInstance = new Chart(ctx, {
+        type: 'line',
         data: {
-            labels: creditLabels,
+            labels: labels,
             datasets: [{
-                label: 'Crédits Gagnés',
-                data: creditDataValues,
-                backgroundColor: 'rgba(75, 192, 192, 0.5)', 
+                label: 'Crédits Gagnés par la Plateforme',
+                data: dataValues,
+                backgroundColor: 'rgba(75, 192, 192, 0.5)',
                 borderColor: 'rgba(75, 192, 192, 1)',
                 borderWidth: 2,
                 fill: true,
-                tension: 0.1 
+                tension: 0.1
             }]
         },
         options: {
@@ -219,28 +195,68 @@ function createCreditsGainedPerDayChart() {
             },
             plugins: {
                 legend: { display: false },
-                title: { display: true, text: 'Gain de Crédits Journalier' }
+                title: { display: true, text: 'Gain de Crédits Journalier (30 derniers jours)' }
             }
         }
     });
 }
-// === FIN AJOUT GRAPHIQUES ET STATS ===
+
+async function fetchAdminStats() {
+    console.log("AdminDashboardHandler: Appel de fetchAdminStats pour récupérer les données du tableau de bord.");
+    try {
+        const response = await fetch('http://ecoride.local/api/get_admin_stats.php');
+        if (!response.ok) {
+            if (response.status === 403) {
+                console.warn("Accès non autorisé aux statistiques admin. Redirection envisagée si nécessaire.");
+                document.getElementById('admin-total-credits').textContent = "Accès refusé";
+                return; 
+            }
+            const errorText = await response.text().catch(() => "Impossible de lire le corps de l'erreur.");
+            throw new Error(`Erreur API (statut ${response.status}) lors de la récupération des stats admin: ${errorText.substring(0, 200)}`);
+        }
+        const data = await response.json();
+        console.log("AdminDashboardHandler: Données de statistiques reçues:", data);
+
+        if (data.success) {
+            updateTotalCreditsDisplay(data.totalPlatformRevenueOverall);
+            createOrUpdateRidesPerDayChart(data.ridesPerDay || []);
+            createOrUpdateCreditsGainedPerDayChart(data.revenuePerDay || []);
+        } else {
+            console.error("Erreur lors de la récupération des statistiques admin:", data.message);
+            updateTotalCreditsDisplay(null); // Afficher N/A ou un message d'erreur
+            // Potentiellement afficher un message d'erreur pour les graphiques aussi
+        }
+    } catch (error) {
+        console.error("Erreur Fetch globale (get_admin_stats):", error);
+        updateTotalCreditsDisplay(null); // Afficher N/A ou un message d'erreur
+        // Afficher des messages d'erreur pour les graphiques
+        const ridesChartCanvas = document.getElementById('ridesPerDayChart');
+        const creditsChartCanvas = document.getElementById('creditsGainedPerDayChart');
+        if (ridesChartCanvas?.parentElement) ridesChartCanvas.parentElement.innerHTML = '<p class="text-danger text-center m-auto">Erreur chargement données graphiques.</p>';
+        if (creditsChartCanvas?.parentElement) creditsChartCanvas.parentElement.innerHTML = '<p class="text-danger text-center m-auto">Erreur chargement données graphiques.</p>';
+    }
+}
 
 
-export function initializeAdminDashboardPage() { 
+//  Initialisation de la Page 
+export function initializeAdminDashboardPage() {
+    console.log("AdminDashboardHandler: Initialisation de la page admin.");
+
+    // Appel initial pour charger les statistiques
+    fetchAdminStats();
+
+    // Logique pour la création d'employés (inchangée pour l'instant, utilise les données factices)
     const createEmployeeModalForm = document.getElementById('create-employee-form');
-    
     const empNomInput = document.getElementById('emp-nom');
     const empPrenomInput = document.getElementById('emp-prenom');
     const empEmailInput = document.getElementById('emp-email');
     const empPasswordInput = document.getElementById('emp-password');
-    
     const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_])[A-Za-z\d\W_]{8,}$/;
     const passwordRequirementsMessage = "Le mot de passe doit contenir au moins 8 caractères, incluant majuscule, minuscule, chiffre et caractère spécial.";
 
     if (createEmployeeModalForm) {
         createEmployeeModalForm.addEventListener('submit', function(event) {
-            event.preventDefault(); 
+            event.preventDefault();
             [empNomInput, empPrenomInput, empEmailInput, empPasswordInput].forEach(input => {
                 if (input) input.setCustomValidity("");
             });
@@ -252,133 +268,83 @@ export function initializeAdminDashboardPage() {
             const email = empEmailInput?.value.trim();
             const password = empPasswordInput?.value;
 
-            if (empNomInput && nom.length < 2) { empNomInput.setCustomValidity("Le nom de l'employé doit contenir au moins 2 caractères."); isFormValidOverall = false; }
-            if (empPrenomInput && prenom.length < 2) { empPrenomInput.setCustomValidity("Le prénom de l'employé doit contenir au moins 2 caractères."); isFormValidOverall = false; }
-            if (empPasswordInput && password) { 
-                if (!passwordRegex.test(password)) { empPasswordInput.setCustomValidity(passwordRequirementsMessage); isFormValidOverall = false; }
-            } 
+            if (empNomInput && nom.length < 2) { empNomInput.setCustomValidity("Nom requis (2 caractères min)."); isFormValidOverall = false; }
+            if (empPrenomInput && prenom.length < 2) { empPrenomInput.setCustomValidity("Prénom requis (2 caractères min)."); isFormValidOverall = false; }
+            if (empPasswordInput && password && !passwordRegex.test(password)) { 
+                empPasswordInput.setCustomValidity(passwordRequirementsMessage); isFormValidOverall = false; 
+            } else if (empPasswordInput && !password && empPasswordInput.hasAttribute('required')) {
+                empPasswordInput.setCustomValidity("Mot de passe initial requis."); isFormValidOverall = false;
+            }
 
             if (!isFormValidOverall) {
-                createEmployeeModalForm.reportValidity(); 
-                console.log("Validation du formulaire de création d'employé échouée.");
-            } else {
-                const newEmployee = {
-                    id: "EMP" + Date.now().toString().slice(-4), nom, prenom, email, statut: 'Actif' 
-                };
-                currentEmployees.push(newEmployee); 
-                displayEmployeesTable(currentEmployees); 
-                console.log("Formulaire de création d'employé valide. Données :", { nom, prenom, email });
-                alert("Compte employé créé et ajouté à la liste (simulation) !"); 
-                createEmployeeModalForm.reset(); 
-                const modalElement = document.getElementById('createEmployeeModal');
-                if (modalElement) { 
-                    const modalInstance = bootstrap.Modal.getInstance(modalElement);
-                    if (modalInstance) modalInstance.hide();
-                }
+                createEmployeeModalForm.reportValidity();
+                return;
             }
-        }); 
+            
+            // TODO: Remplacer par un appel API pour créer l'employé
+            const newEmployee = {
+                id: "EMP" + Date.now().toString().slice(-4), nom, prenom, email, statut: 'Actif'
+            };
+            currentEmployees.push(newEmployee);
+            displayEmployeesTable(currentEmployees);
+            alert("Compte employé créé et ajouté à la liste (simulation) ! L'API est à implémenter.");
+            createEmployeeModalForm.reset();
+            const modalElement = document.getElementById('createEmployeeModal');
+            if (modalElement) bootstrap.Modal.getInstance(modalElement)?.hide();
+        });
         [empNomInput, empPrenomInput, empEmailInput, empPasswordInput].forEach(input => {
             if (input) input.addEventListener('input', () => input.setCustomValidity(""));
         });
     }
 
-    const createEmployeeModalElement = document.getElementById('createEmployeeModal');
-    let createEmployeeModalTrigger = null; 
-    if (createEmployeeModalElement) {
-        createEmployeeModalElement.addEventListener('show.bs.modal', function (event) {
-            if (event.relatedTarget) createEmployeeModalTrigger = event.relatedTarget;
-        });
-        createEmployeeModalElement.addEventListener('hidden.bs.modal', function () {
-            if (createEmployeeModalTrigger) {
-                createEmployeeModalTrigger.focus();
-                createEmployeeModalTrigger = null; 
-            }
-        });
-    }
+    displayEmployeesTable(currentEmployees); // Affiche les employés (données factices pour l'instant)
+    displayUsersTable(currentUsers);       // Affiche les utilisateurs (données factices pour l'instant)
 
-    displayEmployeesTable(currentEmployees); 
-    
+    // Logique pour suspendre/réactiver employés et utilisateurs (inchangée, utilise les données factices)
     const employeesTableBody = document.getElementById('employees-table-body');
     if (employeesTableBody) {
         employeesTableBody.addEventListener('click', function(event) {
-            const target = event.target;
-            let actionButton = null;
-            let actionToPerform = null;
+            const target = event.target.closest('button[data-employee-id]');
+            if (!target) return;
+            
+            const employeeId = target.getAttribute('data-employee-id');
+            const employeeIndex = currentEmployees.findIndex(emp => emp.id === employeeId);
+            if (employeeIndex === -1) return;
 
-            if (target.classList.contains('action-suspend') || target.closest('.action-suspend')) {
-                actionButton = target.classList.contains('action-suspend') ? target : target.closest('.action-suspend');
-                actionToPerform = 'suspend';
-            } 
-            else if (target.classList.contains('action-reactivate') || target.closest('.action-reactivate')) {
-                actionButton = target.classList.contains('action-reactivate') ? target : target.closest('.action-reactivate');
-                actionToPerform = 'reactivate';
+            if (target.classList.contains('action-suspend')) {
+                // TODO: Appel API pour suspendre l'employé
+                currentEmployees[employeeIndex].statut = 'Suspendu';
+                alert(`Employé ${employeeId} suspendu (simulation) ! L'API est à implémenter.`);
+            } else if (target.classList.contains('action-reactivate')) {
+                // TODO: Appel API pour réactiver l'employé
+                currentEmployees[employeeIndex].statut = 'Actif';
+                alert(`Employé ${employeeId} réactivé (simulation) ! L'API est à implémenter.`);
             }
-
-            if (actionButton && actionToPerform) {
-                const employeeId = actionButton.getAttribute('data-employee-id');
-                if (!employeeId) return;
-                const employeeIndex = currentEmployees.findIndex(emp => emp.id === employeeId);
-                if (employeeIndex === -1) return;
-
-                if (actionToPerform === 'suspend') currentEmployees[employeeIndex].statut = 'Suspendu';
-                else if (actionToPerform === 'reactivate') currentEmployees[employeeIndex].statut = 'Actif';
-                
-                displayEmployeesTable(currentEmployees);
-                alert(`Employé ${employeeId} ${currentEmployees[employeeIndex].statut.toLowerCase()} (simulation) !`);
-            }
+            displayEmployeesTable(currentEmployees);
         });
     }
-    
-    displayUsersTable(currentUsers); 
 
     const usersTableBody = document.getElementById('users-table-body');
     if (usersTableBody) {
         usersTableBody.addEventListener('click', function(event) {
-            const target = event.target;
-            let actionButton = null;
-            let actionToPerform = null;
+            const target = event.target.closest('button[data-user-id]');
+            if (!target) return;
 
-            if (target.classList.contains('user-action-suspend') || target.closest('.user-action-suspend')) {
-                actionButton = target.classList.contains('user-action-suspend') ? target : target.closest('.user-action-suspend');
-                actionToPerform = 'suspend';
-            } 
-            else if (target.classList.contains('user-action-reactivate') || target.closest('.user-action-reactivate')) {
-                actionButton = target.classList.contains('user-action-reactivate') ? target : target.closest('.user-action-reactivate');
-                actionToPerform = 'reactivate';
+            const userId = target.getAttribute('data-user-id');
+            const userIndex = currentUsers.findIndex(user => user.id === userId);
+            if (userIndex === -1) return;
+
+            if (target.classList.contains('user-action-suspend')) {
+                // TODO: Appel API pour suspendre l'utilisateur
+                currentUsers[userIndex].statut = 'Suspendu';
+                alert(`Utilisateur ${userId} suspendu (simulation) ! L'API est à implémenter.`);
+            } else if (target.classList.contains('user-action-reactivate')) {
+                // TODO: Appel API pour réactiver l'utilisateur
+                currentUsers[userIndex].statut = 'Actif';
+                alert(`Utilisateur ${userId} réactivé (simulation) ! L'API est à implémenter.`);
             }
-
-            if (actionButton && actionToPerform) {
-                const userId = actionButton.getAttribute('data-user-id'); 
-                if (!userId) return;
-                const userIndex = currentUsers.findIndex(user => user.id === userId);
-                if (userIndex === -1) return;
-
-                if (actionToPerform === 'suspend') currentUsers[userIndex].statut = 'Suspendu';
-                else if (actionToPerform === 'reactivate') currentUsers[userIndex].statut = 'Actif';
-
-                displayUsersTable(currentUsers); 
-                alert(`Utilisateur ${userId} ${currentUsers[userIndex].statut.toLowerCase()} (simulation) !`);
-            }
+            displayUsersTable(currentUsers);
         });
     }
-    
-    // === DÉBUT AJOUT GRAPHIQUES ET STATS (Appels aux nouvelles fonctions) ===
-    // Donnée factice pour le total des crédits
-    const mockTotalCredits = 12345; 
-    updateTotalCreditsDisplay(mockTotalCredits);
-
-    // Création des graphiques (s'assurer que Chart.js est bien chargé via le CDN dans index.html)
-    if (typeof Chart !== 'undefined') { // Vérification simple que Chart.js est disponible
-        createRidesPerDayChart();
-        createCreditsGainedPerDayChart();
-    } else {
-        console.error("Chart.js n'est pas chargé. Vérifiez l'inclusion du CDN dans index.html.");
-        const ridesChartCanvas = document.getElementById('ridesPerDayChart');
-        const creditsChartCanvas = document.getElementById('creditsGainedPerDayChart');
-        if (ridesChartCanvas?.parentElement) ridesChartCanvas.parentElement.innerHTML = '<p class="text-danger text-center m-auto">Erreur: Chart.js non chargé.</p>';
-        if (creditsChartCanvas?.parentElement) creditsChartCanvas.parentElement.innerHTML = '<p class="text-danger text-center m-auto">Erreur: Chart.js non chargé.</p>';
-    }
-    // === FIN AJOUT GRAPHIQUES ET STATS ===
-    
     console.log("AdminDashboardHandler: Initialisation de la page admin terminée.");
 }
