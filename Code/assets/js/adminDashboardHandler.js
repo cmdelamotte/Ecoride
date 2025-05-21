@@ -1,17 +1,8 @@
-let currentEmployees = [
-    { id: 'EMP001', nom: 'Dupont', prenom: 'Jean', email: 'jean.dupont@ecoride.pro', statut: 'Actif' },
-    { id: 'EMP002', nom: 'Martin', prenom: 'Sophie', email: 'sophie.martin@ecoride.pro', statut: 'Suspendu' },
-];
-let currentUsers = [
-    { id: 'USR101', pseudo: 'ClientTest', email: 'client.test@email.com', credits: 15, statut: 'Actif' },
-    { id: 'USR102', pseudo: 'PassagerX', email: 'passager.x@email.com', credits: 0, statut: 'Suspendu' },
-];
-
 // Références aux instances des graphiques pour pouvoir les détruire et les recréer si besoin
 let ridesChartInstance = null;
 let creditsChartInstance = null;
 
-// Fonctions d'Affichage 
+// --- Fonctions d'Affichage 
 function displayEmployeesTable(employeesData) {
     const tableBody = document.getElementById('employees-table-body');
     const template = document.getElementById('employee-row-template');
@@ -42,12 +33,20 @@ function displayEmployeesTable(employeesData) {
         if (nomCell) nomCell.textContent = employee.nom;
         if (prenomCell) prenomCell.textContent = employee.prenom;
         if (emailCell) emailCell.textContent = employee.email;
+
         if (statusBadge) {
-            statusBadge.textContent = employee.statut;
-            statusBadge.className = employee.statut === 'Actif' ? 'badge bg-success' : 'badge bg-danger';
+            statusBadge.textContent = employee.statut; // Doit être "Active" ou "Suspended"
+        if (employee.statut && employee.statut.toLowerCase() === 'active') {
+            statusBadge.className = 'badge bg-success';
+        } else if (employee.statut && employee.statut.toLowerCase() === 'suspended') {
+            statusBadge.className = 'badge bg-danger';
+        } else {
+            statusBadge.className = 'badge bg-secondary'; // Cas par défaut
+        }
         }
         if (suspendButton && reactivateButton) {
-            const isActive = employee.statut === 'Actif';
+            const isActive = employee.statut && employee.statut.toLowerCase() === 'active';
+            console.log(`Employé ${employee.id}, Statut: '${employee.statut}', isActive: ${isActive}`); // Log pour débogage
             suspendButton.classList.toggle('d-none', !isActive);
             reactivateButton.classList.toggle('d-none', isActive);
             suspendButton.setAttribute('data-employee-id', employee.id);
@@ -87,12 +86,20 @@ function displayUsersTable(usersData) {
         if (pseudoCell) pseudoCell.textContent = user.pseudo;
         if (emailCell) emailCell.textContent = user.email;
         if (creditsCell) creditsCell.textContent = user.credits;
+        
         if (statusBadge) {
-            statusBadge.textContent = user.statut;
-            statusBadge.className = user.statut === 'Actif' ? 'badge bg-success' : 'badge bg-danger';
+            statusBadge.textContent = user.statut; // Doit être "Active" ou "Suspended"
+            if (user.statut && user.statut.toLowerCase() === 'active') {
+                statusBadge.className = 'badge bg-success';
+            } else if (user.statut && user.statut.toLowerCase() === 'suspended') {
+                statusBadge.className = 'badge bg-danger';
+            } else {
+                statusBadge.className = 'badge bg-secondary';
+            }
         }
         if (suspendButton && reactivateButton) {
-            const isActive = user.statut === 'Actif';
+            const isActive = user.statut && user.statut.toLowerCase() === 'active';
+            console.log(`Utilisateur ${user.id}, Statut: '${user.statut}', isActive: ${isActive}`); // Log pour débogage
             suspendButton.classList.toggle('d-none', !isActive);
             reactivateButton.classList.toggle('d-none', isActive);
             suspendButton.setAttribute('data-user-id', user.id);
@@ -102,8 +109,44 @@ function displayUsersTable(usersData) {
     });
 }
 
+async function fetchAndDisplayAdminData() {
+    // Récupérer et afficher les statistiques
+    // TODO: regrouper tous les fetch ici pour avoir un seul point d'entrée
 
-// Fonctions pour les STATISTIQUES et GRAPHIQUES
+    // Récupérer et afficher les employés
+    try {
+        const empResponse = await fetch('http://ecoride.local/api/admin_get_employees.php');
+        const empData = await empResponse.json();
+        if (empData.success) {
+            displayEmployeesTable(empData.employees || []);
+        } else {
+            console.error("Erreur API admin_get_employees:", empData.message);
+            document.getElementById('no-employees-message').classList.remove('d-none');
+        }
+    } catch (error) {
+        console.error("Erreur Fetch globale (admin_get_employees):", error);
+        document.getElementById('no-employees-message').textContent = "Erreur chargement employés.";
+        document.getElementById('no-employees-message').classList.remove('d-none');
+    }
+
+    // Récupérer et afficher les utilisateurs
+    try {
+        const userResponse = await fetch('http://ecoride.local/api/admin_get_users.php');
+        const userData = await userResponse.json();
+        if (userData.success) {
+            displayUsersTable(userData.users || []);
+        } else {
+            console.error("Erreur API admin_get_users:", userData.message);
+            document.getElementById('no-users-message').classList.remove('d-none');
+        }
+    } catch (error) {
+        console.error("Erreur Fetch globale (admin_get_users):", error);
+        document.getElementById('no-users-message').textContent = "Erreur chargement utilisateurs.";
+        document.getElementById('no-users-message').classList.remove('d-none');
+    }
+}
+
+// --- Fonctions pour les STATISTIQUES et GRAPHIQUES ---
 
 function updateTotalCreditsDisplay(totalCredits) {
     const totalCreditsElement = document.getElementById('admin-total-credits');
@@ -206,9 +249,13 @@ async function fetchAdminStats() {
     try {
         const response = await fetch('http://ecoride.local/api/get_admin_stats.php');
         if (!response.ok) {
+            // Si le statut est 403 (Forbidden), cela peut signifier que l'utilisateur n'est pas admin
             if (response.status === 403) {
                 console.warn("Accès non autorisé aux statistiques admin. Redirection envisagée si nécessaire.");
+                // Tu pourrais vouloir rediriger l'utilisateur ou afficher un message spécifique
+                // Pour l'instant, on logue juste.
                 document.getElementById('admin-total-credits').textContent = "Accès refusé";
+                // On pourrait vider les graphiques ou afficher un message d'erreur
                 return; 
             }
             const errorText = await response.text().catch(() => "Impossible de lire le corps de l'erreur.");
@@ -238,14 +285,15 @@ async function fetchAdminStats() {
 }
 
 
-//  Initialisation de la Page 
+// --- Initialisation de la Page ---
 export function initializeAdminDashboardPage() {
     console.log("AdminDashboardHandler: Initialisation de la page admin.");
 
-    // Appel initial pour charger les statistiques
-    fetchAdminStats();
+    fetchAdminStats(); // Pour les graphiques et le total des crédits
 
-    // Logique pour la création d'employés (inchangée pour l'instant, utilise les données factices)
+    fetchAndDisplayAdminData(); // Pour les listes d'employés et d'utilisateurs
+
+    // Logique pour la création d'employés
     const createEmployeeModalForm = document.getElementById('create-employee-form');
     const empNomInput = document.getElementById('emp-nom');
     const empPrenomInput = document.getElementById('emp-prenom');
@@ -255,7 +303,7 @@ export function initializeAdminDashboardPage() {
     const passwordRequirementsMessage = "Le mot de passe doit contenir au moins 8 caractères, incluant majuscule, minuscule, chiffre et caractère spécial.";
 
     if (createEmployeeModalForm) {
-        createEmployeeModalForm.addEventListener('submit', function(event) {
+        createEmployeeModalForm.addEventListener('submit', async function(event) { // Assure-toi que c'est async
             event.preventDefault();
             [empNomInput, empPrenomInput, empEmailInput, empPasswordInput].forEach(input => {
                 if (input) input.setCustomValidity("");
@@ -275,75 +323,125 @@ export function initializeAdminDashboardPage() {
             } else if (empPasswordInput && !password && empPasswordInput.hasAttribute('required')) {
                 empPasswordInput.setCustomValidity("Mot de passe initial requis."); isFormValidOverall = false;
             }
-
             if (!isFormValidOverall) {
                 createEmployeeModalForm.reportValidity();
                 return;
             }
-            
-            // TODO: Remplacer par un appel API pour créer l'employé
-            const newEmployee = {
-                id: "EMP" + Date.now().toString().slice(-4), nom, prenom, email, statut: 'Actif'
+
+            const employeeData = {
+                first_name: prenom,
+                last_name: nom,
+                username: `${prenom.toLowerCase()}.${nom.toLowerCase()}`.replace(/\s+/g, ''),
+                email: email,
+                password: password,
             };
-            currentEmployees.push(newEmployee);
-            displayEmployeesTable(currentEmployees);
-            alert("Compte employé créé et ajouté à la liste (simulation) ! L'API est à implémenter.");
-            createEmployeeModalForm.reset();
-            const modalElement = document.getElementById('createEmployeeModal');
-            if (modalElement) bootstrap.Modal.getInstance(modalElement)?.hide();
+
+            try {
+                const response = await fetch('http://ecoride.local/api/admin_create_employee.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(employeeData)
+                });
+                const result = await response.json();
+                if (result.success) {
+                    alert(result.message || "Employé créé avec succès !");
+                    fetchAndDisplayAdminData(); 
+                    createEmployeeModalForm.reset();
+                    bootstrap.Modal.getInstance(document.getElementById('createEmployeeModal'))?.hide();
+                } else {
+                    alert(result.message || "Erreur lors de la création de l'employé.");
+                }
+            } catch (error) {
+                console.error("Erreur création employé:", error);
+                alert("Erreur de communication pour créer l'employé.");
+            }
         });
-        [empNomInput, empPrenomInput, empEmailInput, empPasswordInput].forEach(input => {
-            if (input) input.addEventListener('input', () => input.setCustomValidity(""));
+         [empNomInput, empPrenomInput, empEmailInput, empPasswordInput].forEach(input => { // Listeners pour reset custom validity
+            if (input) {
+                input.addEventListener('input', () => input.setCustomValidity(""));
+            }
         });
     }
 
-    displayEmployeesTable(currentEmployees); // Affiche les employés (données factices pour l'instant)
-    displayUsersTable(currentUsers);       // Affiche les utilisateurs (données factices pour l'instant)
-
-    // Logique pour suspendre/réactiver employés et utilisateurs (inchangée, utilise les données factices)
+    // Logique pour suspendre/réactiver employés
     const employeesTableBody = document.getElementById('employees-table-body');
     if (employeesTableBody) {
-        employeesTableBody.addEventListener('click', function(event) {
+        employeesTableBody.addEventListener('click', async function(event) { // async ici aussi
             const target = event.target.closest('button[data-employee-id]');
             if (!target) return;
             
-            const employeeId = target.getAttribute('data-employee-id');
-            const employeeIndex = currentEmployees.findIndex(emp => emp.id === employeeId);
-            if (employeeIndex === -1) return;
+            const employeeIdRaw = target.getAttribute('data-employee-id');
+            const userId = parseInt(employeeIdRaw.replace('EMP', ''), 10); // L'API attend l'ID numérique
+            let newStatus = '';
 
             if (target.classList.contains('action-suspend')) {
-                // TODO: Appel API pour suspendre l'employé
-                currentEmployees[employeeIndex].statut = 'Suspendu';
-                alert(`Employé ${employeeId} suspendu (simulation) ! L'API est à implémenter.`);
+                newStatus = 'suspended';
             } else if (target.classList.contains('action-reactivate')) {
-                // TODO: Appel API pour réactiver l'employé
-                currentEmployees[employeeIndex].statut = 'Actif';
-                alert(`Employé ${employeeId} réactivé (simulation) ! L'API est à implémenter.`);
+                newStatus = 'active';
+            } else {
+                return;
             }
-            displayEmployeesTable(currentEmployees);
+
+            if (!userId || !newStatus) return;
+
+            try {
+                const response = await fetch('http://ecoride.local/api/admin_update_user_status.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ user_id: userId, new_status: newStatus })
+                });
+                const result = await response.json();
+                if (result.success) {
+                    alert(result.message || `Statut de l'employé ${employeeIdRaw} mis à jour !`);
+                    fetchAndDisplayAdminData();
+                } else {
+                    alert(result.message || "Erreur lors de la mise à jour du statut.");
+                }
+            } catch (error) {
+                console.error("Erreur MàJ statut employé:", error);
+                alert("Erreur de communication pour mettre à jour le statut.");
+            }
         });
     }
-
+    
+    // Logique pour suspendre/réactiver utilisateurs (clients)
     const usersTableBody = document.getElementById('users-table-body');
     if (usersTableBody) {
-        usersTableBody.addEventListener('click', function(event) {
+        usersTableBody.addEventListener('click', async function(event) { // async ici
             const target = event.target.closest('button[data-user-id]');
             if (!target) return;
 
-            const userId = target.getAttribute('data-user-id');
-            const userIndex = currentUsers.findIndex(user => user.id === userId);
-            if (userIndex === -1) return;
+            const userIdRaw = target.getAttribute('data-user-id');
+            const userId = parseInt(userIdRaw.replace('USR', ''), 10); // L'API attend l'ID numérique
+            let newStatus = '';
 
             if (target.classList.contains('user-action-suspend')) {
-                // TODO: Appel API pour suspendre l'utilisateur
-                currentUsers[userIndex].statut = 'Suspendu';
-                alert(`Utilisateur ${userId} suspendu (simulation) ! L'API est à implémenter.`);
+                newStatus = 'suspended';
             } else if (target.classList.contains('user-action-reactivate')) {
-                // TODO: Appel API pour réactiver l'utilisateur
-                currentUsers[userIndex].statut = 'Actif';
-                alert(`Utilisateur ${userId} réactivé (simulation) ! L'API est à implémenter.`);
+                newStatus = 'active';
+            } else {
+                return;
             }
-            displayUsersTable(currentUsers);
+            
+            if (!userId || !newStatus) return;
+
+            try {
+                const response = await fetch('http://ecoride.local/api/admin_update_user_status.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ user_id: userId, new_status: newStatus })
+                });
+                const result = await response.json();
+                if (result.success) {
+                    alert(result.message || `Statut de l'utilisateur ${userIdRaw} mis à jour !`);
+                    fetchAndDisplayAdminData(); // Recharger les listes
+                } else {
+                    alert(result.message || "Erreur lors de la mise à jour du statut de l'utilisateur.");
+                }
+            } catch (error) {
+                console.error("Erreur MàJ statut utilisateur:", error);
+                alert("Erreur de communication pour mettre à jour le statut de l'utilisateur.");
+            }
         });
     }
     console.log("AdminDashboardHandler: Initialisation de la page admin terminée.");
