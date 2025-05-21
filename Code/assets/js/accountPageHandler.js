@@ -70,7 +70,7 @@ async function populateBrandSelect(brandSelectElement) {
     }
     setSelectMessage('Chargement des marques...');
     try {
-        const response = await fetch('http://ecoride.local/api/get_brands.php');
+        const response = await fetch('/api/get_brands.php');
         if (!response.ok) throw new Error(`Erreur HTTP ${response.status} (marques)`);
         const data = await response.json();
         if (data.success && data.brands && data.brands.length > 0) {
@@ -213,7 +213,6 @@ function hideVehicleForm() {
 
 // === Fonction Principale d'Initialisation de la Page ===
 export function initializeAccountPage() {
-    console.log("AccountPageHandler: Initialisation de la page Mon Espace.");
 
     // --- Sélection des éléments du DOM ---
     const roleForm = document.getElementById('role-form');
@@ -281,14 +280,13 @@ export function initializeAccountPage() {
     }
 
 
-fetch('http://ecoride.local/api/get_user_profile.php', { 
+fetch('/api/get_user_profile.php', { 
         method: 'GET',
         headers: {
             'Accept': 'application/json',
         }
     })
     .then(response => {
-        console.log("Profil Fetch: Statut Réponse:", response.status);
         if (response.status === 401) {
             console.warn("Utilisateur non authentifié, redirection vers login.");
             if (typeof LoadContentPage === "function") {
@@ -307,7 +305,6 @@ fetch('http://ecoride.local/api/get_user_profile.php', {
         return response.json();
     })
     .then(data => {
-        console.log("Profil Fetch: Données reçues:", data);
         if (data.success && data.user) {
             const userData = data.user;
             const vehiclesData = data.vehicles || [];
@@ -356,7 +353,6 @@ fetch('http://ecoride.local/api/get_user_profile.php', {
     console.error("Erreur Fetch globale pour get_user_profile:", error);
 
         if (error.message !== 'Non authentifié') {
-            console.log("Redirection vers la page 404 suite à une erreur de chargement du profil.");
             if (typeof LoadContentPage === "function") {
                 window.history.pushState({}, "", "/404");
                 LoadContentPage(); 
@@ -381,13 +377,12 @@ fetch('http://ecoride.local/api/get_user_profile.php', {
         const selectedRole = formData.get('user_role_form'); 
 
         if (selectedRole) { 
-            console.log("accountPageHandler: Rôle fonctionnel sélectionné pour MàJ :", selectedRole);
 
             // Désactive le bouton de soumission du formulaire de rôle
             const roleSubmitButton = roleForm.querySelector('button[type="submit"]');
             if (roleSubmitButton) roleSubmitButton.disabled = true;
 
-            fetch('http://ecoride.local/api/update_user_role.php', {
+            fetch('/api/update_user_role.php', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -395,19 +390,16 @@ fetch('http://ecoride.local/api/get_user_profile.php', {
                 body: JSON.stringify({ role: selectedRole }) 
             })
             .then(response => {
-                console.log("Update Role Fetch: Statut Réponse:", response.status);
                 return response.json().then(data => ({ status: response.status, body: data, ok: response.ok }))
                     .catch(jsonError => {
                         console.error("Update Role: Erreur parsing JSON:", jsonError);
                         return response.text().then(textData => {
-                            console.log("Update Role: Réponse brute non-JSON:", textData);
                             throw new Error(`Réponse non-JSON du serveur (statut ${response.status}): ${textData.substring(0,200)}...`);
                         });
                     });
             })
             .then(({ status, body, ok }) => {
                 if (roleSubmitButton) roleSubmitButton.disabled = false; // Réactiver le bouton
-                console.log("Update Role: Réponse API:", body);
 
                 if (ok && body.success) {
                     alert(body.message || 'Rôle mis à jour avec succès !');
@@ -455,32 +447,28 @@ if (deleteAccountBtn && confirmDeleteAccountModal && confirmDeleteAccountBtn) {
 
         // Listener pour le bouton de confirmation de suppression de compte
         confirmDeleteAccountBtn.addEventListener('click', () => {
-            console.log("accountPageHandler: Confirmation de suppression de compte. Appel API...");
 
             // Désactiver le bouton pour éviter double clic
             confirmDeleteAccountBtn.disabled = true;
 
-            fetch('http://ecoride.local/api/delete_account.php', {
+            fetch('/delete_account.php', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json' 
                     // Le cookie de session PHPSESSID sera envoyé automatiquement
                 },
-                // Implémenter la demande supplémentaire de mot de passe ici
+                // TODO: Implémenter la demande supplémentaire de mot de passe ici
             })
             .then(response => {
-                console.log("Delete Account Fetch: Statut Réponse:", response.status);
                 return response.json().then(data => ({ ok: response.ok, status: response.status, body: data }))
                     .catch(jsonError => {
                         console.error("Delete Account Fetch: Erreur parsing JSON:", jsonError);
                         return response.text().then(textData => {
-                            console.log("Delete Account Fetch: Réponse brute non-JSON:", textData);
                             throw new Error(`Réponse non-JSON (statut ${response.status}) pour suppression compte: ${textData.substring(0,100)}...`);
                         });
                     });
             })
 .then(({ ok, status, body }) => {
-            console.log("Delete Account Fetch: Réponse API:", body);
 
             if (ok && body.success) {
                 alert(body.message || "Votre compte a été supprimé avec succès. Vous allez être déconnecté.");
@@ -537,10 +525,6 @@ if (deleteAccountBtn && confirmDeleteAccountModal && confirmDeleteAccountBtn) {
                 confirmDeleteAccountModal.hide();
             }
         })
-        .finally(() => { // Ce finally est peut-être redondant si on gère déjà la fermeture partout
-            // vehicleIdToDelete = null; // Tu n'as pas de vehicleIdToDelete pour la suppression de compte
-            // if(confirmDeleteAccountModal) confirmDeleteAccountModal.hide(); // Déjà fait
-        });
         });
     }
 
@@ -595,12 +579,11 @@ if (deleteAccountBtn && confirmDeleteAccountModal && confirmDeleteAccountBtn) {
     if (confirmVehicleDeleteBtn && confirmDeleteVehicleModalInstance && vehiclesList) { // Ajout de vehiclesList pour être sûr qu'il est dispo
         confirmVehicleDeleteBtn.addEventListener('click', () => {
             if (vehicleIdToDelete) {
-                console.log("Confirmation de suppression pour véhicule ID:", vehicleIdToDelete);
 
                 // Désactiver le bouton de confirmation pendant l'appel
                 confirmVehicleDeleteBtn.disabled = true;
 
-                fetch('http://ecoride.local/api/delete_vehicle.php', {
+                fetch('/api/delete_vehicle.php', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -608,19 +591,16 @@ if (deleteAccountBtn && confirmDeleteAccountModal && confirmDeleteAccountBtn) {
                     body: JSON.stringify({ vehicle_id: parseInt(vehicleIdToDelete, 10) }) // L'API attend vehicle_id
                 })
                 .then(response => {
-                    console.log("Delete Vehicle Fetch: Statut Réponse:", response.status);
                     return response.json().then(data => ({ ok: response.ok, status: response.status, body: data }))
                         .catch(jsonError => {
                             console.error("Delete Vehicle Fetch: Erreur parsing JSON:", jsonError);
                             return response.text().then(textData => {
-                                console.log("Delete Vehicle Fetch: Réponse brute non-JSON:", textData);
                                 throw new Error(`Réponse non-JSON (statut ${response.status}) pour suppression véhicule: ${textData.substring(0,100)}...`);
                             });
                         });
                 })
                 .then(({ ok, status, body }) => {
                     confirmVehicleDeleteBtn.disabled = false; // Réactiver le bouton
-                    console.log("Delete Vehicle Fetch: Réponse API:", body);
 
                     if (ok && body.success) {
                         alert(body.message || `Véhicule ID ${vehicleIdToDelete} supprimé avec succès !`);
@@ -725,12 +705,9 @@ if (deleteAccountBtn && confirmDeleteAccountModal && confirmDeleteAccountBtn) {
                 passenger_capacity: seats,
                 is_electric: isElectric,
             };
-            console.log("Données du véhicule prêtes à être envoyées à l'API (avant if/else ajout/modif):", vehicleDataToSend);
 
 
-            if (currentVehicleId) { 
-                console.log("Préparation pour MODIFIER Véhicule via API. Données:", vehicleDataToSend, "pour ID:", currentVehicleId);
-                
+            if (currentVehicleId) {                 
                 // L'objet vehicleDataToSend contient déjà les nouvelles valeurs.
                 // Ajout de l'ID du véhicule à mettre à jour, que l'API attend.
                 const dataToSendWithId = { 
@@ -739,7 +716,7 @@ if (deleteAccountBtn && confirmDeleteAccountModal && confirmDeleteAccountBtn) {
                 const submitButton = vehicleForm.querySelector('button[type="submit"]');
                 if (submitButton) submitButton.disabled = true;
 
-                fetch('http://ecoride.local/api/update_vehicle.php', {
+                fetch('/api/update_vehicle.php', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -747,19 +724,16 @@ if (deleteAccountBtn && confirmDeleteAccountModal && confirmDeleteAccountBtn) {
                     body: JSON.stringify(dataToSendWithId) // Envoie les données avec l'ID du véhicule
                 })
                 .then(response => {
-                    console.log("Update Vehicle Fetch: Statut Réponse:", response.status);
                     return response.json().then(data => ({ ok: response.ok, status: response.status, body: data }))
                         .catch(jsonError => {
                             console.error("Update Vehicle Fetch: Erreur parsing JSON:", jsonError);
                             return response.text().then(textData => {
-                                console.log("Update Vehicle Fetch: Réponse brute non-JSON:", textData);
                                 throw new Error(`Réponse non-JSON (statut ${response.status}) pour modif véhicule: ${textData.substring(0,100)}...`);
                             });
                         });
                 })
                 .then(({ ok, body }) => {
                     if (submitButton) submitButton.disabled = false;
-                    console.log("Update Vehicle Fetch: Réponse API:", body);
 
                     if (ok && body.success && body.vehicle) {
                         alert(body.message || "Véhicule mis à jour avec succès !");
@@ -802,13 +776,11 @@ if (deleteAccountBtn && confirmDeleteAccountModal && confirmDeleteAccountBtn) {
                     console.error("Erreur Fetch globale (Update Vehicle):", error);
                     alert('Erreur de communication avec le serveur pour la modification du véhicule. ' + error.message);
                 });
-            } else { 
-                console.log("Préparation pour AJOUTER Véhicule via API. Données:", vehicleDataToSend);
-                
+            } else {                
                 const submitButton = vehicleForm.querySelector('button[type="submit"]');
                 if (submitButton) submitButton.disabled = true;
 
-                fetch('http://ecoride.local/api/add_vehicle.php', {
+                fetch('/api/add_vehicle.php', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -820,19 +792,17 @@ if (deleteAccountBtn && confirmDeleteAccountModal && confirmDeleteAccountBtn) {
                         .catch(jsonError => {
                             console.error("Add Vehicle: Erreur parsing JSON:", jsonError);
                             return response.text().then(textData => {
-                                console.log("Add Vehicle: Réponse brute non-JSON:", textData);
                                 throw new Error(`Réponse non-JSON (statut ${response.status}) pour ajout véhicule: ${textData.substring(0,100)}...`);
                             });
                         });
                 })
-                .then(({ ok, status, body }) => {
+                .then(({ ok, body }) => {
                     if (submitButton) submitButton.disabled = false;
 
                     if (ok && body.success && body.vehicle) {
                         alert(body.message || "Véhicule ajouté avec succès !");
                         hideVehicleForm(); 
 
-                        console.log("Véhicule ajouté. Rechargement de la page Mon Compte pour voir la mise à jour.");
                         if (typeof LoadContentPage === "function") {
                             LoadContentPage(); 
                         } else {
@@ -862,7 +832,6 @@ if (deleteAccountBtn && confirmDeleteAccountModal && confirmDeleteAccountBtn) {
 if (preferencesForm) {
     preferencesForm.addEventListener('submit', function(event) {
         event.preventDefault();
-        console.log("accountPageHandler: Soumission du formulaire des préférences.");
 
         const prefSmoker = prefSmokerInput ? prefSmokerInput.checked : false;
         const prefAnimals = prefAnimalsInput ? prefAnimalsInput.checked : false;
@@ -874,13 +843,11 @@ if (preferencesForm) {
             pref_custom: prefCustom
         };
 
-        console.log("accountPageHandler: Envoi des préférences à l'API:", preferencesData);
-
         // Désactiver le bouton de soumission
         const prefSubmitButton = preferencesForm.querySelector('button[type="submit"]');
         if (prefSubmitButton) prefSubmitButton.disabled = true;
 
-        fetch('http://ecoride.local/api/update_driver_preferences.php', {
+        fetch('/api/update_driver_preferences.php', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -888,19 +855,16 @@ if (preferencesForm) {
             body: JSON.stringify(preferencesData)
         })
         .then(response => {
-            console.log("Update Prefs Fetch: Statut Réponse:", response.status);
             return response.json().then(data => ({ status: response.status, body: data, ok: response.ok }))
                 .catch(jsonError => {
                     console.error("Update Prefs: Erreur parsing JSON:", jsonError);
                     return response.text().then(textData => {
-                        console.log("Update Prefs: Réponse brute non-JSON:", textData);
                         throw new Error(`Réponse non-JSON (statut ${response.status}): ${textData.substring(0,200)}...`);
                     });
                 });
         })
         .then(({ status, body, ok }) => {
             if (prefSubmitButton) prefSubmitButton.disabled = false;
-            console.log("Update Prefs: Réponse API:", body);
 
             if (ok && body.success) {
                 alert(body.message || 'Préférences mises à jour avec succès !');

@@ -30,8 +30,7 @@ async function populateVehicleSelect(vehicleSelectElement) {
         setVehicleSelectMessage("Chargement des véhicules...");
 
         try {
-            // On suppose que get_user_profile.php renvoie les véhicules de l'utilisateur connecté
-            const response = await fetch('http://ecoride.local/api/get_user_profile.php');
+            const response = await fetch('/api/get_user_profile.php');
             if (!response.ok) throw new Error('Erreur récupération profil/véhicules');
             const data = await response.json();
 
@@ -215,7 +214,6 @@ async function populateVehicleSelect(vehicleSelectElement) {
             driver_message: message
         };
 
-        console.log("publishRidePageHandler: Envoi du trajet à l'API :", rideData);
         const submitButton = publishForm.querySelector('button[type="submit"]');
         if(submitButton) submitButton.disabled = true;
         if (globalMessageDiv) { 
@@ -223,13 +221,12 @@ async function populateVehicleSelect(vehicleSelectElement) {
             globalMessageDiv.className = 'alert alert-info';
         }
 
-        fetch('http://ecoride.local/api/publish_ride.php', {
+        fetch('/api/publish_ride.php', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(rideData)
         })
         .then(response => {
-                    console.log("Publish Ride Fetch: Statut Réponse:", response.status); // Bon pour le log
                     // Essayer de parser en JSON. Si ça échoue, c'est que la réponse n'était pas du JSON valide
                     return response.json()
                         .then(data => ({ 
@@ -242,7 +239,6 @@ async function populateVehicleSelect(vehicleSelectElement) {
                             console.error("Publish Ride Fetch: Erreur parsing JSON de la réponse.", jsonError);
                             // On essaie de lire la réponse comme du texte brut pour voir ce que le serveur a envoyé.
                             return response.text().then(textData => {
-                                console.log("Publish Ride Fetch: Réponse brute non-JSON du serveur:", textData);
                                 // On propage une nouvelle erreur pour que le .catch() global du fetch soit activé
                                 // avec un message plus descriptif.
                                 throw new Error(`Réponse non-JSON du serveur (statut ${response.status}): ${textData.substring(0,100)}...`);
@@ -251,9 +247,7 @@ async function populateVehicleSelect(vehicleSelectElement) {
                 })
         .then(({ ok, body }) => {
             if (submitButton) submitButton.disabled = false;
-            console.log("Publish Ride Fetch: Réponse API:", body);
             
-
             if (ok && body.success && body.ride) {
                 if (globalMessageDiv) {
                     globalMessageDiv.textContent = body.message || 'Trajet publié avec succès !';
@@ -264,7 +258,7 @@ async function populateVehicleSelect(vehicleSelectElement) {
                 publishForm.reset();
                 setTimeout(() => {
                     if (typeof LoadContentPage === "function") {
-                        window.history.pushState({}, "", "/your-rides"); // Ou vers le détail du trajet créé: /rides-search?id=${body.ride.id} (nécessite adaptation)
+                        window.history.pushState({}, "", "/your-rides");
                         LoadContentPage();
                     } else {
                         window.location.href = "/your-rides";
@@ -275,7 +269,6 @@ async function populateVehicleSelect(vehicleSelectElement) {
                         let specificFieldErrorsHandled = false;
 
                         if (body.errors) {
-                            console.log("Erreurs de validation du serveur reçues:", body.errors);
                             for (const key in body.errors) {
                                 let inputElement = null;
                                 if (key === 'departure_city') inputElement = departureLocationInput; 

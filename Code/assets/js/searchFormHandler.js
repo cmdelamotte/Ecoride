@@ -51,16 +51,13 @@ export function initializeSearchForm() {
             }
             
             if (!isFormValidOverall) {
-                searchForm.reportValidity(); 
-                console.log("Validation du formulaire de recherche échouée (native ou custom).");
+                searchForm.reportValidity();
             } else {
-                console.log("Formulaire de recherche valide.");
                 const departure = departureInput?.value.trim();
                 const destination = destinationInput?.value.trim();
                 const passengers = parseInt(passengersInput?.value, 10);
 
                 const searchCriteria = { departure, destination, date: rideDateValue, seats: passengers };
-                console.log("Critères de recherche :", searchCriteria);
 
                 const queryParams = new URLSearchParams(searchCriteria).toString();
                 const targetUrl = `/rides-search?${queryParams}`;
@@ -81,8 +78,6 @@ export function initializeSearchForm() {
                 dateInput.setCustomValidity("");
             });
         }
-    } else {
-        // console.warn("Formulaire 'search-form' non trouvé pour initialisation.");
     }
 
     // --- Exécuter le pré-remplissage si on est sur la page de résultats de recherche ---

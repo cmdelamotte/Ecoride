@@ -1,11 +1,10 @@
-// Code/assets/js/forgotPasswordHandler.js
 export function initializeForgotPasswordForm() {
     const forgotPasswordForm = document.getElementById('forgot-password-form');
     const emailInput = document.getElementById('reset-email');
     const messageDiv = document.getElementById('message-forgot-password');
 
     if (forgotPasswordForm) {
-        forgotPasswordForm.addEventListener('submit', async function(event) { // Rendre async
+        forgotPasswordForm.addEventListener('submit', async function(event) {
             event.preventDefault();
 
             if (emailInput) emailInput.setCustomValidity("");
@@ -21,7 +20,7 @@ export function initializeForgotPasswordForm() {
             }
             
             const email = emailInput?.value.trim();
-            if (emailInput && !email && emailInput.hasAttribute('required')) { // Si requis et vide
+            if (emailInput && !email && emailInput.hasAttribute('required')) { 
                 emailInput.setCustomValidity("L'adresse email est requise.");
                 isFormValidOverall = false;
             }
@@ -47,7 +46,7 @@ export function initializeForgotPasswordForm() {
             if(submitButton) submitButton.disabled = true;
 
             try {
-                const response = await fetch('http://ecoride.local/api/request_password_reset.php', {
+                const response = await fetch('/api/request_password_reset.php', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ email: email })
@@ -55,7 +54,7 @@ export function initializeForgotPasswordForm() {
                 const result = await response.json();
 
                 if (messageDiv) {
-                    messageDiv.textContent = result.message; // L'API renvoie déjà le message générique
+                    messageDiv.textContent = result.message;
                     messageDiv.classList.remove('d-none', 'alert-info');
                     messageDiv.classList.toggle('alert-success', result.success);
                     messageDiv.classList.toggle('alert-danger', !result.success);

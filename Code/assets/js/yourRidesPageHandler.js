@@ -144,29 +144,25 @@ function initializeReviewModal() {
                     report_comment: (tripExperience === 'bad' ? reportComment : null) // N'envoie report_comment que si pertinent
                 };
 
-                console.log("yourRidesPageHandler: Envoi de l'avis/signalement à l'API :", reviewData);
                 const submitReviewButton = reviewForm.querySelector('button[type="submit"]');
                 if (submitReviewButton) submitReviewButton.disabled = true;
 
-                fetch('http://ecoride.local/api/submit_review.php', {
+                fetch('/api/submit_review.php', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(reviewData)
                 })
                 .then(response => {
-                    console.log("Submit Review Fetch: Statut Réponse:", response.status);
                     return response.json().then(data => ({ ok: response.ok, status: response.status, body: data }))
                         .catch(jsonError => {
                             console.error("Submit Review: Erreur parsing JSON:", jsonError);
                             return response.text().then(textData => {
-                                console.log("Submit Review: Réponse brute non-JSON:", textData);
                                 throw new Error(`Réponse non-JSON (statut ${response.status}) pour soumission avis: ${textData.substring(0,100)}...`);
                             });
                         });
                 })
-                .then(({ ok, status, body }) => {
+                .then(({ ok, body }) => {
                     if (submitReviewButton) submitReviewButton.disabled = false;
-                    console.log("Submit Review: Réponse API:", body);
                     const modalInstance = bootstrap.Modal.getInstance(reviewModalElement);
 
                     if (ok && body.success) {
@@ -376,18 +372,18 @@ async function handleRideAction(event) {
     }
 
     let apiEndpoint = null;
-    let successAlertMessage = ""; // Message pour l'alerte de succès
+    // let successAlertMessage = ""; // Message pour l'alerte de succès à implémenter
     let confirmMessage = "Êtes-vous sûr de vouloir effectuer cette action ?"; // Message de confirmation par défaut
 
     // Déterminer l'API et les messages en fonction du bouton cliqué
     if (actionButton.classList.contains('action-start-ride')) {
-        apiEndpoint = 'http://ecoride.local/api/start_ride.php';
+        apiEndpoint = '/api/start_ride.php';
         confirmMessage = `Démarrer le trajet ID ${rideId} ?`;
     } else if (actionButton.classList.contains('action-finish-ride')) {
-        apiEndpoint = 'http://ecoride.local/api/finish_ride.php';
+        apiEndpoint = '/api/finish_ride.php';
         confirmMessage = `Marquer le trajet ID ${rideId} comme terminé ?`;
     } else if (actionButton.classList.contains('action-cancel-ride-driver') || actionButton.classList.contains('action-cancel-booking')) {
-        apiEndpoint = 'http://ecoride.local/api/cancel_ride_booking.php';
+        apiEndpoint = '/api/cancel_ride_booking.php';
         if (actionButton.classList.contains('action-cancel-ride-driver')) {
             confirmMessage = `Annuler le trajet ID ${rideId} ? Les passagers seront remboursés.`;
         } else {
@@ -424,13 +420,10 @@ async function handleRideAction(event) {
             throw new Error(`Réponse serveur non-JSON (statut ${response.status}): ${responseText.substring(0, 200)}`);
         }
 
-        console.log(`handleRideAction: Réponse API pour ${apiEndpoint} sur ride_id ${rideId}:`, data);
-
         if (response.ok && data.success) {
             alert(data.message || "Action effectuée avec succès !");
             if (typeof initializeYourRidesPage === "function") {
                 if (window.location.pathname === '/your-rides' && typeof LoadContentPage === "function") {
-                    console.log("Rafraîchissement de l'historique des trajets...");
                     LoadContentPage(); 
                 } else {
                     console.warn("Impossible de rafraîchir dynamiquement, rechargement de la page.");
@@ -451,7 +444,6 @@ async function handleRideAction(event) {
 }
 
 export async function initializeYourRidesPage() {
-        console.log("YourRidesPageHandler: Initialisation de la page Mes Trajets.");
     
     initializeReviewModal();
 
@@ -472,15 +464,15 @@ export async function initializeYourRidesPage() {
     
     // Afficher un indicateur de chargement
     noRidesMessageGlobal.classList.add('d-none');
-    currentRideHighlightDiv.innerHTML = '<p class="text-center text-muted mt-3">Chargement de vos trajets...</p>'; // Ou un spinner
+    currentRideHighlightDiv.innerHTML = '<p class="text-center text-muted mt-3">Chargement de vos trajets...</p>';
     currentRideHighlightDiv.classList.remove('d-none');
 
 
     try {
-        const response = await fetch('http://ecoride.local/api/get_user_rides_history.php');
+        const response = await fetch('/api/get_user_rides_history.php');
         if (!response.ok) {
-            if (response.status === 401) { // Non authentifié
-                 window.location.href = "/login"; // Redirection simple
+            if (response.status === 401) {
+                window.location.href = "/login";
                 return;
             }
             throw new Error(`Erreur API (statut ${response.status})`);
@@ -491,7 +483,6 @@ export async function initializeYourRidesPage() {
         currentRideHighlightDiv.classList.add('d-none'); // Cacher par défaut
 
         if (data.success) {
-            // Appeler une version de renderAllRides qui prend les données de l'API
             displayFetchedRides(data.driven_rides || [], data.booked_rides || []);
         } else {
             console.error("Erreur API get_user_rides_history:", data.message);
@@ -509,7 +500,7 @@ export async function initializeYourRidesPage() {
     // Listeners pour les actions et les onglets 
     const ridesHistorySection = document.querySelector('.rides-history-section');
     if (ridesHistorySection) {
-        ridesHistorySection.addEventListener('click', handleRideAction); // handleRideAction devra être adapté pour appeler des API
+        ridesHistorySection.addEventListener('click', handleRideAction);
     }
 
     const rideTabs = document.querySelectorAll('#ridesTabs button[data-bs-toggle="tab"]');
@@ -575,7 +566,7 @@ function displayFetchedRides(drivenRides, bookedRides) {
             vehicule: `${apiRideData.vehicle_brand || ''} ${apiRideData.vehicle_model || ''}`.trim(),
             estEco: apiRideData.is_eco_ride,
             driverName: apiRideData.driver_username, 
-            driverRating: null, // L'API get_user_rides_history ne renvoie pas la note moyenne
+            driverRating: null,
             
             // Pour Chauffeur:
             passagersInscrits: apiRideData.seats_offered - apiRideData.seats_available,
@@ -613,7 +604,6 @@ function displayFetchedRides(drivenRides, bookedRides) {
         }
 
         cardData.pricePaid = pricePaid.toFixed(2);
-        console.log(`  - Prix payé FINAL: ${cardData.pricePaid} crédits`);
             if (apiRideData.seats_booked && cardData.price_per_seat) { // seats_booked vient de la jointure Bookings pour les booked_rides
                 cardData.prixPaye = cardData.price_per_seat * parseInt(apiRideData.seats_booked, 10);
             } else {
@@ -622,7 +612,6 @@ function displayFetchedRides(drivenRides, bookedRides) {
             cardData.gainEstime = null; // Pas pertinent pour le passager
         }
 
-        console.log("Données pour la carte (avant createRideCardElement):", cardData);
         const rideCard = createRideCardElement(cardData);
         if (!rideCard) return;
 
@@ -634,7 +623,7 @@ function displayFetchedRides(drivenRides, bookedRides) {
         const arrivalDateTime = apiRideData.estimated_arrival_time ? new Date(apiRideData.estimated_arrival_time.replace(' ', 'T')) : null;
 
         if (apiRideData.ride_status === 'ongoing' || (apiRideData.ride_status === 'planned' && departureDateTime <= now && (!arrivalDateTime || now < arrivalDateTime) )) {
-            // En cours (ou aurait dû démarrer et pas encore arrivé)
+            // En cours
             currentRideHighlightDiv.appendChild(rideCard);
             currentRideHighlightDiv.classList.remove('d-none');
         } else if (apiRideData.ride_status === 'planned' && departureDateTime > now) {

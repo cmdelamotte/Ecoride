@@ -40,15 +40,12 @@ export function initializeContactForm() {
             
             if (!isFormValidOverall) {
                 contactForm.reportValidity(); // Affiche les messages d'erreur natifs et custom
-                console.log("Validation du formulaire de contact échouée.");
             } else {
                 const name = nameInput?.value.trim();
                 const email = emailInput?.value.trim();
                 const subject = subjectInput?.value.trim();
                 // messageValue est déjà défini
 
-                console.log("Formulaire de contact valide côté client. Données :", { name, email, subject, message: messageValue });
-                
                 // TODO: Appel fetch vers l'API backend pour envoyer le message.
                 // Pour l'instant, simulation d'un succès :
                 if (messageDiv) {

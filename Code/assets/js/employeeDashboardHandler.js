@@ -96,7 +96,7 @@ function displayReportedRides(reports) {
         const clone = template.content.cloneNode(true);
         const cardElement = clone.querySelector('.card');
 
-        cardElement.dataset.reportId = report.reportId; // ou report.rideId
+        cardElement.dataset.reportId = report.reportId;
         cardElement.querySelector('.report-ride-id').textContent = report.rideId;
         cardElement.querySelector('.report-submission-date').textContent = `Date signalement: ${report.reportSubmissionDate}`;
         cardElement.querySelector('.report-ride-departure').textContent = report.rideDeparture;
@@ -129,7 +129,7 @@ async function fetchPendingReviews() {
     noReviewsMessage.classList.add('d-none');
 
     try {
-        const response = await fetch('http://ecoride.local/api/employee_get_pending_reviews.php');
+        const response = await fetch('/api/employee_get_pending_reviews.php');
         const data = await response.json();
 
         if (data.success) {
@@ -160,7 +160,7 @@ async function fetchReportedRides() {
     noReportsMessage.classList.add('d-none');
 
     try {
-        const response = await fetch('http://ecoride.local/api/employee_get_reports.php');
+        const response = await fetch('/api/employee_get_reports.php');
         const data = await response.json();
 
         if (data.success) {
@@ -203,7 +203,7 @@ async function handleReviewAction(event) {
         newStatus = 'rejected';
         confirmMessage = `Refuser l'avis ${reviewId} ?`;
     } else {
-        return; // Pas un bouton d'action d'avis
+        return; 
     }
 
     if (!reviewId || !newStatus) {
@@ -218,7 +218,7 @@ async function handleReviewAction(event) {
     targetButton.disabled = true; // Désactiver pendant l'appel
 
     try {
-        const response = await fetch('http://ecoride.local/api/employee_update_review_status.php', {
+        const response = await fetch('/api/employee_update_review_status.php', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ review_id: reviewId, new_status: newStatus })
@@ -243,7 +243,6 @@ async function handleReviewAction(event) {
 // --- Initialisation de la Page ---
 
 export function initializeEmployeeDashboardPage() {
-    console.log("EmployeeDashboardHandler: Initialisation de la page Espace Employé.");
 
     fetchPendingReviews();
     fetchReportedRides();

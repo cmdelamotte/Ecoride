@@ -110,7 +110,7 @@ export function initializeResetPasswordForm() {
         if(submitButton) submitButton.disabled = true;
 
         try {
-            const response = await fetch('http://ecoride.local/api/perform_password_reset.php', {
+            const response = await fetch('/api/perform_password_reset.php', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(dataToSend)

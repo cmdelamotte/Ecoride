@@ -1,6 +1,6 @@
 import Route from "./Route.js";
 
-//Définir ici vos routes
+//Définir ici les routes
 export const allRoutes = [
     new Route("/", "Accueil", "/pages/home.html", [], "/assets/js/searchFormHandler.js"),
     new Route("/login", "Connexion", "/pages/auth/login.html", [], "/assets/js/loginFormHandler.js"),

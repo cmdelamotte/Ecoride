@@ -26,10 +26,9 @@ export function initializeEditPersonalInfoForm() {
 
     // --- 1. Pré-remplissage du formulaire en appelant l'API de profil ---
     function prefillFormWithApiData() {
-        console.log("personalInfoFormHandler: Tentative de récupération du profil pour pré-remplissage.");
-        fetch('http://ecoride.local/api/get_user_profile.php', { method: 'GET', headers: {'Accept': 'application/json'} })
+        fetch('/api/get_user_profile.php', { method: 'GET', headers: {'Accept': 'application/json'} })
             .then(response => {
-                if (response.status === 401) { // Non authentifié
+                if (response.status === 401) {
                     if (typeof LoadContentPage === "function") {
                         window.history.pushState({}, "", "/login"); LoadContentPage();
                     } else { window.location.href = "/login"
@@ -45,7 +44,6 @@ export function initializeEditPersonalInfoForm() {
             .then(data => {
                 if (data.success && data.user) {
                     const u = data.user;
-                    console.log("personalInfoFormHandler: Données de profil reçues:", u);
                     if (firstNameInput) firstNameInput.value = u.first_name || '';
                     if (lastNameInput) lastNameInput.value = u.last_name || '';
                     if (usernameInput) usernameInput.value = u.username || '';
@@ -145,7 +143,6 @@ export function initializeEditPersonalInfoForm() {
 
         // Le formulaire est valide côté client, appel de l'API de mise à jour
         const dataToUpdate = { firstName, lastName, username, email, birthdate, phone, currentPassword };
-        console.log("personalInfoFormHandler: Envoi des données de MàJ à l'API :", dataToUpdate);
         
         const submitButton = form.querySelector('button[type="submit"]');
         if(submitButton) submitButton.disabled = true;
@@ -153,25 +150,22 @@ export function initializeEditPersonalInfoForm() {
             messageDiv.textContent = 'Mise à jour en cours...';
             messageDiv.className = 'alert alert-info'; }
 
-        fetch('http://ecoride.local/api/update_personal_info.php', {
+        fetch('/api/update_personal_info.php', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(dataToUpdate)
         })
         .then(response => {
-            console.log("Update Personal Info Fetch: Statut Réponse:", response.status);
             return response.json().then(data => ({ ok: response.ok, status: response.status, body: data }))
                 .catch(jsonError => {
                     console.error("Update Personal Info: Erreur parsing JSON:", jsonError);
                     return response.text().then(textData => {
-                        console.log("Update Personal Info: Réponse brute non-JSON:", textData);
                         throw new Error(`Réponse non-JSON (statut ${response.status}): ${textData.substring(0,200)}...`);
                     });
                 });
         })
         .then(({ ok, body }) => {
             if (submitButton) submitButton.disabled = false;
-            console.log("Update Personal Info: Réponse API:", body);
 
             if (ok && body.success) {
                 if (messageDiv) {
@@ -184,7 +178,6 @@ export function initializeEditPersonalInfoForm() {
                 }
                 currentPasswordInput.value = ''; // Vider le champ du mot de passe actuel
                 setTimeout(() => {
-                            console.log("personalInfoFormHandler: Redirection vers /account après MàJ succès.");
                             if (typeof LoadContentPage === "function") {
                                 window.history.pushState({}, "", "/account");
                                 LoadContentPage();

@@ -14,29 +14,16 @@ export function isConnected() {
 }
 
 /**
- * Simule une connexion en stockant un token et un rôle.
- * @param {string} role - Le rôle à simuler (ex: "passenger", "driver", "passenger-driver", "employee", "admin")
- * @param {string} token - Un token factice.
- */
-// function simulateLogin(role, token = "fakeUserToken123") {
-//     sessionStorage.setItem('ecoRideUserToken', token);
-//     sessionStorage.setItem('ecoRideUserRole', role);
-//     console.log(`Simulation: Connexion en tant que ${role}`);
-//     showAndHideElementsForRoles();
-// }
-
-/**
  * Gère la déconnexion de l'utilisateur.
  * Appelle l'API pour détruire la session serveur, puis nettoie le client.
  * @param {Event} event - L'événement clic (optionnel, si appelé depuis un lien).
  */
-export async function signout(event) { // Ajout de async car on va utiliser await pour fetch
+export async function signout(event) {
     if (event) event.preventDefault();
-    console.log("authManager: Déconnexion initiée.");
 
     try {
-        const response = await fetch('http://ecoride.local/api/logout.php', {
-            method: 'POST', // Conformément au script logout.php
+        const response = await fetch('/api/logout.php', {
+            method: 'POST',
             headers: {
                 'Content-Type': 'application/json' // Même si le corps est vide, c'est une bonne pratique
             },
@@ -56,7 +43,6 @@ export async function signout(event) { // Ajout de async car on va utiliser awai
         });
 
         if (response.ok && data.success) {
-            console.log("authManager: Déconnexion réussie côté serveur.", data.message);
         } else {
             // Même si la déconnexion serveur échoue ou renvoie une erreur,
             // on procède à la déconnexion côté client pour que l'utilisateur
@@ -72,7 +58,6 @@ export async function signout(event) { // Ajout de async car on va utiliser awai
     }
 
     // --- Nettoyage côté client (toujours effectué, même si l'appel API échoue) ---
-    console.log("authManager: Nettoyage du sessionStorage JS.");
     sessionStorage.removeItem('user_id'); 
     sessionStorage.removeItem('username');
     sessionStorage.removeItem('simulatedUserFirstName');
@@ -94,7 +79,6 @@ export async function signout(event) { // Ajout de async car on va utiliser awai
     }
 
     // Redirection vers la page d'accueil
-    console.log("authManager: Redirection vers l'accueil.");
     if (typeof LoadContentPage === "function") {
         window.history.pushState({}, "", "/");
         LoadContentPage();
@@ -125,11 +109,9 @@ function shouldElementBeVisible(rules, userRole) {
 
 // La fonction showAndHideElementsForRoles applique les résultats de shouldElementBeVisible :
 export function showAndHideElementsForRoles() {
-    const userRole = getRole(); 
-    console.log("authManager - UI Update based on Role:", userRole || 'disconnected'); // LOG 1
+    const userRole = getRole();
     document.querySelectorAll('[data-show]').forEach(element => {
         const rules = element.dataset.show.split(' ');
-        console.log("authManager - Element:", element.id || element.textContent.trim().substring(0,20), "Rules:", rules, "Current Role:", userRole); // LOG 2
         if (shouldElementBeVisible(rules, userRole)) {
             element.classList.remove('d-none');
         } else {
@@ -151,16 +133,3 @@ document.addEventListener('DOMContentLoaded', () => {
     // Mettre à jour l'affichage initial de la navbar
     showAndHideElementsForRoles();
 });
-
-
-// DÉBUT BLOC DE DÉBOGAGE - À RETIRER/COMMENTER POUR LA PRODUCTION
-// if (typeof window !== 'undefined') { // Vérifie qu'on est bien dans un environnement navigateur
-//     window.simulateLogin = simulateLogin;
-//     window.signout = signout;
-//     window.showAndHideElementsForRoles = showAndHideElementsForRoles; // Si tu veux la tester aussi
-//     window.dev_getRole = getRole; // Préfixe par dev_ pour marquer que c'est pour le dev
-//     window.dev_getToken = getToken;
-//     window.dev_isConnected = isConnected;
-
-//     console.log("Fonctions de débogage (simulateLogin, signout, etc.) attachées à window.");
-// }

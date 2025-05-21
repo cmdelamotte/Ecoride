@@ -46,7 +46,6 @@ function displayEmployeesTable(employeesData) {
         }
         if (suspendButton && reactivateButton) {
             const isActive = employee.statut && employee.statut.toLowerCase() === 'active';
-            console.log(`Employé ${employee.id}, Statut: '${employee.statut}', isActive: ${isActive}`); // Log pour débogage
             suspendButton.classList.toggle('d-none', !isActive);
             reactivateButton.classList.toggle('d-none', isActive);
             suspendButton.setAttribute('data-employee-id', employee.id);
@@ -99,7 +98,6 @@ function displayUsersTable(usersData) {
         }
         if (suspendButton && reactivateButton) {
             const isActive = user.statut && user.statut.toLowerCase() === 'active';
-            console.log(`Utilisateur ${user.id}, Statut: '${user.statut}', isActive: ${isActive}`); // Log pour débogage
             suspendButton.classList.toggle('d-none', !isActive);
             reactivateButton.classList.toggle('d-none', isActive);
             suspendButton.setAttribute('data-user-id', user.id);
@@ -110,12 +108,9 @@ function displayUsersTable(usersData) {
 }
 
 async function fetchAndDisplayAdminData() {
-    // Récupérer et afficher les statistiques
-    // TODO: regrouper tous les fetch ici pour avoir un seul point d'entrée
-
     // Récupérer et afficher les employés
     try {
-        const empResponse = await fetch('http://ecoride.local/api/admin_get_employees.php');
+        const empResponse = await fetch('/api/admin_get_employees.php');
         const empData = await empResponse.json();
         if (empData.success) {
             displayEmployeesTable(empData.employees || []);
@@ -131,7 +126,7 @@ async function fetchAndDisplayAdminData() {
 
     // Récupérer et afficher les utilisateurs
     try {
-        const userResponse = await fetch('http://ecoride.local/api/admin_get_users.php');
+        const userResponse = await fetch('/api/admin_get_users.php');
         const userData = await userResponse.json();
         if (userData.success) {
             displayUsersTable(userData.users || []);
@@ -245,24 +240,19 @@ function createOrUpdateCreditsGainedPerDayChart(revenueData) {
 }
 
 async function fetchAdminStats() {
-    console.log("AdminDashboardHandler: Appel de fetchAdminStats pour récupérer les données du tableau de bord.");
     try {
-        const response = await fetch('http://ecoride.local/api/get_admin_stats.php');
+        const response = await fetch('/api/get_admin_stats.php');
         if (!response.ok) {
             // Si le statut est 403 (Forbidden), cela peut signifier que l'utilisateur n'est pas admin
             if (response.status === 403) {
                 console.warn("Accès non autorisé aux statistiques admin. Redirection envisagée si nécessaire.");
-                // Tu pourrais vouloir rediriger l'utilisateur ou afficher un message spécifique
-                // Pour l'instant, on logue juste.
                 document.getElementById('admin-total-credits').textContent = "Accès refusé";
-                // On pourrait vider les graphiques ou afficher un message d'erreur
                 return; 
             }
             const errorText = await response.text().catch(() => "Impossible de lire le corps de l'erreur.");
             throw new Error(`Erreur API (statut ${response.status}) lors de la récupération des stats admin: ${errorText.substring(0, 200)}`);
         }
         const data = await response.json();
-        console.log("AdminDashboardHandler: Données de statistiques reçues:", data);
 
         if (data.success) {
             updateTotalCreditsDisplay(data.totalPlatformRevenueOverall);
@@ -270,12 +260,11 @@ async function fetchAdminStats() {
             createOrUpdateCreditsGainedPerDayChart(data.revenuePerDay || []);
         } else {
             console.error("Erreur lors de la récupération des statistiques admin:", data.message);
-            updateTotalCreditsDisplay(null); // Afficher N/A ou un message d'erreur
-            // Potentiellement afficher un message d'erreur pour les graphiques aussi
+            updateTotalCreditsDisplay(null);
         }
     } catch (error) {
         console.error("Erreur Fetch globale (get_admin_stats):", error);
-        updateTotalCreditsDisplay(null); // Afficher N/A ou un message d'erreur
+        updateTotalCreditsDisplay(null);
         // Afficher des messages d'erreur pour les graphiques
         const ridesChartCanvas = document.getElementById('ridesPerDayChart');
         const creditsChartCanvas = document.getElementById('creditsGainedPerDayChart');
@@ -287,7 +276,6 @@ async function fetchAdminStats() {
 
 // --- Initialisation de la Page ---
 export function initializeAdminDashboardPage() {
-    console.log("AdminDashboardHandler: Initialisation de la page admin.");
 
     fetchAdminStats(); // Pour les graphiques et le total des crédits
 
@@ -303,7 +291,7 @@ export function initializeAdminDashboardPage() {
     const passwordRequirementsMessage = "Le mot de passe doit contenir au moins 8 caractères, incluant majuscule, minuscule, chiffre et caractère spécial.";
 
     if (createEmployeeModalForm) {
-        createEmployeeModalForm.addEventListener('submit', async function(event) { // Assure-toi que c'est async
+        createEmployeeModalForm.addEventListener('submit', async function(event) {
             event.preventDefault();
             [empNomInput, empPrenomInput, empEmailInput, empPasswordInput].forEach(input => {
                 if (input) input.setCustomValidity("");
@@ -337,7 +325,7 @@ export function initializeAdminDashboardPage() {
             };
 
             try {
-                const response = await fetch('http://ecoride.local/api/admin_create_employee.php', {
+                const response = await fetch('/api/admin_create_employee.php', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(employeeData)
@@ -366,7 +354,7 @@ export function initializeAdminDashboardPage() {
     // Logique pour suspendre/réactiver employés
     const employeesTableBody = document.getElementById('employees-table-body');
     if (employeesTableBody) {
-        employeesTableBody.addEventListener('click', async function(event) { // async ici aussi
+        employeesTableBody.addEventListener('click', async function(event) {
             const target = event.target.closest('button[data-employee-id]');
             if (!target) return;
             
@@ -385,7 +373,7 @@ export function initializeAdminDashboardPage() {
             if (!userId || !newStatus) return;
 
             try {
-                const response = await fetch('http://ecoride.local/api/admin_update_user_status.php', {
+                const response = await fetch('/api/admin_update_user_status.php', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ user_id: userId, new_status: newStatus })
@@ -407,7 +395,7 @@ export function initializeAdminDashboardPage() {
     // Logique pour suspendre/réactiver utilisateurs (clients)
     const usersTableBody = document.getElementById('users-table-body');
     if (usersTableBody) {
-        usersTableBody.addEventListener('click', async function(event) { // async ici
+        usersTableBody.addEventListener('click', async function(event) { 
             const target = event.target.closest('button[data-user-id]');
             if (!target) return;
 
@@ -426,7 +414,7 @@ export function initializeAdminDashboardPage() {
             if (!userId || !newStatus) return;
 
             try {
-                const response = await fetch('http://ecoride.local/api/admin_update_user_status.php', {
+                const response = await fetch('/api/admin_update_user_status.php', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ user_id: userId, new_status: newStatus })
@@ -444,5 +432,4 @@ export function initializeAdminDashboardPage() {
             }
         });
     }
-    console.log("AdminDashboardHandler: Initialisation de la page admin terminée.");
 }

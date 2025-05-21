@@ -1,4 +1,4 @@
-import { signout as authManagerSignout } from './authManager.js'; // Pour déconnecter l'utilisateur
+import { signout as authManagerSignout } from './authManager.js';
 
 export function initializeEditPasswordForm() {
     const editPasswordForm = document.getElementById('edit-password-form');
@@ -76,7 +76,6 @@ export function initializeEditPasswordForm() {
             confirmNewPassword: confirmNewPassword // Le PHP revérifiera la confirmation et la complexité
         };
 
-        console.log("editPasswordFormHandler: Envoi des données de MàJ mot de passe à l'API.");
         const submitButton = editPasswordForm.querySelector('button[type="submit"]');
         if(submitButton) submitButton.disabled = true;
         if (messageDiv) { 
@@ -84,25 +83,22 @@ export function initializeEditPasswordForm() {
             messageDiv.className = 'alert alert-info';
         }
 
-        fetch('http://ecoride.local/api/update_password.php', {
+        fetch('/api/update_password.php', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(passwordData)
         })
         .then(response => {
-            console.log("Update Password Fetch: Statut Réponse:", response.status);
             return response.json().then(data => ({ ok: response.ok, status: response.status, body: data }))
                 .catch(jsonError => {
                     console.error("Update Password: Erreur parsing JSON:", jsonError);
                     return response.text().then(textData => {
-                        console.log("Update Password: Réponse brute non-JSON:", textData);
                         throw new Error(`Réponse non-JSON (statut ${response.status}) pour MàJ MDP: ${textData.substring(0,200)}...`);
                     });
                 });
         })
         .then(({ ok, body }) => {
             if (submitButton) submitButton.disabled = false;
-            console.log("Update Password: Réponse API:", body);
 
             if (ok && body.success) {
                 if (messageDiv) {

@@ -146,7 +146,7 @@ function createRideCardElement(rideData) {
 
     (async () => {
     try {
-        const detailsRes = await fetch(`http://ecoride.local/api/get_ride_details.php?ride_id=${rideData.ride_id}`);
+        const detailsRes = await fetch(`/api/get_ride_details.php?ride_id=${rideData.ride_id}`);
         if (!detailsRes.ok) throw new Error(`Erreur API détails trajet (statut ${detailsRes.status})`);
         const detailsData = await detailsRes.json();
         if (!detailsData.success) throw new Error("Réponse API échec: " + (detailsData.message || "inconnue"));
@@ -222,7 +222,7 @@ function renderPaginationControls(currentPage, totalPages, currentSearchParams) 
     prevLi.appendChild(prevLink);
     paginationContainer.appendChild(prevLi);
 
-    // Numéros de page (simplifié pour l'instant, on peut ajouter "...")
+    // Numéros de page
     for (let i = 1; i <= totalPages; i++) {
         const pageLi = document.createElement('li');
         pageLi.className = `page-item ${i === currentPage ? 'active' : ''}`;
@@ -267,7 +267,6 @@ function updateUrlAndReload(newPage, searchParams) {
 
 
 async function fetchAndDisplayRides() {
-    console.log("RidesSearchPageHandler: fetchAndDisplayRides appelée.");
     const rideResultsContainer = document.getElementById('ride-results-container');
     const noResultsMessage = document.getElementById('no-results-message');
     const loadingIndicator = document.getElementById('loading-indicator');
@@ -313,8 +312,7 @@ async function fetchAndDisplayRides() {
         }
     });
 
-    const apiUrl = `http://ecoride.local/api/search_rides.php?${apiQueryParams.toString()}`;
-    console.log("fetchAndDisplayRides: Appel API vers:", apiUrl);
+    const apiUrl = `/api/search_rides.php?${apiQueryParams.toString()}`;
 
     try {
         const response = await fetch(apiUrl);
@@ -326,8 +324,6 @@ async function fetchAndDisplayRides() {
             console.error("Erreur parsing JSON (search_rides):", jsonError, "Réponse brute:", responseText);
             throw new Error(`Réponse non-JSON (statut ${response.status}): ${responseText.substring(0, 200)}`);
         }
-        
-        console.log("fetchAndDisplayRides: Données reçues:", data);
 
         if (data.success) {
             if (data.rides && data.rides.length > 0) {
@@ -486,7 +482,7 @@ export function initializeRidesSearchPage() {
             }
             confirmBookingButton.disabled = true;
             try {
-                const response = await fetch('http://ecoride.local/api/book_ride.php', {
+                const response = await fetch('/api/book_ride.php', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ ride_id: parseInt(rideIdToBook, 10), seats_to_book: seatsToBook })

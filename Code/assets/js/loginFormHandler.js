@@ -1,5 +1,5 @@
-import { LoadContentPage } from "../../router/Router.js";      // Pour la redirection SPA
-import { showAndHideElementsForRoles } from './authManager.js'; // Pour mettre à jour l'UI
+import { LoadContentPage } from "../../router/Router.js"; 
+import { showAndHideElementsForRoles } from './authManager.js';
 
 //TODO : Améliorer redirection après connexion
 
@@ -29,7 +29,6 @@ export function initializeLoginForm() {
 
     loginForm.addEventListener('submit', function(event) {
         event.preventDefault(); 
-        console.log("loginFormHandler: Submit intercepté.");
 
         // Réinitialisation des messages
         if (identifierInput) identifierInput.setCustomValidity("");
@@ -74,7 +73,6 @@ export function initializeLoginForm() {
             password: passwordValue
         };
 
-        console.log("loginFormHandler: Tentative de connexion avec :", loginData);
         const submitButton = loginForm.querySelector('button[type="submit"]');
         if(submitButton) submitButton.disabled = true;
         if (errorMessageDiv) {
@@ -83,7 +81,7 @@ export function initializeLoginForm() {
             errorMessageDiv.classList.add('alert-info');
         }
 
-        fetch('http://ecoride.local/api/login.php', {
+        fetch('/api/login.php', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -91,19 +89,16 @@ export function initializeLoginForm() {
             body: JSON.stringify(loginData)
         })
         .then(response => {
-            console.log("loginFormHandler: Statut Réponse Fetch:", response.status);
             return response.json().then(data => ({ status: response.status, body: data, ok: response.ok }))
                 .catch(jsonError => {
                     console.error("loginFormHandler: Erreur parsing JSON:", jsonError);
                     return response.text().then(textData => {
-                        console.log("loginFormHandler: Réponse brute non-JSON:", textData);
                         throw new Error(`Réponse non-JSON du serveur (statut ${response.status}): ${textData.substring(0,200)}...`);
                     });
                 });
         })
         .then(({ status, body, ok }) => {
             if (submitButton) submitButton.disabled = false;
-            console.log("loginFormHandler: Réponse API (JSON parsé):", body);
 
             if (ok && body.success && body.user) {
                 // Connexion réussie !
@@ -115,13 +110,13 @@ export function initializeLoginForm() {
                 
                 // Stocker les informations utilisateur dans sessionStorage
                 sessionStorage.setItem('user_id', body.user.id);
-                sessionStorage.setItem('username', body.user.username); // Ou 'user_pseudo' si c'est la clé que tu utilises
+                sessionStorage.setItem('username', body.user.username);
                 sessionStorage.setItem('simulatedUserFirstName', body.user.firstName);
                 sessionStorage.setItem('simulatedUserLastName', body.user.lastName);
-                sessionStorage.setItem('simulatedUserEmail', body.user.email); // Si renvoyé par l'API et utile
-                sessionStorage.setItem('simulatedUserBirthdate', body.user.birthdate || ''); // Si renvoyé
-                sessionStorage.setItem('simulatedUserPhone', body.user.phone || '');       // Si renvoyé
-                sessionStorage.setItem('simulatedUserCredits', String(body.user.credits)); // Assurer que c'est une chaîne
+                sessionStorage.setItem('simulatedUserEmail', body.user.email);
+                sessionStorage.setItem('simulatedUserBirthdate', body.user.birthdate || '');
+                sessionStorage.setItem('simulatedUserPhone', body.user.phone || '');      
+                sessionStorage.setItem('simulatedUserCredits', String(body.user.credits));
                 
                 const userRolesSystem = body.user.roles_system || [];
                 const userFunctionalRole = body.user.functional_role;
@@ -151,7 +146,6 @@ export function initializeLoginForm() {
                         redirectTo = "/employee-dashboard";
                     }
                     
-                    console.log("loginFormHandler: Redirection vers", redirectTo);
                     if (typeof LoadContentPage === "function") {
                         window.history.pushState({}, "", redirectTo);
                         LoadContentPage();
