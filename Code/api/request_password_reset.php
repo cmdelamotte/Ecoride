@@ -1,6 +1,7 @@
 <?php
 
 require_once __DIR__ . '/config/database.php';
+require_once __DIR__ . '/config/settings.php';
 require_once __DIR__ . '/../lib/PHPMailer/Exception.php';
 require_once __DIR__ . '/../lib/PHPMailer/PHPMailer.php';
 require_once __DIR__ . '/../lib/PHPMailer/SMTP.php';
@@ -13,7 +14,7 @@ if (session_status() == PHP_SESSION_NONE) {
 }
 
 header('Content-Type: application/json');
-header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Origin: ' . CORS_ALLOWED_ORIGIN);
 header('Access-Control-Allow-Methods: POST, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With');
 
@@ -68,17 +69,17 @@ try {
         }
 
         // Lien de réinitialisation
-        $resetLink = "http://ecoride.local/reset-password?token=" . $token;
+        $resetLink = APP_BASE_URL . "/reset-password?token=" . $token;
 
         // Envoyer l'email
         $mail = new PHPMailer(true);
         try {
             // Paramètres SMTP
             $mail->isSMTP();
-            $mail->Host       = 'smtp.gmail.com';
+            $mail->Host       = SMTP_HOST;
             $mail->SMTPAuth   = true;
-            $mail->Username   = 'ecoride.ecf.dev@gmail.com';
-            $mail->Password   = 'nskmypmjzjmflaws';
+            $mail->Username   = SMTP_USERNAME;
+            $mail->Password   = SMTP_PASSWORD;
             $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
             $mail->Port       = 465;
             $mail->CharSet    = 'UTF-8';

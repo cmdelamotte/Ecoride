@@ -1,7 +1,6 @@
 <?php
-// Code/api/config/analytics_manager.php
 
-require_once __DIR__ . '/mongodb_config.php'; // Pour getMongoClient()
+require_once __DIR__ . '/mongodb_config.php';
 
 use MongoDB\Client;
 use MongoDB\Collection;

@@ -1,13 +1,14 @@
 <?php
 
+require_once 'config/database.php';
+require_once __DIR__ . '/config/settings.php';
+
 if (session_status() == PHP_SESSION_NONE) {
     session_start();
 }
 
-require_once 'config/database.php';
-
 header('Content-Type: application/json');
-header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Origin: ' . CORS_ALLOWED_ORIGIN);
 header('Access-Control-Allow-Methods: POST, OPTIONS'); 
 header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With');
 
@@ -16,7 +17,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
     exit();
 }
 
-if ($_SERVER['REQUEST_METHOD'] !== 'POST') { // Utilisation de POST pour la simplicité avec les formulaires/JS
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
     echo json_encode(['success' => false, 'message' => 'Méthode non autorisée.']);
     exit();
@@ -29,7 +30,7 @@ if (!isset($_SESSION['user_id'])) {
     exit();
 }
 
-$current_user_id = $_SESSION['user_id']; // ID de l'utilisateur connecté
+$current_user_id = $_SESSION['user_id'];
 
 // 2. Récupérer les données JSON envoyées
 $inputJSON = file_get_contents('php://input');
@@ -148,7 +149,7 @@ try {
 
 
 if (!empty($errors)) {
-    http_response_code(400); // Bad Request
+    http_response_code(400);
     echo json_encode(['success' => false, 'message' => 'Erreurs de validation des données du véhicule.', 'errors' => $errors]);
     exit();
 }
@@ -202,7 +203,7 @@ try {
         } else {
             http_response_code(200);
             echo json_encode([
-                'success' => true, // L'opération n'a pas échoué, mais n'a rien modifié
+                'success' => true, // L'opération n'a pas échoué, mais n'a rien été modifié
                 'message' => 'Aucune modification détectée pour le véhicule ou véhicule non trouvé avec les bons droits.',
             ]);
         }

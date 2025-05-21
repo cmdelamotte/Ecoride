@@ -1,13 +1,14 @@
 <?php 
 
+require_once 'config/database.php';
+require_once __DIR__ . '/config/settings.php';
+
 if (session_status() == PHP_SESSION_NONE) {
     session_start();
 }
 
-require_once 'config/database.php';
-
 header('Content-Type: application/json');
-header('Access-Control-Allow-Origin: *'); 
+header('Access-Control-Allow-Origin: ' . CORS_ALLOWED_ORIGIN);
 header('Access-Control-Allow-Methods: POST, OPTIONS'); 
 header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With');
 
@@ -166,12 +167,9 @@ if (!empty($errors)) {
     exit(); // Arrêt si erreurs
 }
 
-// Si on arrive ici, $errors est vide. Toutes les validations sont passées.
-// Et $departure_datetime_for_db, $estimated_arrival_datetime_for_db, $vehicle_is_electric sont définies.
 
-$is_eco_ride = $vehicle_is_electric; // Utilise la valeur récupérée
+$is_eco_ride = $vehicle_is_electric;
 
-// --- Insertion en base de données ---
 try {
     $pdo->beginTransaction();
 

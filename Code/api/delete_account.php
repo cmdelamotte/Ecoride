@@ -1,13 +1,14 @@
 <?php
 
+require_once 'config/database.php';
+require_once __DIR__ . '/config/settings.php';
+
 if (session_status() == PHP_SESSION_NONE) {
     session_start();
 }
 
-require_once 'config/database.php';
-
 header('Content-Type: application/json');
-header('Access-Control-Allow-Origin: *'); 
+header('Access-Control-Allow-Origin: ' . CORS_ALLOWED_ORIGIN);
 header('Access-Control-Allow-Methods: POST, OPTIONS'); 
 header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With');
 
@@ -30,9 +31,6 @@ if (!isset($_SESSION['user_id'])) {
 }
 
 $current_user_id = $_SESSION['user_id'];
-
-// L'action est confirmée par le fait que l'utilisateur est connecté et a initié cette requête POST
-// Amélioration voulu si le temps le permet : Redemander le MdP dans la modale de confirmation de suppression de compte
 
 try {
     $pdo = getPDOConnection();

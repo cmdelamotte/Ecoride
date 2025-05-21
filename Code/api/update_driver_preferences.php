@@ -1,13 +1,14 @@
 <?php
 
+require_once 'config/database.php';
+require_once __DIR__ . '/config/settings.php';
+
 if (session_status() == PHP_SESSION_NONE) {
     session_start();
 }
 
-require_once 'config/database.php';
-
 header('Content-Type: application/json');
-header('Access-Control-Allow-Origin: *'); 
+header('Access-Control-Allow-Origin: ' . CORS_ALLOWED_ORIGIN);
 header('Access-Control-Allow-Methods: POST, OPTIONS'); 
 header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With');
 
@@ -37,8 +38,7 @@ $prefSmoker = filter_var($input['pref_smoker'] ?? false, FILTER_VALIDATE_BOOLEAN
 $prefAnimals = filter_var($input['pref_animals'] ?? false, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
 $prefCustom = isset($input['pref_custom']) ? trim($input['pref_custom']) : null; // Peut être une chaîne vide ou null
 
-// filter_var avec FILTER_NULL_ON_FAILURE retournera null si la valeur n'est pas un booléen valide.
-// On s'assure que ce ne sont pas null pour les booléens pour éviter des erreurs en BDD si la colonne ne l'accepte pas (même si nos booléens ont un DEFAULT)
+// On s'assure que ce ne sont pas null pour les booléens pour éviter des erreurs en BDD si la colonne ne l'accepte pas (même si les booléens ont un DEFAULT)
 if ($prefSmoker === null || $prefAnimals === null) {
     http_response_code(400);
     echo json_encode(['success' => false, 'message' => 'Valeurs invalides pour les préférences fumeur/animaux.']);
@@ -69,11 +69,11 @@ try {
 
     if ($stmt->execute()) {
         // Mettre à jour la session PHP
-        $_SESSION['driver_pref_smoker'] = $prefSmoker;   // Stocker le booléen
-        $_SESSION['driver_pref_animals'] = $prefAnimals; // Stocker le booléen
+        $_SESSION['driver_pref_smoker'] = $prefSmoker;  
+        $_SESSION['driver_pref_animals'] = $prefAnimals;
         $_SESSION['driver_pref_custom'] = $prefCustomToStore; 
 
-        http_response_code(200); // OK
+        http_response_code(200);
         echo json_encode([
             'success' => true,
             'message' => 'Préférences du chauffeur mises à jour avec succès.',

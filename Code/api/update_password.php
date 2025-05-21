@@ -1,13 +1,14 @@
 <?php
 
+require_once 'config/database.php';
+require_once __DIR__ . '/config/settings.php';
+
 if (session_status() == PHP_SESSION_NONE) {
     session_start();
 }
 
-require_once 'config/database.php';
-
 header('Content-Type: application/json');
-header('Access-Control-Allow-Origin: *'); 
+header('Access-Control-Allow-Origin: ' . CORS_ALLOWED_ORIGIN); 
 header('Access-Control-Allow-Methods: POST, OPTIONS'); 
 header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With');
 
@@ -22,7 +23,6 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit();
 }
 
-// 1. Vérifier si l'utilisateur est connecté
 if (!isset($_SESSION['user_id'])) {
     http_response_code(401); 
     echo json_encode(['success' => false, 'message' => 'Utilisateur non authentifié.']);
@@ -31,22 +31,22 @@ if (!isset($_SESSION['user_id'])) {
 
 $current_user_id = $_SESSION['user_id'];
 
-// 2. Récupérer les données JSON envoyées
+
 $inputJSON = file_get_contents('php://input');
 $input = json_decode($inputJSON, TRUE);
 
-// Les clés ici doivent correspondre à ce que le JS enverra
+
 $oldPassword = $input['oldPassword'] ?? '';
 $newPassword = $input['newPassword'] ?? '';
 $confirmNewPassword = $input['confirmNewPassword'] ?? '';
 
-// --- Validation serveur des mots de passe ---
+
 $errors = [];
 
-// Regex pour la complexité du mot de passe 
+
 $passwordRegex = '/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_])[A-Za-z\d\W_]{8,}$/';
 
-// 1. Vérifier que tous les champs sont remplis
+
 if (empty($oldPassword)) {
     $errors['oldPassword'] = "L'ancien mot de passe est requis.";
 }
@@ -57,21 +57,17 @@ if (empty($confirmNewPassword)) {
     $errors['confirmNewPassword'] = "La confirmation du nouveau mot de passe est requise.";
 }
 
-// 2. Vérifier que le nouveau mot de passe et sa confirmation sont identiques
-//    (On ne fait cette vérification que si les deux champs ont été remplis,
-//     pour éviter des messages d'erreur redondants si l'un est vide)
+
 if (!empty($newPassword) && !empty($confirmNewPassword) && $newPassword !== $confirmNewPassword) {
     $errors['confirmNewPassword'] = "La confirmation ne correspond pas au nouveau mot de passe.";
 }
 
-// 3. Vérifier la complexité du nouveau mot de passe
-//    (Seulement si newPassword n'est pas vide et qu'il n'y a pas déjà une erreur de confirmation)
+
 if (!empty($newPassword) && !isset($errors['confirmNewPassword']) && !preg_match($passwordRegex, $newPassword)) {
     $errors['newPassword'] = "Le nouveau mot de passe doit contenir au moins 8 caractères, incluant majuscule, minuscule, chiffre et caractère spécial.";
 }
 
-// 4. Vérifier si l'ancien mot de passe est correct
-//    (On ne fait cette vérification que s'il n'y a pas déjà d'autres erreurs sur les champs de mot de passe)
+
 if (empty($errors['oldPassword']) && empty($errors['newPassword']) && empty($errors['confirmNewPassword'])) {
     try {
         $pdo = getPDOConnection();
@@ -86,14 +82,13 @@ if (empty($errors['oldPassword']) && empty($errors['newPassword']) && empty($err
     } catch (PDOException $e) {
         error_log("Erreur PDO (update_password.php - vérif ancien mdp) : " . $e->getMessage());
         $errors['database'] = "Erreur serveur lors de la vérification des informations.";
-        // En cas d'erreur BDD ici, on arrête et on renvoie les erreurs
         http_response_code(500);
         echo json_encode(['success' => false, 'message' => 'Erreur serveur.', 'errors' => $errors]);
         exit();
     }
 }
 
-// 5. Si des erreurs de validation sont présentes, les renvoyer
+
 if (!empty($errors)) {
     http_response_code(400); 
     echo json_encode(['success' => false, 'message' => 'Erreurs de validation.', 'errors' => $errors]);
@@ -117,8 +112,8 @@ try {
         // Détruire la session actuelle pour des raisons de sécurité.
         // Cela déconnectera l'utilisateur de toutes ses sessions actives
         // et le forcera à se reconnecter avec le nouveau mot de passe.
-        session_unset();   // Vider les données de $_SESSION
-        session_destroy(); // Détruire la session côté serveur
+        session_unset();
+        session_destroy();
         
         // Dit au navigateur d'effacer le cookie de session
         if (ini_get("session.use_cookies")) {

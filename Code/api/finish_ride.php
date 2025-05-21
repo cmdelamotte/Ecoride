@@ -1,13 +1,13 @@
 <?php
 
+require_once 'config/database.php';
+require_once __DIR__ . '/config/analytics_manager.php'; 
+require_once __DIR__ . '/config/settings.php';
+
 if (session_status() == PHP_SESSION_NONE) {
     session_start();
 }
 
-require_once 'config/database.php';
-require_once __DIR__ . '/config/analytics_manager.php'; 
-
-// Charger les classes PHPMailer
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\SMTP;
 use PHPMailer\PHPMailer\Exception;
@@ -18,7 +18,7 @@ require_once __DIR__ . '/../lib/PHPMailer/PHPMailer.php';
 require_once __DIR__ . '/../lib/PHPMailer/SMTP.php';
 
 header('Content-Type: application/json');
-header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Origin: ' . CORS_ALLOWED_ORIGIN);
 header('Access-Control-Allow-Methods: POST, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With');
 
@@ -71,7 +71,7 @@ try {
     $stmtCheck->execute();
     $ride = $stmtCheck->fetch(PDO::FETCH_ASSOC);
 
-    $ride_id_sql_for_analytics = (string)$ride['ride_id_sql']; // Pour MongoDB
+    $ride_id_sql_for_analytics = (string)$ride['ride_id_sql'];
 
     if (!$ride) {
         $response['message'] = "Trajet non trouvé.";
@@ -112,7 +112,7 @@ try {
     if ($total_passengers > 0) {
         $price_per_seat = (float)$ride['price_per_seat'];
         $gross_earnings = $price_per_seat * $total_passengers;
-        $total_commission_for_platform = $platform_commission_per_seat * $total_passengers; // <--- CALCUL
+        $total_commission_for_platform = $platform_commission_per_seat * $total_passengers;
         $earnings_for_driver = $gross_earnings - $total_commission_for_platform;
 
         if ($earnings_for_driver > 0) { // On ne crédite que si le gain net est positif
@@ -142,17 +142,17 @@ try {
                             " -> " . htmlspecialchars($ride['arrival_city'] ?? 'N/A') . 
                             " du " . (isset($ride['departure_time']) ? (new DateTime($ride['departure_time']))->format('d/m/Y à H:i') : 'Date inconnue');
     $driverUsernameForEmail = htmlspecialchars($ride['driver_username'] ?? 'Votre chauffeur');
-    $linkToYourRides = "http://ecoride.local/your-rides"; // Lien vers la page de l'historique
+    $linkToYourRides = APP_BASE_URL . "/your-rides";
 
     foreach ($passengers as $passenger) {
         if (isset($passenger['passenger_email']) && filter_var($passenger['passenger_email'], FILTER_VALIDATE_EMAIL)) {
             $mail = new PHPMailer(true);
             try {
                 $mail->isSMTP();
-                $mail->Host       = 'smtp.gmail.com';
+                $mail->Host       = SMTP_HOST;
                 $mail->SMTPAuth   = true;
-                $mail->Username   = 'ecoride.ecf.dev@gmail.com';
-                $mail->Password   = 'nskmypmjzjmflaws';
+                $mail->Username   = SMTP_USERNAME;
+                $mail->Password   = SMTP_PASSWORD;
                 $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
                 $mail->Port       = 465;
                 $mail->CharSet    = 'UTF-8';

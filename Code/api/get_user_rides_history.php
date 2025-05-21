@@ -1,13 +1,14 @@
 <?php
 
+require_once 'config/database.php';
+require_once __DIR__ . '/config/settings.php';
+
 if (session_status() == PHP_SESSION_NONE) {
     session_start();
 }
 
-require_once 'config/database.php';
-
 header('Content-Type: application/json');
-header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Origin: ' . CORS_ALLOWED_ORIGIN);
 header('Access-Control-Allow-Methods: GET, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With');
 
@@ -60,7 +61,6 @@ try {
     foreach ($driven_rides_raw as $ride) {
         $ride['is_eco_ride'] = (bool)$ride['is_eco_ride'];
         $ride['seats_available'] = (int)($ride['seats_available'] ?? 0);
-        // On peut ajouter le rôle "Chauffeur" ici pour le JS
         $ride['user_role_in_ride'] = 'driver';
         $driven_rides[] = $ride;
     }

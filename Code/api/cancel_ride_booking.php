@@ -5,6 +5,7 @@ if (session_status() == PHP_SESSION_NONE) {
 }
 
 require_once 'config/database.php';
+require_once __DIR__ . '/config/settings.php';
 
 
 use PHPMailer\PHPMailer\PHPMailer;
@@ -16,7 +17,7 @@ require_once __DIR__ . '/../lib/PHPMailer/PHPMailer.php';
 require_once __DIR__ . '/../lib/PHPMailer/SMTP.php';
 
 header('Content-Type: application/json');
-header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Origin: ' . CORS_ALLOWED_ORIGIN);
 header('Access-Control-Allow-Methods: POST, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With');
 
@@ -127,10 +128,10 @@ try {
                 $mail = new PHPMailer(true);
                 try {
                     $mail->isSMTP();
-                    $mail->Host       = 'smtp.gmail.com';
+                    $mail->Host       = SMTP_HOST;
                     $mail->SMTPAuth   = true;
-                    $mail->Username   = 'ecoride.ecf.dev@gmail.com';
-                    $mail->Password   = 'nskmypmjzjmflaws';
+                    $mail->Username   = SMTP_USERNAME;
+                    $mail->Password   = SMTP_PASSWORD;
                     $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
                     $mail->Port       = 465;
                     $mail->CharSet    = 'UTF-8';

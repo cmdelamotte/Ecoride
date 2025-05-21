@@ -1,7 +1,8 @@
 <?php
 
 require_once __DIR__ . '/config/analytics_manager.php'; 
-require_once __DIR__ . '/config/database.php'; 
+require_once __DIR__ . '/config/database.php';
+require_once __DIR__ . '/config/settings.php';
 
 
 if (session_status() == PHP_SESSION_NONE) {
@@ -9,7 +10,7 @@ if (session_status() == PHP_SESSION_NONE) {
 }
 
 header('Content-Type: application/json');
-header('Access-Control-Allow-Origin: *'); // À ajuster pour la production
+header('Access-Control-Allow-Origin: ' . CORS_ALLOWED_ORIGIN);
 header('Access-Control-Allow-Methods: GET, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With');
 

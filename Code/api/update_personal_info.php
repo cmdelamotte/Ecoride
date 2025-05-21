@@ -1,13 +1,14 @@
 <?php
 
+require_once 'config/database.php';
+require_once __DIR__ . '/config/settings.php';
+
 if (session_status() == PHP_SESSION_NONE) {
     session_start();
 }
 
-require_once 'config/database.php';
-
 header('Content-Type: application/json');
-header('Access-Control-Allow-Origin: *'); 
+header('Access-Control-Allow-Origin: ' . CORS_ALLOWED_ORIGIN);
 header('Access-Control-Allow-Methods: POST, OPTIONS'); 
 header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With');
 
@@ -22,7 +23,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit();
 }
 
-// 1. Vérifier si l'utilisateur est connecté
+
 if (!isset($_SESSION['user_id'])) {
     http_response_code(401); 
     echo json_encode(['success' => false, 'message' => 'Utilisateur non authentifié.']);
@@ -31,23 +32,23 @@ if (!isset($_SESSION['user_id'])) {
 
 $current_user_id = $_SESSION['user_id'];
 
-// 2. Récupérer les données JSON envoyées
+
 $inputJSON = file_get_contents('php://input');
 $input = json_decode($inputJSON, TRUE);
 
-// Récupération des nouvelles informations et du mot de passe actuel
+
 $firstName = trim($input['firstName'] ?? '');
 $lastName = trim($input['lastName'] ?? '');
 $username = trim($input['username'] ?? '');
 $email = trim($input['email'] ?? '');
-$birthdate = $input['birthdate'] ?? null; // Format AAAA-MM-JJ
+$birthdate = $input['birthdate'] ?? null; 
 $phoneNumber = trim($input['phone'] ?? '');
-$currentPassword = $input['currentPassword'] ?? ''; // Mot de passe actuel pour vérification
+$currentPassword = $input['currentPassword'] ?? ''; 
 
-// --- Validation serveur des nouvelles données ET du mot de passe actuel ---
+
 $errors = [];
 
-// 1. Valider le mot de passe actuel
+
 if (empty($currentPassword)) {
     $errors['currentPassword'] = "Le mot de passe actuel est requis pour confirmer les modifications.";
 } else {
@@ -72,23 +73,21 @@ if (empty($currentPassword)) {
     }
 }
 
-// 2. Valider les nouvelles informations personnelles
-// Prenom
+
 if (empty($firstName)) { $errors['firstName'] = "Le prénom est requis."; }
 elseif (strlen($firstName) < 2) { $errors['firstName'] = "Prénom trop court (min 2 caractères)."; }
 elseif (strlen($firstName) > 100) { $errors['firstName'] = "Prénom trop long (max 100 caractères)."; }
 
-// Nom
+
 if (empty($lastName)) { $errors['lastName'] = "Le nom est requis."; }
 elseif (strlen($lastName) < 2) { $errors['lastName'] = "Nom trop court (min 2 caractères)."; }
 elseif (strlen($lastName) > 100) { $errors['lastName'] = "Nom trop long (max 100 caractères)."; }
 
-// Username (si modifié, vérifier l'unicité par rapport aux AUTRES utilisateurs)
+
 if (empty($username)) { $errors['username'] = "Le pseudo est requis."; }
 elseif (strlen($username) < 3) { $errors['username'] = "Pseudo trop court (min 3 caractères)."; }
 elseif (strlen($username) > 50) { $errors['username'] = "Pseudo trop long (max 50 caractères)."; }
 else {
-    // Vérifier l'unicité du nouveau username, on vérifie juste s'il existe pour un AUTRE user_id
     if (!isset($pdo)) { $pdo = getPDOConnection(); } 
     try {
         $stmtCheckUsername = $pdo->prepare("SELECT id FROM Users WHERE username = :username AND id != :user_id");

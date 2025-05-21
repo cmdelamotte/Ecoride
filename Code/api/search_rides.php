@@ -1,9 +1,10 @@
 <?php
 
 require_once 'config/database.php';
+require_once __DIR__ . '/config/settings.php';
 
 header('Content-Type: application/json');
-header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Origin: ' . CORS_ALLOWED_ORIGIN);
 header('Access-Control-Allow-Methods: GET, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type');
 
@@ -159,7 +160,7 @@ try {
         $stmtRides->execute($queryParamsForRides);
         $rides = $stmtRides->fetchAll(PDO::FETCH_ASSOC);
 
-        if ($rides) { // Ceci est redondant si totalRides > 0, mais je garde pour la structure
+        if ($rides) { // Ceci est redondant si totalRides > 0, mais on garde pour la structure
             foreach ($rides as $key => $ride) {
                 $rides[$key]['is_eco_ride'] = (bool)$ride['is_eco_ride'];
                 $rides[$key]['seats_available'] = (int)($ride['seats_available'] ?? 0);

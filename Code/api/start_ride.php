@@ -1,13 +1,14 @@
 <?php
 
+require_once 'config/database.php';
+require_once __DIR__ . '/config/settings.php';
+
 if (session_status() == PHP_SESSION_NONE) {
     session_start();
 }
 
-require_once 'config/database.php';
-
 header('Content-Type: application/json');
-header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Origin: ' . CORS_ALLOWED_ORIGIN);
 header('Access-Control-Allow-Methods: POST, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With');
 
@@ -74,7 +75,7 @@ try {
     $stmtUpdate = $pdo->prepare("UPDATE Rides SET ride_status = :new_status WHERE id = :ride_id AND driver_id = :driver_id");
     $stmtUpdate->bindParam(':new_status', $new_status);
     $stmtUpdate->bindParam(':ride_id', $ride_id, PDO::PARAM_INT);
-    $stmtUpdate->bindParam(':driver_id', $current_user_id, PDO::PARAM_INT); // Double sécurité
+    $stmtUpdate->bindParam(':driver_id', $current_user_id, PDO::PARAM_INT);
 
     if ($stmtUpdate->execute()) {
         if ($stmtUpdate->rowCount() > 0) {

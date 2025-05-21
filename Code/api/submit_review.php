@@ -1,13 +1,14 @@
 <?php
 
+require_once 'config/database.php';
+require_once __DIR__ . '/config/settings.php';
+
 if (session_status() == PHP_SESSION_NONE) {
     session_start();
 }
 
-require_once 'config/database.php';
-
 header('Content-Type: application/json');
-header('Access-Control-Allow-Origin: *'); 
+header('Access-Control-Allow-Origin: ' . CORS_ALLOWED_ORIGIN);
 header('Access-Control-Allow-Methods: POST, OPTIONS'); 
 header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With');
 
@@ -31,7 +32,6 @@ if (!isset($_SESSION['user_id'])) {
 
 $author_id = (int)$_SESSION['user_id'];
 
-// 2. Récupérer les données JSON envoyées
 $inputJSON = file_get_contents('php://input');
 $input = json_decode($inputJSON, TRUE);
 
@@ -44,7 +44,6 @@ if ($trip_experience_good === false && isset($input['report_comment'])) {
     $report_comment = trim($input['report_comment']);
 }
 
-// --- Validation serveur ---
 $errors = [];
 $pdo = getPDOConnection();
 $driver_id = null; // Pour stocker l'ID du chauffeur du trajet
