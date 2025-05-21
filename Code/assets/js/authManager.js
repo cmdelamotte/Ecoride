@@ -9,7 +9,7 @@ export function getRole() {
     return sessionStorage.getItem('ecoRideUserRole');
 }
 
-function isConnected() {
+export function isConnected() {
     return getToken() !== null;
 }
 
