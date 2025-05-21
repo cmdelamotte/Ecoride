@@ -267,6 +267,7 @@ function updateUrlAndReload(newPage, searchParams) {
 
 
 async function fetchAndDisplayRides() {
+    console.log("RidesSearchPageHandler: fetchAndDisplayRides appelée.");
     const rideResultsContainer = document.getElementById('ride-results-container');
     const noResultsMessage = document.getElementById('no-results-message');
     const loadingIndicator = document.getElementById('loading-indicator');
@@ -278,14 +279,16 @@ async function fetchAndDisplayRides() {
         return;
     }
 
+    // Afficher l'indicateur de chargement immédiatement
     loadingIndicator.classList.remove('d-none');
-    rideResultsContainer.innerHTML = '';
+    rideResultsContainer.innerHTML = ''; // Vider les anciens résultats
+    noResultsMessage.innerHTML = ''; // Vider aussi le contenu du message (important pour la date proche)
     noResultsMessage.classList.add('d-none');
-    paginationNav.classList.add('d-none');
+    paginationNav.classList.add('d-none'); // Cacher la pagination pendant le chargement
 
-    const queryParamsFromUrl = new URLSearchParams(window.location.search); // Ceux de l'URL actuelle
+    const queryParamsFromUrl = new URLSearchParams(window.location.search);
 
-    // Vérifier les paramètres de recherche principaux venant de l'URL (avec les noms corrects)
+    // Vérifier les paramètres de recherche principaux venant de l'URL
     if (!queryParamsFromUrl.get('departure') || !queryParamsFromUrl.get('destination') || !queryParamsFromUrl.get('date')) {
         loadingIndicator.classList.add('d-none');
         if (otherRidesBar) otherRidesBar.classList.add('d-none');
@@ -300,7 +303,7 @@ async function fetchAndDisplayRides() {
     apiQueryParams.set('arrival_city', queryParamsFromUrl.get('destination') || '');
     apiQueryParams.set('date', queryParamsFromUrl.get('date') || '');
     apiQueryParams.set('seats', queryParamsFromUrl.get('seats') || '1');
-    apiQueryParams.set('page', queryParamsFromUrl.get('page') || '1'); // Page de l'URL ou 1 par défaut
+    apiQueryParams.set('page', queryParamsFromUrl.get('page') || '1');
     apiQueryParams.set('limit', queryParamsFromUrl.get('limit') || String(RIDES_PER_PAGE));
 
     // Ajouter les filtres supplémentaires s'ils sont dans l'URL
@@ -311,31 +314,71 @@ async function fetchAndDisplayRides() {
     });
 
     const apiUrl = `http://ecoride.local/api/search_rides.php?${apiQueryParams.toString()}`;
+    console.log("fetchAndDisplayRides: Appel API vers:", apiUrl);
 
     try {
         const response = await fetch(apiUrl);
-        if (!response.ok) {
-            const errorText = await response.text().catch(() => "Impossible de lire le corps de l'erreur.");
-            throw new Error(`Erreur API (statut ${response.status}): ${errorText.substring(0, 200)}`);
+        const responseText = await response.text();
+        let data;
+        try {
+            data = JSON.parse(responseText);
+        } catch (jsonError) {
+            console.error("Erreur parsing JSON (search_rides):", jsonError, "Réponse brute:", responseText);
+            throw new Error(`Réponse non-JSON (statut ${response.status}): ${responseText.substring(0, 200)}`);
         }
-        const data = await response.json().catch(async (jsonError) => {
-            const errorText = await response.text().catch(() => "Impossible de lire le corps de l'erreur JSON.");
-            console.error("Erreur parsing JSON (search_rides):", jsonError, "Réponse brute:", errorText);
-            throw new Error(`Réponse non-JSON (statut ${response.status}): ${errorText.substring(0, 200)}`);
-        });
+        
+        console.log("fetchAndDisplayRides: Données reçues:", data);
 
-        if (data.success && data.rides && data.rides.length > 0) {
-            data.rides.forEach(ride => {
-                const rideCard = createRideCardElement(ride);
-                if (rideCard) {
-                    rideResultsContainer.appendChild(rideCard);
+        if (data.success) {
+            if (data.rides && data.rides.length > 0) {
+                data.rides.forEach(ride => {
+                    const rideCard = createRideCardElement(ride);
+                    if (rideCard) {
+                        rideResultsContainer.appendChild(rideCard);
+                    }
+                });
+                renderPaginationControls(data.page, data.totalPages, queryParamsFromUrl); // queryParamsFromUrl pour conserver tous les filtres dans les liens de pagination
+                if (otherRidesBar) otherRidesBar.classList.remove('d-none');
+            } else {
+                // Aucun trajet pour la date actuelle
+                let messageHtml = data.message || "Aucun trajet ne correspond à vos critères pour la date sélectionnée.";
+                if (data.nextAvailableDate) {
+                    const formattedNextDate = new Date(data.nextAvailableDate + 'T00:00:00').toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+                    messageHtml += `<br>Le prochain trajet disponible pour cet itinéraire est le <strong>${formattedNextDate}</strong>.`;
+                    
+                    const searchNextDateButton = document.createElement('button');
+                    searchNextDateButton.className = 'btn primary-btn btn-sm mt-3';
+                    searchNextDateButton.textContent = `Rechercher pour le ${formattedNextDate}`;
+                    searchNextDateButton.onclick = () => {
+                        const dateInput = document.getElementById('search-form-date');
+                        if (dateInput) {
+                            dateInput.value = data.nextAvailableDate; // AAAA-MM-JJ
+                        }
+                        
+                        const newSearchParams = new URLSearchParams(queryParamsFromUrl.toString());
+                        newSearchParams.set('date', data.nextAvailableDate);
+                        newSearchParams.set('page', '1'); // Reset à la page 1 pour la nouvelle date
+                        
+                        const newUrl = `${window.location.pathname}?${newSearchParams.toString()}`;
+                        window.history.pushState({ date: data.nextAvailableDate, searchParams: newSearchParams.toString() }, "", newUrl);
+                        fetchAndDisplayRides(); 
+                    };
+                    
+                    noResultsMessage.innerHTML = '';
+                    const messageParagraph = document.createElement('p');
+                    messageParagraph.innerHTML = messageHtml;
+                    noResultsMessage.appendChild(messageParagraph);
+                    noResultsMessage.appendChild(searchNextDateButton);
+
+                } else {
+                     noResultsMessage.innerHTML = messageHtml; // Juste le message "aucun trajet"
                 }
-            });
-            // Passer queryParamsFromUrl à renderPaginationControls car c'est l'état actuel de l'URL du navigateur
-            renderPaginationControls(data.page, data.totalPages, queryParamsFromUrl);
-            if (otherRidesBar) otherRidesBar.classList.remove('d-none');
-        } else {
-            noResultsMessage.textContent = data.message || "Aucun trajet ne correspond à vos critères de recherche.";
+                noResultsMessage.classList.remove('d-none');
+                if (otherRidesBar) otherRidesBar.classList.add('d-none');
+                paginationNav.classList.add('d-none');
+            }
+        } else { // Si data.success est false dès le départ (erreur API)
+            noResultsMessage.textContent = data.message || "Erreur lors de la recherche des trajets.";
             noResultsMessage.classList.remove('d-none');
             if (otherRidesBar) otherRidesBar.classList.add('d-none');
             paginationNav.classList.add('d-none');
@@ -349,7 +392,7 @@ async function fetchAndDisplayRides() {
     } finally {
         setTimeout(() => {
             loadingIndicator.classList.add('d-none');
-        }, 500)
+        }, 500); 
     }
 }
 
@@ -363,9 +406,6 @@ export function initializeRidesSearchPage() {
     const filterForm = document.getElementById('filter-form');
     const durationRangeInput = document.getElementById('duration-filter-range');
     const priceRangeInput = document.getElementById('price-filter');
-    const animalRadios = document.querySelectorAll('input[name="animal-option"]');
-    const ratingRadios = document.querySelectorAll('input[name="rating-options"]');
-    const ecoSwitch = document.getElementById('eco-filter');
     const resetButton = filterForm ? filterForm.querySelector('button[type="button"].secondary-btn') : null;
 
 
