@@ -1,66 +1,3 @@
-// --- Données Simulées ---
-let pendingReviewsData = [
-    {
-        reviewId: 'REV001',
-        passengerName: 'Alice Voyageuse',
-        driverName: 'Bob Conducteur',
-        rating: 4, // Note sur 5
-        comment: "Trajet agréable, conducteur sympathique et prudent. Arrivé à l'heure.",
-        submittedDate: '2025-05-14',
-        rideId: 'RIDE123',
-        rideDetails: 'Paris -> Lyon'
-    },
-    {
-        reviewId: 'REV002',
-        passengerName: 'Charles Client',
-        driverName: 'Carole Chauffeuse',
-        rating: 2,
-        comment: "Conductrice en retard de 30 minutes sans prévenir. Voiture un peu sale.",
-        submittedDate: '2025-05-13',
-        rideId: 'RIDE124',
-        rideDetails: 'Rennes -> Nantes'
-    },
-    {
-        reviewId: 'REV003',
-        passengerName: 'David Passager',
-        driverName: 'Diane Pilote',
-        rating: 5,
-        comment: "Excellent ! Conduite souple, voiture propre, très bonne discussion. Je recommande vivement !",
-        submittedDate: '2025-05-12',
-        rideId: 'RIDE125',
-        rideDetails: 'Lille -> Bruxelles'
-    }
-];
-
-let reportedRidesData = [
-    {
-        reportId: 'REP001', // Ou utiliser rideId si un trajet ne peut être signalé qu'une fois
-        rideId: 'RIDE456',
-        rideDeparture: 'Marseille',
-        rideArrival: 'Nice',
-        rideDate: '2025-05-10',
-        reportSubmissionDate: '2025-05-11',
-        passengerName: 'Eva Plaignante',
-        passengerEmail: 'eva.plaignante@email.com',
-        driverName: 'Fred Fautif',
-        driverEmail: 'fred.fautif@email.com',
-        reasonComment: "Le chauffeur a conduit de manière extrêmement dangereuse, faisant plusieurs excès de vitesse et ignorant les feux rouges. J'ai eu très peur."
-    },
-    {
-        reportId: 'REP002',
-        rideId: 'RIDE789',
-        rideDeparture: 'Bordeaux',
-        rideArrival: 'Toulouse',
-        rideDate: '2025-05-09',
-        reportSubmissionDate: '2025-05-10',
-        passengerName: 'Georges Témoin',
-        passengerEmail: 'georges.temoin@email.com',
-        driverName: 'Gisèle Conductrice',
-        driverEmail: 'gisele.conductrice@email.com',
-        reasonComment: "Le véhicule ne correspondait pas à celui annoncé (beaucoup plus petit et ancien). De plus, le chauffeur a voulu me faire payer un supplément en espèces à la fin du trajet."
-    }
-];
-
 // --- Fonctions d'Affichage ---
 
 /**
@@ -179,35 +116,127 @@ function displayReportedRides(reports) {
     });
 }
 
+
+/**
+ * Récupère et affiche les avis en attente.
+ */
+async function fetchPendingReviews() {
+    const reviewsContainer = document.querySelector('.review-list');
+    const noReviewsMessage = document.getElementById('no-pending-reviews');
+    if (!reviewsContainer || !noReviewsMessage) return;
+
+    reviewsContainer.innerHTML = '<p class="text-center text-muted">Chargement des avis...</p>'; // Indicateur de chargement
+    noReviewsMessage.classList.add('d-none');
+
+    try {
+        const response = await fetch('http://ecoride.local/api/employee_get_pending_reviews.php');
+        const data = await response.json();
+
+        if (data.success) {
+            displayPendingReviews(data.reviews || []); // Appelle la fonction d'affichage
+        } else {
+            console.error("Erreur API employee_get_pending_reviews:", data.message);
+            reviewsContainer.innerHTML = ''; // Vide l'indicateur de chargement
+            noReviewsMessage.textContent = data.message || "Erreur lors du chargement des avis.";
+            noReviewsMessage.classList.remove('d-none');
+        }
+    } catch (error) {
+        console.error("Erreur Fetch globale (employee_get_pending_reviews):", error);
+        reviewsContainer.innerHTML = '';
+        noReviewsMessage.textContent = "Erreur de communication pour charger les avis.";
+        noReviewsMessage.classList.remove('d-none');
+    }
+}
+
+/**
+ * Récupère et affiche les signalements.
+ */
+async function fetchReportedRides() {
+    const reportsContainer = document.querySelector('.reported-rides-list');
+    const noReportsMessage = document.getElementById('no-reported-rides');
+    if (!reportsContainer || !noReportsMessage) return;
+
+    reportsContainer.innerHTML = '<p class="text-center text-muted">Chargement des signalements...</p>';
+    noReportsMessage.classList.add('d-none');
+
+    try {
+        const response = await fetch('http://ecoride.local/api/employee_get_reports.php');
+        const data = await response.json();
+
+        if (data.success) {
+            displayReportedRides(data.reports || []);
+        } else {
+            console.error("Erreur API employee_get_reports:", data.message);
+            reportsContainer.innerHTML = '';
+            noReportsMessage.textContent = data.message || "Erreur lors du chargement des signalements.";
+            noReportsMessage.classList.remove('d-none');
+        }
+    } catch (error) {
+        console.error("Erreur Fetch globale (employee_get_reports):", error);
+        reportsContainer.innerHTML = '';
+        noReportsMessage.textContent = "Erreur de communication pour charger les signalements.";
+        noReportsMessage.classList.remove('d-none');
+    }
+}
+
 // --- Gestion des Actions ---
 
 /**
- * Gère les actions sur les avis (validation, refus).
+ * Gère les actions sur les avis (validation, refus) via API.
  * @param {Event} event - L'objet événement du clic.
  */
-function handleReviewAction(event) {
+async function handleReviewAction(event) {
     const targetButton = event.target.closest('button');
-    if (!targetButton) return; // Clic en dehors d'un bouton
+    if (!targetButton) return;
 
     const card = targetButton.closest('.card[data-review-id]');
     if (!card) return;
 
-    const reviewId = card.dataset.reviewId;
-    let actionMessage = '';
+    const reviewId = card.dataset.reviewId; // Ex: "REV001"
+    let newStatus = '';
+    let confirmMessage = '';
 
     if (targetButton.classList.contains('action-validate-review')) {
-        // Simulation: supprimer l'avis de la liste des données et rafraîchir
-        pendingReviewsData = pendingReviewsData.filter(review => review.reviewId !== reviewId);
-        actionMessage = `Avis ${reviewId} validé (simulation) !`;
+        newStatus = 'approved';
+        confirmMessage = `Valider l'avis ${reviewId} ? Le chauffeur sera crédité si applicable.`;
     } else if (targetButton.classList.contains('action-reject-review')) {
-        // Simulation: supprimer l'avis de la liste des données et rafraîchir
-        pendingReviewsData = pendingReviewsData.filter(review => review.reviewId !== reviewId);
-        actionMessage = `Avis ${reviewId} refusé (simulation) !`;
+        newStatus = 'rejected';
+        confirmMessage = `Refuser l'avis ${reviewId} ?`;
+    } else {
+        return; // Pas un bouton d'action d'avis
     }
 
-    if (actionMessage) {
-        alert(actionMessage);
-        displayPendingReviews(pendingReviewsData); // Rafraîchir la liste des avis
+    if (!reviewId || !newStatus) {
+        console.error("ID d'avis ou nouveau statut manquant pour l'action.");
+        return;
+    }
+
+    if (!confirm(confirmMessage)) {
+        return;
+    }
+
+    targetButton.disabled = true; // Désactiver pendant l'appel
+
+    try {
+        const response = await fetch('http://ecoride.local/api/employee_update_review_status.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ review_id: reviewId, new_status: newStatus })
+        });
+        const result = await response.json();
+
+        if (result.success) {
+            alert(result.message || `Avis ${reviewId} mis à jour !`);
+            fetchPendingReviews(); // Recharger la liste des avis en attente
+        } else {
+            alert(result.message || "Erreur lors de la mise à jour de l'avis.");
+            console.error("Erreur API employee_update_review_status:", result);
+        }
+    } catch (error) {
+        console.error("Erreur Fetch globale (employee_update_review_status):", error);
+        alert("Erreur de communication pour mettre à jour l'avis. " + error.message);
+    } finally {
+        targetButton.disabled = false; // Réactiver le bouton
     }
 }
 
@@ -216,8 +245,8 @@ function handleReviewAction(event) {
 export function initializeEmployeeDashboardPage() {
     console.log("EmployeeDashboardHandler: Initialisation de la page Espace Employé.");
 
-    displayPendingReviews(pendingReviewsData);
-    displayReportedRides(reportedRidesData);
+    fetchPendingReviews();
+    fetchReportedRides();
 
     const reviewsContainer = document.querySelector('.review-list');
     if (reviewsContainer) {
