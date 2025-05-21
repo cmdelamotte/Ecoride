@@ -28,9 +28,8 @@ export const LoadContentPage = async () => {
   if (!actualRoute) {
     actualRoute = route404;
   } else {
-    // L'URL existe, maintenant vérifions les autorisations
-    const userRole = getCurrentUserRole(); // Récupère le rôle stocké dans sessionStorage par authManager
-    const userIsConnected = isUserConnected(); // Vérifie si l'utilisateur est connecté
+    const userRole = getCurrentUserRole(); 
+    const userIsConnected = isUserConnected();
 
     // Vérification des autorisations de la route
     if (actualRoute.authorize && actualRoute.authorize.length > 0) {

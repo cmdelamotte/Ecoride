@@ -14,7 +14,7 @@ export async function loadAndInitializePageScript(pathJS) {
     // 'pageModule' sera un objet contenant toutes les fonctions exportées par le fichier pathJS.
     const pageModule = await import(pathJS);
     
-    // On essaie d'appeler des fonctions d'initialisation par convention de nom.
+    // On appelle des fonctions d'initialisation par convention de nom.
     if (pageModule.initializeSearchForm && typeof pageModule.initializeSearchForm === 'function') {
         pageModule.initializeSearchForm();
         console.log(`PageScriptManager: initializeSearchForm() appelée depuis ${pathJS}`);
@@ -30,6 +30,9 @@ export async function loadAndInitializePageScript(pathJS) {
     } else if (pageModule.initializeEditPasswordForm && typeof pageModule.initializeEditPasswordForm === 'function') { 
         pageModule.initializeEditPasswordForm();
         console.log(`PageScriptManager: initializeEditPasswordForm() appelée depuis ${pathJS}`);
+    } else if (pageModule.initializeResetPasswordForm && typeof pageModule.initializeResetPasswordForm === 'function') { 
+        pageModule.initializeResetPasswordForm();
+        console.log(`PageScriptManager: initializeResetPasswordForm() appelée depuis ${pathJS}`);
     }  else if (pageModule.initializeContactForm && typeof pageModule.initializeContactForm === 'function') { 
         pageModule.initializeContactForm();
         console.log(`PageScriptManager: initializeContactForm() appelée depuis ${pathJS}`);
@@ -45,7 +48,7 @@ export async function loadAndInitializePageScript(pathJS) {
     } else if (pageModule.initializeEditPersonalInfoForm && typeof pageModule.initializeEditPersonalInfoForm === 'function') {
         pageModule.initializeEditPersonalInfoForm();
         console.log(`PageScriptManager: initializeEditPersonalInfoForm() appelée depuis ${pathJS}`);
-    } else if (pageModule.initializePublishRidePage && typeof pageModule.initializePublishRidePage === 'function') { // Nom de la fonction mis à jour
+    } else if (pageModule.initializePublishRidePage && typeof pageModule.initializePublishRidePage === 'function') {
     pageModule.initializePublishRidePage();
     console.log(`PageScriptManager: initializePublishRidePage() appelée depuis ${pathJS}`);
     } else if (pageModule.initializeAdminDashboardPage && typeof pageModule.initializeAdminDashboardPage === 'function') {

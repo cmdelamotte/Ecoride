@@ -11,6 +11,7 @@ export const allRoutes = [
     new Route("/employee-dashboard", "Espace employé", "/pages/auth/employee-dashboard.html",["employee", "admin"], "/assets/js/employeeDashboardHandler.js"),
     new Route("/admin-dashboard", "Espace Admin", "/pages/auth/admin-dashboard.html",["admin"], "/assets/js/adminDashboardHandler.js"),
     new Route("/forgot-password", "Mot de passe oublié", "/pages/auth/forgot-password.html",[], "/assets/js/forgotPasswordHandler.js"),
+    new Route("/reset-password", "Réinitialisation de mot de passe", "/pages/auth/reset-password.html",["disconnected"], "/assets/js/resetPasswordHandler.js"),
     new Route("/your-rides", "Vos covoiturages", "/pages/your-rides.html", ["passenger", "driver", "passenger-driver"], "/assets/js/yourRidesPageHandler.js"),
     new Route("/book-ride", "Réserver", "/pages/booking/book-ride.html", ["passenger, passenger-driver"]),
     new Route("/publish-ride", "Publier un trajet", "/pages/publish-ride.html", ["driver, passenger-driver"], "/assets/js/publishRidePageHandler.js"),
