@@ -1,10 +1,8 @@
-import { initializeSearchForm } from './searchFormHandler.js'; 
-import { LoadContentPage } from '../../router/Router.js'; 
+import { initializeSearchForm } from './searchFormHandler.js';
+import { LoadContentPage } from '../../router/Router.js';
 
-/**
- * Met à jour l'affichage de la valeur du slider de durée.
- * @param {string} valueString - La valeur actuelle du slider
- */
+const RIDES_PER_PAGE = 5; // Nombre de résultats par page
+
 function updateDurationOutputDisplay(valueString) {
     const outputElement = document.getElementById('duration-output');
     if (outputElement) {
@@ -15,25 +13,15 @@ function updateDurationOutputDisplay(valueString) {
     }
 }
 
-/**
- * Met à jour l'affichage de la valeur du slider de prix.
- * @param {string} valueString - La valeur actuelle du slider (ex: "50").
- */
 function updatePriceOutputDisplay(valueString) {
-    // Cible l'output du prix par son ID unique "price-output".
-    const outputElement = document.getElementById('price-output'); 
-    
-    if (outputElement) { 
-        outputElement.textContent = valueString + " crédits"; 
+    const outputElement = document.getElementById('price-output');
+    if (outputElement) {
+        outputElement.textContent = valueString + " crédits";
     }
 }
 
-/**
- * Pré-remplit les champs du formulaire de filtres à partir des paramètres de l'URL.
- */
 function prefillFilterFormFromURL() {
     const queryParams = new URLSearchParams(window.location.search);
-
     const priceRangeInput = document.getElementById('price-filter');
     const durationRangeInput = document.getElementById('duration-filter-range');
     const animalRadios = document.querySelectorAll('input[name="animal-option"]');
@@ -42,82 +30,50 @@ function prefillFilterFormFromURL() {
 
     if (queryParams.has('maxPrice') && priceRangeInput) {
         priceRangeInput.value = queryParams.get('maxPrice');
-        updatePriceOutputDisplay(priceRangeInput.value); // Appel de la fonction pour mettre à jour l'output
+        updatePriceOutputDisplay(priceRangeInput.value);
     }
-
     if (queryParams.has('maxDuration') && durationRangeInput) {
         durationRangeInput.value = queryParams.get('maxDuration');
         updateDurationOutputDisplay(durationRangeInput.value);
     }
-
     if (queryParams.has('animalsAllowed') && animalRadios.length) {
         const animalsValue = queryParams.get('animalsAllowed');
-        animalRadios.forEach(radio => {
-            if (radio.value === animalsValue) {
-                radio.checked = true;
-            }
-        });
+        animalRadios.forEach(radio => { if (radio.value === animalsValue) radio.checked = true; });
     }
-
     if (queryParams.has('minRating') && ratingRadios.length) {
         const ratingValue = queryParams.get('minRating');
-        ratingRadios.forEach(radio => {
-            if (radio.value === ratingValue) {
-                radio.checked = true;
-            }
-        });
+        ratingRadios.forEach(radio => { if (radio.value === ratingValue) radio.checked = true; });
     }
-
     if (queryParams.has('ecoOnly') && ecoSwitch) {
         ecoSwitch.checked = (queryParams.get('ecoOnly') === 'true');
     }
 }
 
-/**
- * Crée un élément de carte de trajet à partir des données d'un trajet et d'un template.
- * @param {object} rideData - Les données du trajet venant de l'API.
- * @returns {Node|null} Le nœud DOM de la carte de trajet remplie, ou null si erreur.
- */
 function createRideCardElement(rideData) {
-        const templateElement = document.getElementById('ride-card-template');
+    const templateElement = document.getElementById('ride-card-template');
     if (!templateElement) {
         console.error("Template #ride-card-template est manquant.");
         return null;
     }
-
     const clone = templateElement.content.cloneNode(true);
     const cardElement = clone.querySelector('.ride-card');
-
     if (!cardElement) {
-        console.error("Élément '.ride-card' non trouvé dans le template cloné.");
-        return null; 
+        console.error("Élément '.ride-card' non trouvé.");
+        return null;
     }
-    
-    // Rendre les ID uniques pour le collapse 
-    const uniqueRideIdSuffix = `_ride_${rideData.ride_id}`; // rideData est l'objet du trajet en cours
+    const uniqueRideIdSuffix = `_ride_${rideData.ride_id}`;
     const detailsButton = cardElement.querySelector('.ride-details-button');
-    
-    // 1. Sélectionne l'élément qui va devenir le "collapse" par une classe stable
-    const collapseElement = cardElement.querySelector('.collapse'); // Assure-toi que ton div.collapse a bien cette classe
-
+    const collapseElement = cardElement.querySelector('.collapse');
     if (collapseElement) {
-        // 2. Assigne un ID unique
         const newCollapseId = `detailsCollapse${uniqueRideIdSuffix}`;
         collapseElement.id = newCollapseId;
-
-        // 3. Mets à jour le bouton "Détails" pour qu'il cible ce nouvel ID
         if (detailsButton) {
             detailsButton.setAttribute('data-bs-target', `#${newCollapseId}`);
             detailsButton.setAttribute('aria-controls', newCollapseId);
-            detailsButton.setAttribute('data-ride-id', rideData.ride_id); // Tu l'as déjà
-        } else {
-            console.error("Bouton Détails (.ride-details-button) non trouvé pour trajet", rideData.ride_id);
+            detailsButton.setAttribute('data-ride-id', rideData.ride_id);
         }
-    } else {
-        console.error("Div .collapse non trouvée dans le template pour trajet ID", rideData.ride_id);
     }
 
-    // Remplir les informations de la carte
     const driverPhotoEl = cardElement.querySelector('.driver-profile-photo');
     const driverUsernameEl = cardElement.querySelector('.driver-username');
     const driverRatingEl = cardElement.querySelector('.driver-rating');
@@ -127,341 +83,279 @@ function createRideCardElement(rideData) {
     const estimatedDurationEl = cardElement.querySelector('.ride-estimated-duration');
     const priceEl = cardElement.querySelector('.ride-price');
     const seatsAvailableEl = cardElement.querySelector('.ride-available-seats');
-
-    // Détails dans le collapse
     const carModelEl = cardElement.querySelector('.ride-car-model');
     const carEnergyEl = cardElement.querySelector('.ride-car-energy');
     const participateButton = cardElement.querySelector('.participate-button');
     const carRegYearEl = cardElement.querySelector('.ride-car-registration-year');
     const departureAddressDetailEl = cardElement.querySelector('.ride-departure-address-details');
     const arrivalAddressDetailEl = cardElement.querySelector('.ride-arrival-address-details');
-    // const seatsInModalEl = cardElement.querySelector('.ride-available-seats-modal'); // La modale est globale
 
-    if (departureAddressDetailEl) {
-        departureAddressDetailEl.textContent = rideData.departure_address; 
-    }
-    if (arrivalAddressDetailEl) {
-        arrivalAddressDetailEl.textContent = rideData.arrival_address;
-    }
+    if (departureAddressDetailEl) departureAddressDetailEl.textContent = rideData.departure_address;
+    if (arrivalAddressDetailEl) arrivalAddressDetailEl.textContent = rideData.arrival_address;
 
-    // --- Remplissage des données principales de la carte ---
     if (driverPhotoEl && rideData.driver_photo) {
         driverPhotoEl.src = rideData.driver_photo;
         driverPhotoEl.alt = `Photo de ${rideData.driver_username}`;
     } else if (driverPhotoEl) {
-        driverPhotoEl.src = "././img/default-profile.png" ; // Chemin vers une image par défaut
+        driverPhotoEl.src = "././img/default-profile.png";
         driverPhotoEl.alt = 'Photo de profil par défaut';
     }
     if (driverUsernameEl) driverUsernameEl.textContent = rideData.driver_username;
-    
-    // Note moyenne du chauffeur (l'API search_rides ne la renvoie pas encore, ce sera pour les détails)
     if (driverRatingEl) driverRatingEl.textContent = rideData.driver_average_rating ? `${parseFloat(rideData.driver_average_rating).toFixed(1)} (${rideData.driver_review_count || 0} avis)` : 'N/A';
     else if (driverRatingEl) driverRatingEl.textContent = 'N/A';
-
-
-    if (departureLocationEl) departureLocationEl.textContent = rideData.departure_city || 'N/A'; 
+    if (departureLocationEl) departureLocationEl.textContent = rideData.departure_city || 'N/A';
     if (arrivalLocationEl) arrivalLocationEl.textContent = rideData.arrival_city || 'N/A';
-
     if (departureTimeEl && rideData.departure_time) {
         const depDate = new Date(rideData.departure_time.replace(' ', 'T'));
         departureTimeEl.textContent = `${depDate.toLocaleDateString([], {day:'2-digit', month:'2-digit', year:'numeric'})} ${depDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`;
     }
-    
-    // Calcul et affichage de la durée estimée
     if (estimatedDurationEl && rideData.departure_time && rideData.estimated_arrival_time) {
         const departure = new Date(rideData.departure_time.replace(' ', 'T'));
         const arrival = new Date(rideData.estimated_arrival_time.replace(' ', 'T'));
         const durationMs = arrival - departure;
-
         if (durationMs > 0) {
             const hours = Math.floor(durationMs / (1000 * 60 * 60));
             const minutes = Math.floor((durationMs % (1000 * 60 * 60)) / (1000 * 60));
             estimatedDurationEl.textContent = `${hours}h${minutes < 10 ? '0' : ''}${minutes}`;
-        } else {
-            estimatedDurationEl.textContent = "N/A";
-        }
-    } else if (estimatedDurationEl) {
-        estimatedDurationEl.textContent = "N/A";
-    }
-
+        } else { estimatedDurationEl.textContent = "N/A"; }
+    } else if (estimatedDurationEl) { estimatedDurationEl.textContent = "N/A"; }
     if (priceEl) priceEl.textContent = `${rideData.price_per_seat} crédits`;
     if (seatsAvailableEl) seatsAvailableEl.textContent = rideData.seats_available !== null ? rideData.seats_available : 'N/A';
     
     const ecoCheckbox = cardElement.querySelector('input.is-ride-eco');
-    const ecoLabel = cardElement.querySelector('label.is-ride-eco'); // Sélectionne par classe
-
+    const ecoLabel = cardElement.querySelector('label.is-ride-eco');
     if (ecoCheckbox) {
-        const newEcoId = `ecoCheck_ride_${rideData.ride_id}`; // Crée un ID unique
-        ecoCheckbox.id = newEcoId; // Change l'ID de l'input
-        if (ecoLabel) ecoLabel.setAttribute('for', newEcoId); // Met à jour le 'for' du label
-        
+        const newEcoId = `ecoCheck_ride_${rideData.ride_id}`;
+        ecoCheckbox.id = newEcoId;
+        if (ecoLabel) ecoLabel.setAttribute('for', newEcoId);
         ecoCheckbox.checked = rideData.is_eco_ride || false;
         ecoCheckbox.disabled = true;
-
         const ecoCheckWrapper = ecoCheckbox.closest('.form-check');
-        if (ecoCheckWrapper) {
-            ecoCheckWrapper.style.display = rideData.is_eco_ride ? 'inline-block' : 'none';
-        }
+        if (ecoCheckWrapper) ecoCheckWrapper.style.display = rideData.is_eco_ride ? 'inline-block' : 'none';
     }
 
-
-    // --- Remplissage des détails dans le "collapse" ---
     if (carModelEl) carModelEl.textContent = `${rideData.vehicle_brand || ''} ${rideData.vehicle_model || ''}`.trim();
-        if (carEnergyEl) {
-        carEnergyEl.textContent = rideData.vehicle_energy || 'N/A';
-    }
-    
+    if (carEnergyEl) carEnergyEl.textContent = rideData.vehicle_energy || 'N/A';
     if (carRegYearEl && rideData.vehicle_registration_date) {
-        // Extrait juste l'année de la date AAAA-MM-JJ
-        carRegYearEl.textContent = rideData.vehicle_registration_date.substring(0, 4); 
-    } else if (carRegYearEl) {
-        carRegYearEl.textContent = 'N/A';
-    }
-
-
-    if (detailsButton && collapseElement) { // Vérifie les deux
-        detailsButton.addEventListener('click', async () => { 
-            // À L'INTÉRIEUR du listener, collapseElement est celui défini ci-dessus et a un ID
-            console.log("Clic sur Détails pour trajet ID:", rideData.ride_id, "Section à afficher/peupler:", collapseElement.id);
-        });
-        }
+        carRegYearEl.textContent = rideData.vehicle_registration_date.substring(0, 4);
+    } else if (carRegYearEl) { carRegYearEl.textContent = 'N/A'; }
 
     if (participateButton) {
         participateButton.setAttribute('data-ride-id', rideData.ride_id);
-        participateButton.addEventListener('click', () => {
-            // Mettre à jour les infos dans la modale #confirmationModal
-            document.getElementById('modal-ride-departure-location').textContent = rideData.departure_city;
-            document.getElementById('modal-ride-arrival-location').textContent = rideData.arrival_city;
-            const depDate = new Date(rideData.departure_time.replace(' ', 'T'));
-            document.getElementById('modal-ride-date-text').textContent = depDate.toLocaleDateString();
-            document.getElementById('modal-ride-time-text').textContent = depDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-            document.getElementById('modal-ride-credits-cost').textContent = rideData.price_per_seat;
-            // Mettre à jour le data-ride-id sur le bouton de confirmation de la modale
-            document.getElementById('confirm-booking-btn').setAttribute('data-ride-id', rideData.ride_id);
-            // Les places dispo pour la modale
-            const modalSeatsSpan = document.querySelector('#confirmationModal .ride-available-seats-modal');
-            if (modalSeatsSpan) modalSeatsSpan.textContent = rideData.seats_available;
-
-        });
     }
+
     (async () => {
     try {
         const detailsRes = await fetch(`http://ecoride.local/api/get_ride_details.php?ride_id=${rideData.ride_id}`);
         if (!detailsRes.ok) throw new Error(`Erreur API détails trajet (statut ${detailsRes.status})`);
-
         const detailsData = await detailsRes.json();
         if (!detailsData.success) throw new Error("Réponse API échec: " + (detailsData.message || "inconnue"));
-
-        // === Préférences chauffeur ===
         const prefs = detailsData.details?.driver_preferences || {};
         const prefsContainer = cardElement.querySelector('.driver-preferences-text');
         const noPrefsMsg = cardElement.querySelector('.no-prefs-message');
         if (prefsContainer) {
-            prefsContainer.innerHTML = ''; // Reset
-
-            let hasPref = false;
-
-            if (prefs.smoker !== undefined) {
-                hasPref = true;
-                const smokeText = prefs.smoker ? 'Accepte les fumeurs' : 'Non-fumeur';
-                const el = document.createElement('p');
-                el.classList.add('mb-1');
-                el.textContent = smokeText;
-                prefsContainer.appendChild(el);
-            }
-
-            if (prefs.animals !== undefined) {
-                hasPref = true;
-                const animalText = prefs.animals ? 'Accepte les animaux' : 'N’accepte pas les animaux';
-                const el = document.createElement('p');
-                el.classList.add('mb-1');
-                el.textContent = animalText;
-                prefsContainer.appendChild(el);
-            }
-
-            if (prefs.custom && prefs.custom.trim() !== '') {
-                hasPref = true;
-                const el = document.createElement('p');
-                el.classList.add('mb-1');
-                el.textContent = prefs.custom;
-                prefsContainer.appendChild(el);
-            }
-
-            if (!hasPref && noPrefsMsg) {
-                noPrefsMsg.classList.remove('d-none');
-            }
+            prefsContainer.innerHTML = ''; let hasPref = false;
+            if (prefs.smoker !== undefined) { hasPref = true; const el = document.createElement('p'); el.classList.add('mb-1'); el.textContent = prefs.smoker ? 'Accepte les fumeurs' : 'Non-fumeur'; prefsContainer.appendChild(el); }
+            if (prefs.animals !== undefined) { hasPref = true; const el = document.createElement('p'); el.classList.add('mb-1'); el.textContent = prefs.animals ? 'Accepte les animaux' : 'N’accepte pas les animaux'; prefsContainer.appendChild(el); }
+            if (prefs.custom && prefs.custom.trim() !== '') { hasPref = true; const el = document.createElement('p'); el.classList.add('mb-1'); el.textContent = prefs.custom; prefsContainer.appendChild(el); }
+            if (!hasPref && noPrefsMsg) noPrefsMsg.classList.remove('d-none');
         }
-
-        // === Avis chauffeur ===
         const reviewsContainer = cardElement.querySelector('.driver-reviews-container');
         const reviewTemplate = document.getElementById('driver-review-item-template');
-
         if (reviewsContainer && reviewTemplate) {
             const reviews = detailsData.details?.reviews || [];
-
             reviews.forEach(review => {
                 const reviewClone = reviewTemplate.content.cloneNode(true);
                 const authorEl = reviewClone.querySelector('.review-author');
                 const dateEl = reviewClone.querySelector('.review-date');
                 const starsEl = reviewClone.querySelector('.review-stars');
                 const commentEl = reviewClone.querySelector('.review-comment');
-
                 if (authorEl) authorEl.textContent = review.author_username || "Utilisateur";
-                if (dateEl) {
-                    const date = new Date(review.submission_date.replace(' ', 'T'));
-                    dateEl.textContent = date.toLocaleDateString('fr-FR');
-                }
-                if (starsEl) {
-                    const stars = parseInt(review.rating, 10);
-                    starsEl.innerHTML = '★'.repeat(stars) + '☆'.repeat(5 - stars);
-                }
+                if (dateEl) dateEl.textContent = new Date(review.submission_date.replace(' ', 'T')).toLocaleDateString('fr-FR');
+                if (starsEl) { const stars = parseInt(review.rating, 10); starsEl.innerHTML = '★'.repeat(stars) + '☆'.repeat(5 - stars); }
                 if (commentEl) commentEl.textContent = review.comment || "";
-
                 reviewsContainer.appendChild(reviewClone);
             });
         }
-    } catch (err) {
-        console.warn(`Erreur lors de la récupération des détails du trajet ${rideData.ride_id} :`, err);
+    } catch (err) { console.warn(`Erreur récup détails trajet ${rideData.ride_id}:`, err); }
+    })();
+    return cardElement;
+}
+
+
+
+function renderPaginationControls(currentPage, totalPages, currentSearchParams) {
+    const paginationContainer = document.querySelector('ul.pagination');
+
+    if (!paginationContainer) {
+        console.error("Conteneur de pagination introuvable !");
+        return;
     }
-})();
-    return cardElement; 
+
+    paginationContainer.innerHTML = ''; // Vider les anciens contrôles
+
+    if (totalPages <= 1) { // Pas besoin de pagination si 0 ou 1 page
+        paginationContainer.classList.add('d-none'); // Cacher le conteneur
+        return;
+    }
+
+    const navElement = document.querySelector('nav[aria-label="Navigation des pages de résultats"]');
+    if (navElement) {
+        navElement.classList.remove('d-none');
+    }
+    paginationContainer.classList.remove('d-none'); // Afficher le conteneur
+
+    // Bouton Précédent
+    const prevDisabled = currentPage === 1;
+    const prevLi = document.createElement('li');
+    prevLi.className = `page-item ${prevDisabled ? 'disabled' : ''}`;
+    const prevLink = document.createElement('a');
+    prevLink.className = 'page-link';
+    prevLink.href = '#'; // Sera géré par JS
+    prevLink.textContent = 'Précédent';
+    if (!prevDisabled) {
+        prevLink.onclick = (e) => {
+            e.preventDefault();
+            updateUrlAndReload(currentPage - 1, currentSearchParams);
+        };
+    }
+    prevLi.appendChild(prevLink);
+    paginationContainer.appendChild(prevLi);
+
+    // Numéros de page (simplifié pour l'instant, on peut ajouter "...")
+    for (let i = 1; i <= totalPages; i++) {
+        const pageLi = document.createElement('li');
+        pageLi.className = `page-item ${i === currentPage ? 'active' : ''}`;
+        const pageLink = document.createElement('a');
+        pageLink.className = 'page-link';
+        pageLink.href = '#';
+        pageLink.textContent = i;
+        if (i !== currentPage) {
+            pageLink.onclick = (e) => {
+                e.preventDefault();
+                updateUrlAndReload(i, currentSearchParams);
+            };
+        }
+        pageLi.appendChild(pageLink);
+        paginationContainer.appendChild(pageLi);
+    }
+
+    // Bouton Suivant
+    const nextDisabled = currentPage === totalPages;
+    const nextLi = document.createElement('li');
+    nextLi.className = `page-item ${nextDisabled ? 'disabled' : ''}`;
+    const nextLink = document.createElement('a');
+    nextLink.className = 'page-link';
+    nextLink.href = '#';
+    nextLink.textContent = 'Suivant';
+    if (!nextDisabled) {
+        nextLink.onclick = (e) => {
+            e.preventDefault();
+            updateUrlAndReload(currentPage + 1, currentSearchParams);
+        };
+    }
+    nextLi.appendChild(nextLink);
+    paginationContainer.appendChild(nextLi);
+}
+
+function updateUrlAndReload(newPage, searchParams) {
+    searchParams.set('page', newPage); // Mettre à jour le paramètre 'page'
+    const newUrl = `${window.location.pathname}?${searchParams.toString()}`;
+    window.history.pushState({ page: newPage, searchParams: searchParams.toString() }, "", newUrl);
+    fetchAndDisplayRides(); // Recharger les résultats pour la nouvelle page
 }
 
 
 async function fetchAndDisplayRides() {
-    console.log("RidesSearchPageHandler: fetchAndDisplayRides appelée.");
     const rideResultsContainer = document.getElementById('ride-results-container');
     const noResultsMessage = document.getElementById('no-results-message');
     const loadingIndicator = document.getElementById('loading-indicator');
     const otherRidesBar = document.getElementById('other-rides-bar');
+    const paginationNav = document.querySelector('nav[aria-label="Navigation des pages de résultats"]');
 
-    if (!rideResultsContainer || !noResultsMessage || !loadingIndicator) {
-        console.error("DOM manquant pour affichage résultats recherche.");
+    if (!rideResultsContainer || !noResultsMessage || !loadingIndicator || !paginationNav) {
+        console.error("DOM manquant pour affichage résultats recherche ou pagination.");
         return;
     }
 
     loadingIndicator.classList.remove('d-none');
-
-    rideResultsContainer.innerHTML = ''; 
+    rideResultsContainer.innerHTML = '';
     noResultsMessage.classList.add('d-none');
+    paginationNav.classList.add('d-none');
 
-    const queryParams = new URLSearchParams(window.location.search);
-    if (!queryParams.get('departure') || !queryParams.get('destination')) {
+    const queryParamsFromUrl = new URLSearchParams(window.location.search); // Ceux de l'URL actuelle
+
+    // Vérifier les paramètres de recherche principaux venant de l'URL (avec les noms corrects)
+    if (!queryParamsFromUrl.get('departure') || !queryParamsFromUrl.get('destination') || !queryParamsFromUrl.get('date')) {
         loadingIndicator.classList.add('d-none');
-        otherRidesBar.classList.add('d-none')
-        return; // Ne rien faire si pas de recherche
+        if (otherRidesBar) otherRidesBar.classList.add('d-none');
+        noResultsMessage.textContent = "Veuillez spécifier un départ, une destination et une date pour la recherche.";
+        noResultsMessage.classList.remove('d-none');
+        return;
     }
-    // On récupère les paramètres de recherche principaux depuis l'URL
-    let apiUrl = 'http://ecoride.local/api/search_rides.php?' + 
-                `departure_city=${encodeURIComponent(queryParams.get('departure') || '')}` +
-                `&arrival_city=${encodeURIComponent(queryParams.get('destination') || '')}` +
-                `&date=${encodeURIComponent(queryParams.get('date') || '')}` +
-                `&seats=${encodeURIComponent(queryParams.get('seats') || '1')}`;
 
+    // Construire les queryParams pour l'API en utilisant les noms attendus par search_rides.php
+    const apiQueryParams = new URLSearchParams();
+    apiQueryParams.set('departure_city', queryParamsFromUrl.get('departure') || '');
+    apiQueryParams.set('arrival_city', queryParamsFromUrl.get('destination') || '');
+    apiQueryParams.set('date', queryParamsFromUrl.get('date') || '');
+    apiQueryParams.set('seats', queryParamsFromUrl.get('seats') || '1');
+    apiQueryParams.set('page', queryParamsFromUrl.get('page') || '1'); // Page de l'URL ou 1 par défaut
+    apiQueryParams.set('limit', queryParamsFromUrl.get('limit') || String(RIDES_PER_PAGE));
+
+    // Ajouter les filtres supplémentaires s'ils sont dans l'URL
     ['maxPrice', 'maxDuration', 'animalsAllowed', 'minRating', 'ecoOnly'].forEach(filterKey => {
-        if (queryParams.has(filterKey) && queryParams.get(filterKey) !== '') {
-            // Convertir les booléens pour l'API si besoin (ecoOnly, animalsAllowed)
-            let value = queryParams.get(filterKey);
-            if (filterKey === 'ecoOnly' && value === 'true') value = '1';
-            else if (filterKey === 'ecoOnly' && value === 'false') value = '0';
-            if (filterKey === 'animalsAllowed' && value === 'true') value = '1';
-            else if (filterKey === 'animalsAllowed' && value === 'false') value = '0';
-            
-            apiUrl += `&${filterKey}=${encodeURIComponent(value)}`;
+        if (queryParamsFromUrl.has(filterKey) && queryParamsFromUrl.get(filterKey) !== '') {
+            apiQueryParams.set(filterKey, queryParamsFromUrl.get(filterKey));
         }
     });
-    
-    console.log("fetchAndDisplayRides: Appel API vers:", apiUrl);
+
+    const apiUrl = `http://ecoride.local/api/search_rides.php?${apiQueryParams.toString()}`;
 
     try {
         const response = await fetch(apiUrl);
-        setTimeout(() => {
-        loadingIndicator.classList.add('d-none');
-        }, 1000);
-
-        if (!response.ok) { 
+        if (!response.ok) {
             const errorText = await response.text().catch(() => "Impossible de lire le corps de l'erreur.");
-            throw new Error(`Erreur API (statut ${response.status}): ${errorText.substring(0,200)}`);
+            throw new Error(`Erreur API (statut ${response.status}): ${errorText.substring(0, 200)}`);
         }
         const data = await response.json().catch(async (jsonError) => {
             const errorText = await response.text().catch(() => "Impossible de lire le corps de l'erreur JSON.");
-            console.error("Erreur parsing JSON de la réponse search_rides:", jsonError, "Réponse brute:", errorText);
-            throw new Error(`Réponse non-JSON du serveur (statut ${response.status}): ${errorText.substring(0,200)}`);
+            console.error("Erreur parsing JSON (search_rides):", jsonError, "Réponse brute:", errorText);
+            throw new Error(`Réponse non-JSON (statut ${response.status}): ${errorText.substring(0, 200)}`);
         });
-        console.log("fetchAndDisplayRides: Données reçues:", data);
 
-if (data.success && data.rides && data.rides.length > 0) {
-    data.rides.forEach(ride => {
-        // FILTRAGE côté client ici
-        if (!applyClientSideFilters(ride)) return;  // Si le trajet ne passe pas les filtres, on le saute
-
-        const rideCard = createRideCardElement(ride); 
-        if (rideCard) {
-            rideResultsContainer.appendChild(rideCard);
+        if (data.success && data.rides && data.rides.length > 0) {
+            data.rides.forEach(ride => {
+                const rideCard = createRideCardElement(ride);
+                if (rideCard) {
+                    rideResultsContainer.appendChild(rideCard);
+                }
+            });
+            // Passer queryParamsFromUrl à renderPaginationControls car c'est l'état actuel de l'URL du navigateur
+            renderPaginationControls(data.page, data.totalPages, queryParamsFromUrl);
+            if (otherRidesBar) otherRidesBar.classList.remove('d-none');
+        } else {
+            noResultsMessage.textContent = data.message || "Aucun trajet ne correspond à vos critères de recherche.";
+            noResultsMessage.classList.remove('d-none');
+            if (otherRidesBar) otherRidesBar.classList.add('d-none');
+            paginationNav.classList.add('d-none');
         }
-    });
-
-    // Si aucun résultat n’est affiché après filtrage
-    if (rideResultsContainer.children.length === 0) {
-        noResultsMessage.textContent = "Aucun trajet ne correspond à vos critères de recherche.";
-        noResultsMessage.classList.remove('d-none');
-    }
-
-} else {
-    noResultsMessage.textContent = data.message || "Aucun trajet ne correspond à vos critères de recherche.";
-    noResultsMessage.classList.remove('d-none');
-}
-
     } catch (error) {
-        loadingIndicator.classList.add('d-none');
         console.error("Erreur Fetch globale (search_rides):", error);
         noResultsMessage.textContent = "Une erreur de communication est survenue. " + error.message;
         noResultsMessage.classList.remove('d-none');
+        if (otherRidesBar) otherRidesBar.classList.add('d-none');
+        paginationNav.classList.add('d-none');
+    } finally {
+        loadingIndicator.classList.add('d-none');
     }
 }
-
-function applyClientSideFilters(ride) {
-    const urlParams = new URLSearchParams(window.location.search);
-    const maxPrice = parseFloat(urlParams.get('maxPrice')) || Infinity;
-    const maxDuration = parseFloat(urlParams.get('maxDuration')) || Infinity;
-    const animalsAllowed = urlParams.get('animalsAllowed'); // peut valoir "", "true", "false"
-    const minRating = parseFloat(urlParams.get('minRating')) || 0;
-    const ecoOnly = urlParams.get('ecoOnly') === 'true';
-
-    // Prix
-    if (ride.price_per_seat > maxPrice) return false;
-
-    // Durée
-    if (ride.departure_time && ride.estimated_arrival_time) {
-        const dep = new Date(ride.departure_time);
-        const arr = new Date(ride.estimated_arrival_time);
-        const durationHours = (arr - dep) / (1000 * 60 * 60);
-        if (durationHours > maxDuration) return false;
-    }
-
-    // Animaux
-    if (animalsAllowed === 'true' && ride.driver_pref_animals !== true) return false;
-    if (animalsAllowed === 'false' && ride.driver_pref_animals !== false) return false;
-
-    // Note
-    if (ride.driver_average_rating && parseFloat(ride.driver_average_rating) < minRating) return false;
-
-    // Éco
-    if (ecoOnly && !ride.is_eco_ride) return false;
-
-    return true;
-}
-
 
 
 export function initializeRidesSearchPage() {
-    console.log("RidesSearchPageHandler: Initialisation de la page de recherche de trajets.");
 
     if (typeof initializeSearchForm === 'function' && document.getElementById('search-form')) {
-        initializeSearchForm(); 
-        console.log("RidesSearchPageHandler: initializeSearchForm() appelée.");
-    } else if (!document.getElementById('search-form')) {
-        console.warn("RidesSearchPageHandler: Formulaire 'search-form' non trouvé.");
+        initializeSearchForm();
     }
 
     const filterForm = document.getElementById('filter-form');
@@ -472,166 +366,107 @@ export function initializeRidesSearchPage() {
     const ecoSwitch = document.getElementById('eco-filter');
     const resetButton = filterForm ? filterForm.querySelector('button[type="button"].secondary-btn') : null;
 
-    // Pré-remplir les filtres à partir de l'URL
-    if (filterForm) { 
-        prefillFilterFormFromURL();
-    }
-
-    // Initialisation pour le slider de durée
-    if (durationRangeInput) {
-        // L'affichage initial est déjà géré par prefillFilterFormFromURL (qui appelle updateDurationOutputDisplay)
-        // ou par updateDurationOutputDisplay(durationRangeInput.value) si prefill ne fait rien pour la durée.
-        // Pour être sûr, on peut l'appeler ici aussi si prefill n'a pas de valeur d'URL pour la durée.
-        if (!new URLSearchParams(window.location.search).has('maxDuration')) {
-            updateDurationOutputDisplay(durationRangeInput.value); 
-        }
-        durationRangeInput.addEventListener('input', function() {
-            updateDurationOutputDisplay(this.value);
-        });
-    }
-
-    // Initialisation pour le slider de prix
-    if (priceRangeInput) {
-        // L'affichage initial est déjà géré par prefillFilterFormFromURL
-        if (!new URLSearchParams(window.location.search).has('maxPrice')) {
-            updatePriceOutputDisplay(priceRangeInput.value); 
-        }
-        priceRangeInput.addEventListener('input', function() {
-            updatePriceOutputDisplay(this.value); 
-        });
-    }
 
     if (filterForm) {
+        prefillFilterFormFromURL(); // Pré-remplir le formulaire de recherche ET les filtres
+        if (durationRangeInput) {
+            if (!new URLSearchParams(window.location.search).has('maxDuration')) {
+                updateDurationOutputDisplay(durationRangeInput.value); 
+            }
+            durationRangeInput.addEventListener('input', function() { updateDurationOutputDisplay(this.value); });
+        }
+        if (priceRangeInput) {
+            if (!new URLSearchParams(window.location.search).has('maxPrice')) {
+                updatePriceOutputDisplay(priceRangeInput.value); 
+            }
+            priceRangeInput.addEventListener('input', function() { updatePriceOutputDisplay(this.value); });
+        }
+
         filterForm.addEventListener('submit', function(event) {
             event.preventDefault();
-            
-            const filters = {
-                maxPrice: priceRangeInput ? priceRangeInput.value : null,
-                maxDuration: durationRangeInput ? parseFloat(durationRangeInput.value) : null,
-                animalsAllowed: null,
-                minRating: null,
-                ecoOnly: ecoSwitch ? ecoSwitch.checked : false
-            };
-
-            animalRadios.forEach(radio => {
-                if (radio.checked && radio.value !== "") {
-                    filters.animalsAllowed = radio.value; 
-                }
-            });
-
-            ratingRadios.forEach(radio => {
-                if (radio.checked && radio.value !== "0") {
-                    filters.minRating = radio.value;
-                }
-            });
-
-            console.log("Filtres appliqués :", filters);
-            
             const currentSearchParams = new URLSearchParams(window.location.search);
-            ['maxPrice', 'maxDuration', 'animalsAllowed', 'minRating', 'ecoOnly'].forEach(key => currentSearchParams.delete(key));
 
-            Object.keys(filters).forEach(key => {
-                if (filters[key] !== null && filters[key] !== "" && (typeof filters[key] !== 'boolean' || filters[key] === true) ) {
-                    currentSearchParams.set(key, filters[key]);
-                }
-            });
+            // Supprimer les anciens paramètres de filtre pour éviter les doublons
+            ['maxPrice', 'maxDuration', 'animalsAllowed', 'minRating', 'ecoOnly', 'page'].forEach(key => currentSearchParams.delete(key));
+            currentSearchParams.set('page', '1'); // Toujours aller à la page 1 quand on applique de nouveaux filtres
+
+            // Ajouter les nouveaux filtres depuis le formulaire de filtre
+            const formData = new FormData(filterForm);
+            if (formData.get('price-filter')) currentSearchParams.set('maxPrice', formData.get('price-filter'));
+            if (formData.get('duration_filter_range')) currentSearchParams.set('maxDuration', formData.get('duration_filter_range'));
             
+            const animalOption = formData.get('animal-option');
+            if (animalOption && animalOption !== "") currentSearchParams.set('animalsAllowed', animalOption);
+            
+            const ratingOption = formData.get('rating-options');
+            if (ratingOption && ratingOption !== "0") currentSearchParams.set('minRating', ratingOption);
+            
+            if (document.getElementById('eco-filter')?.checked) currentSearchParams.set('ecoOnly', 'true');
+            else currentSearchParams.delete('ecoOnly'); // S'assurer de le supprimer s'il n'est pas coché
+
+
             const newUrl = `${window.location.pathname}?${currentSearchParams.toString()}`;
-            
-            window.history.pushState({filtersApplied: filters}, "", newUrl);
-            if (typeof LoadContentPage === "function") {
-                LoadContentPage(); 
-            } else {
-                console.warn("LoadContentPage n'est pas disponible pour appliquer les filtres.");
-            }
+            window.history.pushState({ filtersApplied: Object.fromEntries(formData) }, "", newUrl);
+            fetchAndDisplayRides(); // Recharger avec les nouveaux filtres et la pagination réinitialisée
         });
 
         if (resetButton) {
             resetButton.addEventListener('click', function() {
-                console.log("Filtres réinitialisés.");
-                
                 const currentSearchParams = new URLSearchParams(window.location.search);
-                const searchCriteriaParams = {};
-                ['departure', 'destination', 'date', 'seats'].forEach(key => {
-                    if (currentSearchParams.has(key)) {
-                        searchCriteriaParams[key] = currentSearchParams.get(key);
-                    }
+                // Garder les paramètres de recherche principaux, supprimer les filtres et la page
+                const searchCriteriaToKeep = {};
+                ['departure_city', 'arrival_city', 'date', 'seats'].forEach(key => {
+                    if (currentSearchParams.has(key)) searchCriteriaToKeep[key] = currentSearchParams.get(key);
                 });
                 
-                const newUrl = `${window.location.pathname}?${new URLSearchParams(searchCriteriaParams).toString()}`;
-
-                window.history.pushState({filtersReset: true}, "", newUrl);
+                const newUrl = `${window.location.pathname}?${new URLSearchParams(searchCriteriaToKeep).toString()}`;
+                window.history.pushState({ filtersReset: true }, "", newUrl);
+                // Recharger la page entière pour que prefillFilterFormFromURL remette les valeurs par défaut des filtres aussi
                 if (typeof LoadContentPage === "function") {
-                    LoadContentPage(); 
+                    LoadContentPage();
                 } else {
-                    console.warn("LoadContentPage n'est pas disponible pour réinitialiser les filtres.");
+                    window.location.href = newUrl; // Fallback
                 }
             });
         }
-    } else {
-        console.warn("RidesSearchPageHandler: Formulaire 'filter-form' non trouvé.");
     }
 
     const confirmBookingButton = document.getElementById('confirm-booking-btn');
-    const confirmationModalElement = document.getElementById('confirmationModal'); 
-
+    const confirmationModalElement = document.getElementById('confirmationModal');
     if (confirmBookingButton && confirmationModalElement) {
-        confirmBookingButton.addEventListener('click', async () => { // La fonction devient async
+        confirmBookingButton.addEventListener('click', async () => {
             const rideIdToBook = confirmBookingButton.getAttribute('data-ride-id');
-            const seatsToBook = 1; // Pour l'instant, on réserve toujours 1 place
-
+            const seatsToBook = 1; 
             if (!rideIdToBook) {
-                alert("Erreur : ID du trajet non trouvé pour la réservation.");
-                bootstrap.Modal.getInstance(confirmationModalElement)?.hide(); // Cacher la modale
+                alert("Erreur : ID du trajet non trouvé.");
+                bootstrap.Modal.getInstance(confirmationModalElement)?.hide();
                 return;
             }
-
-            console.log(`RidesSearchPageHandler: Tentative de réservation pour ride_id: ${rideIdToBook}, places: ${seatsToBook}`);
-            
-            confirmBookingButton.disabled = true; // Désactiver pendant l'appel
-
+            confirmBookingButton.disabled = true;
             try {
                 const response = await fetch('http://ecoride.local/api/book_ride.php', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        ride_id: parseInt(rideIdToBook, 10),
-                        seats_to_book: seatsToBook
-                    })
+                    body: JSON.stringify({ ride_id: parseInt(rideIdToBook, 10), seats_to_book: seatsToBook })
                 });
-
                 const data = await response.json().catch(async (jsonError) => {
-                    const errorText = await response.text().catch(() => "Impossible de lire le corps de l'erreur JSON.");
-                    console.error("Erreur parsing JSON (book_ride):", jsonError, "Réponse brute:", errorText);
-                    throw new Error(`Réponse non-JSON (statut ${response.status}): ${errorText.substring(0,200)}`);
+                    const errorText = await response.text().catch(() => "Err JSON.");
+                    throw new Error(`Non-JSON (statut ${response.status}): ${errorText.substring(0,200)}`);
                 });
-
-                console.log("RidesSearchPageHandler: Réponse API book_ride:", data);
-
                 if (response.ok && data.success) {
-                    alert(data.message || "Réservation confirmée avec succès !");
-
-                    // Rafraîchir la liste des trajets pour mettre à jour les places disponibles
-                    fetchAndDisplayRides(); 
-
+                    alert(data.message || "Réservation confirmée !");
+                    fetchAndDisplayRides(); // Rafraîchir pour les places dispo et potentiellement la pagination
                 } else {
-                    // Afficher le message d'erreur spécifique de l'API
-                    alert(data.message || `Erreur lors de la réservation (statut ${response.status}).`);
+                    alert(data.message || `Erreur réservation (statut ${response.status}).`);
                 }
-
             } catch (error) {
-                console.error("Erreur Fetch globale (book_ride):", error);
-                alert("Erreur de communication lors de la tentative de réservation. " + error.message);
+                alert("Erreur communication réservation. " + error.message);
             } finally {
-                confirmBookingButton.disabled = false; // Réactiver le bouton
-                const modalInstance = bootstrap.Modal.getInstance(confirmationModalElement);
-                if (modalInstance) modalInstance.hide(); // Toujours cacher la modale
+                confirmBookingButton.disabled = false;
+                bootstrap.Modal.getInstance(confirmationModalElement)?.hide();
             }
         });
-    } else {
-        if (!confirmBookingButton) console.warn("Bouton #confirm-booking-btn non trouvé pour la réservation.");
-        if (!confirmationModalElement) console.warn("Modale #confirmationModal non trouvée.");
     }
-        // APPEL INITIAL POUR CHARGER LES RÉSULTATS BASÉS SUR L'URL ACTUELLE
+    
     fetchAndDisplayRides(); 
 }
