@@ -347,7 +347,9 @@ async function fetchAndDisplayRides() {
         if (otherRidesBar) otherRidesBar.classList.add('d-none');
         paginationNav.classList.add('d-none');
     } finally {
-        loadingIndicator.classList.add('d-none');
+        setTimeout(() => {
+            loadingIndicator.classList.add('d-none');
+        }, 500)
     }
 }
 
