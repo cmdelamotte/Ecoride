@@ -36,7 +36,7 @@ function getPDOConnection() {
             // En cas d'erreur de connexion:
             // En phase de développement, il est utile de voir l'erreur.
             // En production, il faudra logger cette erreur de manière sécurisée et afficher un message générique à l'utilisateur.
-            error_log("Erreur de connexion PDO : " . $e->getMessage()); // Log l'erreur (vérifie ton error_log Apache/PHP)
+            error_log("Erreur de connexion PDO : " . $e->getMessage()); // Log l'erreur 
             // Arrête le script avec un message d'erreur.
             die("Erreur critique : Impossible de se connecter à la base de données. Veuillez contacter l'administrateur.");
         }

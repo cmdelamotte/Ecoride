@@ -5,6 +5,7 @@ if (session_status() == PHP_SESSION_NONE) {
 }
 
 require_once 'config/database.php';
+require_once __DIR__ . '/config/analytics_manager.php'; 
 
 // Charger les classes PHPMailer
 use PHPMailer\PHPMailer\PHPMailer;
@@ -60,15 +61,17 @@ try {
     // 1. Vérifier si l'utilisateur est le chauffeur et si le trajet est 'ongoing'
     // On récupère aussi les infos du trajet pour l'email
     $stmtCheck = $pdo->prepare(
-        "SELECT r.driver_id, r.ride_status, r.price_per_seat, r.departure_city, r.arrival_city, r.departure_time, 
-                u_driver.username as driver_username
-                FROM Rides r
-                JOIN Users u_driver ON r.driver_id = u_driver.id
-                WHERE r.id = :ride_id FOR UPDATE"
+    "SELECT r.id as ride_id_sql, r.driver_id, r.ride_status, r.price_per_seat, r.departure_city, r.arrival_city, r.departure_time, 
+            u_driver.username as driver_username
+            FROM Rides r
+            JOIN Users u_driver ON r.driver_id = u_driver.id
+            WHERE r.id = :ride_id FOR UPDATE"
     );
     $stmtCheck->bindParam(':ride_id', $ride_id, PDO::PARAM_INT);
     $stmtCheck->execute();
     $ride = $stmtCheck->fetch(PDO::FETCH_ASSOC);
+
+    $ride_id_sql_for_analytics = (string)$ride['ride_id_sql']; // Pour MongoDB
 
     if (!$ride) {
         $response['message'] = "Trajet non trouvé.";
@@ -93,6 +96,8 @@ try {
     $stmtUpdateRide->bindParam(':ride_id', $ride_id, PDO::PARAM_INT);
     $stmtUpdateRide->execute();
 
+    recordRideCompletedEvent($ride_id_sql_for_analytics);
+
     // 3. Calculer les gains du chauffeur et mettre à jour ses crédits
     $stmtBookedSeats = $pdo->prepare("SELECT SUM(seats_booked) as total_confirmed_seats FROM Bookings WHERE ride_id = :ride_id AND booking_status = 'confirmed'");
     $stmtBookedSeats->bindParam(':ride_id', $ride_id, PDO::PARAM_INT);
@@ -102,12 +107,13 @@ try {
     $total_passengers = $booked_info ? (int)$booked_info['total_confirmed_seats'] : 0;
     $earnings_for_driver = 0;
     $gross_earnings = 0;
+    $total_commission_for_platform = 0; // <-- Variable pour la commission
 
     if ($total_passengers > 0) {
         $price_per_seat = (float)$ride['price_per_seat'];
         $gross_earnings = $price_per_seat * $total_passengers;
-        $total_commission = $platform_commission_per_seat * $total_passengers;
-        $earnings_for_driver = $gross_earnings - $total_commission;
+        $total_commission_for_platform = $platform_commission_per_seat * $total_passengers; // <--- CALCUL
+        $earnings_for_driver = $gross_earnings - $total_commission_for_platform;
 
         if ($earnings_for_driver > 0) { // On ne crédite que si le gain net est positif
             $stmtAddCredits = $pdo->prepare("UPDATE Users SET credits = credits + :earnings WHERE id = :driver_id");
@@ -116,6 +122,11 @@ try {
             $stmtAddCredits->execute();
         }
     }
+
+    // Enregistrer le revenu de la plateforme
+        if ($total_commission_for_platform > 0) {
+            recordPlatformRevenueEvent($ride_id_sql_for_analytics, $total_commission_for_platform);
+        }
     
     // 4. Récupérer les emails des passagers confirmés pour envoyer une notification d'avis
     $stmtPassengers = $pdo->prepare(
@@ -182,7 +193,7 @@ try {
 } catch (Exception $e) {
     if (isset($pdo) && $pdo->inTransaction()) { $pdo->rollBack(); }
     if (http_response_code() < 400) { http_response_code(500); }
-    error_log("Erreur (finish_ride.php): RideID $ride_id, UserID $current_user_id - " . $e->getMessage());
+    error_log("Erreur (finish_ride.php): RideID $ride_id_from_input, UserID $current_user_id - " . $e->getMessage());
     if (empty($response['message']) || http_response_code() == 500) {
         $response['message'] = 'Erreur serveur lors de la finalisation du trajet.';
     }
