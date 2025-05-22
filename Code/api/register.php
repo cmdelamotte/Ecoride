@@ -1,47 +1,40 @@
 <?php
 
-// Inclure le fichier de configuration de la base de données
+require_once __DIR__ . '/config/settings.php';
 require_once 'config/database.php';
 
 
 header('Content-Type: application/json');
-header('Access-Control-Allow-Origin: *'); 
+header('Access-Control-Allow-Origin: ' . CORS_ALLOWED_ORIGIN);
 header('Access-Control-Allow-Methods: POST, GET, OPTIONS'); 
 header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With');
 
-// Gérer les requêtes OPTIONS (pré-vérification CORS)
 if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
     http_response_code(200);
     exit();
 }
 
-// S'assurer que la requête est de type POST
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    http_response_code(405); // Method Not Allowed
+    http_response_code(405);
     echo json_encode(['success' => false, 'message' => 'Méthode non autorisée. Seule la méthode POST est acceptée.']);
     exit();
 }
 
-// Récupérer les données envoyées en JSON depuis le corps de la requête
-// Le JavaScript enverra les données en JSON avec fetch()
 $inputJSON = file_get_contents('php://input');
-$input = json_decode($inputJSON, TRUE); // Convertit le JSON en tableau associatif PHP
+$input = json_decode($inputJSON, TRUE);
 
-// --- Validation des données ---
-// C'est une validation basique, tu devras l'améliorer.
 $username = trim($input['username'] ?? '');
 $firstName = trim($input['firstName'] ?? '');
 $lastName = trim($input['lastName'] ?? '');
 $email = trim($input['email'] ?? '');
-$password = $input['password'] ?? ''; // Pas de trim pour le mot de passe initialement
-$birthdate = $input['birthdate'] ?? ''; // Format YYYY-MM-DD attendu
+$password = $input['password'] ?? '';
+$birthdate = $input['birthdate'] ?? '';
 $phoneNumber = trim($input['phone'] ?? '');
 
 $errors = [];
 
 if (empty($username)) { $errors[] = "Le nom d'utilisateur est requis."; }
 elseif (strlen($username) < 3) { $errors[] = "Le nom d'utilisateur doit contenir au moins 3 caractères."; }
-// TODO: Vérifier si username existe déjà en BDD
 
 if (empty($firstName)) { $errors[] = "Le prénom est requis."; }
 elseif (strlen($firstName) < 2) { $errors[] = "Le prénom doit contenir au moins 2 caractères."; }
@@ -51,20 +44,16 @@ elseif (strlen($lastName) < 2) { $errors[] = "Le nom de famille doit contenir au
 
 if (empty($email)) { $errors[] = "L'email est requis."; }
 elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) { $errors[] = "Le format de l'email est invalide."; }
-// TODO: Vérifier si email existe déjà en BDD
 
 if (empty($password)) { $errors[] = "Le mot de passe est requis."; }
 elseif (strlen($password) < 8) { $errors[] = "Le mot de passe doit contenir au moins 8 caractères."; }
-// TODO: Ajouter la validation de complexité du mot de passe (regex) comme en JS si besoin.
 
 if (empty($birthdate)) { $errors[] = "La date de naissance est requise."; }
-// TODO: Valider le format de la date et l'âge minimum (16 ans) comme en JS.
 
 if (empty($phoneNumber)) { $errors[] = "Le numéro de téléphone est requis."; }
-// TODO: Valider le format du téléphone (regex) comme en JS.
 
 if (!empty($errors)) {
-    http_response_code(400); // Bad Request
+    http_response_code(400);
     echo json_encode(['success' => false, 'message' => 'Erreurs de validation.', 'errors' => $errors]);
     exit();
 }
@@ -81,7 +70,7 @@ try {
     // Commencer une transaction (si plusieurs requêtes doivent réussir ensemble)
     $pdo->beginTransaction();
 
-    // Vérifier si username ou email existent déjà (plus robuste que les TODOs précédents)
+    // Vérifier si username ou email existent déjà 
     $stmtCheck = $pdo->prepare("SELECT id FROM Users WHERE username = :username OR email = :email");
     $stmtCheck->bindParam(':username', $username);
     $stmtCheck->bindParam(':email', $email);
@@ -115,8 +104,8 @@ try {
     $stmtUser->execute();
     $newUserId = $pdo->lastInsertId(); // Récupérer l'ID de l'utilisateur nouvellement créé
 
-    // 3. Assigner le rôle ROLE_USER (ID 1, d'après nos INSERTs de test)
-    $roleUserId = 1; // ID de ROLE_USER
+    // 3. Assigner le rôle ROLE_USER
+    $roleUserId = 1;
     $sqlUserRole = "INSERT INTO UserRoles (user_id, role_id) VALUES (:user_id, :role_id)";
     $stmtUserRole = $pdo->prepare($sqlUserRole);
     $stmtUserRole->bindParam(':user_id', $newUserId);
@@ -127,7 +116,7 @@ try {
     $pdo->commit();
 
     // 4. Envoyer une réponse de succès
-    http_response_code(201); // Created
+    http_response_code(201);
     echo json_encode([
         'success' => true, 
         'message' => 'Inscription réussie !', 
@@ -138,10 +127,10 @@ try {
     if ($pdo && $pdo->inTransaction()) {
         $pdo->rollBack(); // Annuler la transaction en cas d'erreur
     }
-    http_response_code(500); // Internal Server Error
-    error_log("Erreur PDO lors de l'inscription : " . $e->getMessage()); // Log l'erreur serveur
+    http_response_code(500);
+    error_log("Erreur PDO lors de l'inscription : " . $e->getMessage());
     echo json_encode(['success' => false, 'message' => `Une erreur est survenue lors de l''inscription. Veuillez réessayer.`]);
-} catch (Exception $e) { // Pour attraper d'autres types d'erreurs potentielles
+} catch (Exception $e) {
     if ($pdo && $pdo->inTransaction()) {
         $pdo->rollBack();
     }

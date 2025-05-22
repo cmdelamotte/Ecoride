@@ -1,11 +1,6 @@
 <?php
 
-// Paramètres de connexion à la base de données
-define('DB_HOST', 'localhost'); 
-define('DB_NAME', 'ecoride');
-define('DB_USER', 'ecoride_admin');
-define('DB_PASS', '01v_.fGZ$A26'); 
-define('DB_CHARSET', 'utf8mb4');
+require_once __DIR__ . '/settings.php';
 
 // Options pour PDO
 $options = [
@@ -33,35 +28,16 @@ function getPDOConnection() {
             // Crée l'instance de PDO
             $pdo = new PDO($dsn, DB_USER, DB_PASS, $options);
         } catch (\PDOException $e) {
-            // En cas d'erreur de connexion:
-            // En phase de développement, il est utile de voir l'erreur.
-            // En production, il faudra logger cette erreur de manière sécurisée et afficher un message générique à l'utilisateur.
-            error_log("Erreur de connexion PDO : " . $e->getMessage()); // Log l'erreur (vérifie ton error_log Apache/PHP)
-            // Arrête le script avec un message d'erreur.
-            die("Erreur critique : Impossible de se connecter à la base de données. Veuillez contacter l'administrateur.");
+            error_log("Erreur de connexion PDO : " . $e->getMessage());
+            if (defined('APP_ENV') && APP_ENV === 'production') {
+                http_response_code(503);
+                echo json_encode(['success' => false, 'message' => 'Erreur de connexion à la base de données. Veuillez réessayer plus tard.']);
+                exit;
+            } else {
+                die("Erreur critique BDD (PDO). Vérifiez les logs serveur et la configuration. Message: " . $e->getMessage());
+            }
         }
     }
-    return $pdo; // Retourne l'objet de connexion PDO
+    return $pdo;
 }
-
-/*
-// --- Section de test simple ---
-http://localhost/chemin_vers_ton_projet/api/config/database.php
-*/
-
-// echo "Tentative de connexion...<br>";
-// try {
-//     $db = getPDOConnection();
-//     if ($db) {
-//         echo "Connexion à la base de données '" . DB_NAME . "' réussie via PDO !<br>";
-//         // Optionnel: faire une petite requête simple pour être sûr
-//         // $stmt = $db->query("SELECT DATABASE();");
-//         // $currentDb = $stmt->fetchColumn();
-//         // echo "Base de données actuelle sélectionnée par PDO : " . $currentDb;
-//     } else {
-//         echo "getPDOConnection() a retourné null, ce qui ne devrait pas arriver si aucune exception n'est levée.";
-//     }
-// } catch (\PDOException $e) {
-//     echo "Échec de la connexion lors du test : " . $e->getMessage();
-// }
 ?>

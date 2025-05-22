@@ -35,6 +35,8 @@ CREATE TABLE IF NOT EXISTS `Users` (
   `driver_pref_animals` BOOLEAN NOT NULL DEFAULT FALSE,
   `driver_pref_custom` TEXT NULL,
   `functional_role` ENUM('passenger', 'driver', 'passenger_driver') NOT NULL DEFAULT 'passenger',
+  `reset_token` VARCHAR(255) NULL DEFAULT NULL,             -- NOUVELLE COLONNE
+  `reset_token_expires_at` DATETIME NULL DEFAULT NULL,      -- NOUVELLE COLONNE
   `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE = InnoDB;
@@ -99,8 +101,8 @@ CREATE TABLE IF NOT EXISTS `Rides` (
   `vehicle_id` INT NOT NULL,                  -- Foreign key to Vehicles table
   `departure_city` VARCHAR(150) NOT NULL,     -- For searching and simplified display
   `arrival_city` VARCHAR(150) NOT NULL,       -- For searching and simplified display
-  `departure_address` TEXT NULL,              -- Specific departure address (optional)
-  `arrival_address` TEXT NULL,                -- Specific arrival address (optional)
+  `departure_address` TEXT NOT NULL,              -- Specific departure address
+  `arrival_address` TEXT NOT NULL,                -- Specific arrival address
   `departure_time` DATETIME NOT NULL,         -- Precise date and time of departure
   `estimated_arrival_time` DATETIME NOT NULL, -- Estimated date and time of arrival
   `price_per_seat` DECIMAL(10, 2) NOT NULL,

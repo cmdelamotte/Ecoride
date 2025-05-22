@@ -14,26 +14,34 @@ INSERT INTO `Brands` (`id`, `name`) VALUES
 (4, 'Volkswagen'),
 (5, 'Tesla'),
 (6, 'Toyota'),
-(7, 'Fiat');
+(7, 'Fiat'),
+(8, 'Dacia'),
+(9, 'BMW'),
+(10, 'Kia'),
+(11, 'Hyundai'),
+(12, 'Ford'),
+(13, 'Opel'),
+(14, 'Mercedes-Benz'),
+(15, 'Audi');
 
 -- Données pour `Users` table
 -- User 1: Admin
 INSERT INTO `Users` 
 (`first_name`, `last_name`, `username`, `email`, `password_hash`, `phone_number`, `birth_date`, `profile_picture_path`, `address`, `credits`, `account_status`, `driver_pref_smoker`, `driver_pref_animals`, `driver_pref_custom`, `functional_role`) 
 VALUES
-('Admin', 'EcoRide', 'admin_ecoride', 'admin@ecoride.com', '$2y$10$a7untfF/qix0x7Tk3vPlVODiYYCGWqP8fUD7f.IsHVg8zUuT8FE.S', '0102030401', '1980-01-01', NULL, '1 Admin Street, Rennes', 100.00, 'active', FALSE, FALSE, NULL, 'passenger');
+('Admin', 'EcoRide', 'admin_ecoride', 'admin@ecoride.com', '$2y$10$6BFo8Wiveqnj9iMG/GzNP.MxSw2PHy9Y/17cjxqYJm4ohhg2Q1TnO', '0102030401', '1980-01-01', NULL, '1 Admin Street, Rennes', 100.00, 'active', FALSE, FALSE, NULL, 'passenger');
 
 -- User 2: Employee
 INSERT INTO `Users` 
 (`first_name`, `last_name`, `username`, `email`, `password_hash`, `phone_number`, `birth_date`, `profile_picture_path`, `address`, `credits`, `account_status`, `driver_pref_smoker`, `driver_pref_animals`, `driver_pref_custom`, `functional_role`) 
 VALUES
-('Employee', 'EcoRide', 'employee_ecoride', 'employee@ecoride.com', '$2y$10$Bpqbj/.bGq0wPjSCcuifzO1JFPIkwNj7jCbBX7eC9jUT.shxMQzam', '0102030402', '1990-02-15', NULL, '2 Staff Avenue, Rennes', 50.00, 'active', FALSE, FALSE, NULL, 'passenger');
+('Employee', 'EcoRide', 'employee_ecoride', 'employee@ecoride.com', '$2y$10$6BFo8Wiveqnj9iMG/GzNP.MxSw2PHy9Y/17cjxqYJm4ohhg2Q1TnO', '0102030402', '1990-02-15', NULL, '2 Staff Avenue, Rennes', 50.00, 'active', FALSE, FALSE, NULL, 'passenger');
 
 -- User 3: Client - Chauffeur-Passager (mot de passe 'password123')
 INSERT INTO `Users` 
 (`first_name`, `last_name`, `username`, `email`, `password_hash`, `phone_number`, `birth_date`, `profile_picture_path`, `address`, `credits`, `account_status`, `driver_pref_smoker`, `driver_pref_animals`, `driver_pref_custom`, `functional_role`) 
 VALUES
-('Alice', 'Martin', 'alice_driver_passenger', 'alice.martin@email.com', '...', '0611223344', '1992-07-20', 'img/users/alice.jpg', '10 Rue du Covoiturage, Lyon', 75.50, 'active', FALSE, TRUE, 'Musique pop bienvenue, discussions moderees.', 'passenger_driver');
+('Alice', 'Martin', 'alice_driver_passenger', 'alice.martin@email.com', '$2y$10$6BFo8Wiveqnj9iMG/GzNP.MxSw2PHy9Y/17cjxqYJm4ohhg2Q1TnO', '0611223344', '1992-07-20', NULL , '10 Rue du Covoiturage, Lyon', 75.50, 'active', FALSE, TRUE, 'Musique pop bienvenue, discussions moderees.', 'passenger_driver');
 
 -- User 4: Client - Passager uniquement (mot de passe 'password123')
 INSERT INTO `Users` 
@@ -45,7 +53,7 @@ VALUES
 INSERT INTO `Users` 
 (`first_name`, `last_name`, `username`, `email`, `password_hash`, `phone_number`, `birth_date`, `profile_picture_path`, `address`, `credits`, `account_status`, `driver_pref_smoker`, `driver_pref_animals`, `driver_pref_custom`, `functional_role`) 
 VALUES
-('Carole', 'Petit', 'carole_driver', 'carole.petit@email.com', '...', '0712345678', '1995-04-30', 'img/users/carole.jpg', '5 Avenue de la Route, Marseille', 150.00, 'active', TRUE, FALSE, 'Animaux non admis. Prefere le silence ou musique classique.', 'driver');
+('Carole', 'Petit', 'carole_driver', 'carole.petit@email.com', '$2y$10$6BFo8Wiveqnj9iMG/GzNP.MxSw2PHy9Y/17cjxqYJm4ohhg2Q1TnO', '0712345678', '1995-04-30', NULL, '5 Avenue de la Route, Marseille', 150.00, 'active', TRUE, FALSE, 'Animaux non admis. Prefere le silence ou musique classique.', 'driver');
 
 -- Données pour `UserRoles` table
 -- Assignation des rôles aux users créés au dessus.
@@ -319,3 +327,12 @@ VALUES
   'new', 
   TIMESTAMPADD(DAY, -14, NOW() + INTERVAL 2 HOUR) -- Soumis peu après son avis
 );
+
+-- -----------------------------------------------------
+-- Création de User pour tester la suppression
+-- -----------------------------------------------------
+
+INSERT INTO `Users` 
+(`first_name`, `last_name`, `username`, `email`, `password_hash`, `phone_number`, `birth_date`, `profile_picture_path`, `address`, `credits`, `account_status`, `driver_pref_smoker`, `driver_pref_animals`, `driver_pref_custom`, `functional_role`) 
+VALUES
+('ToDelete', 'UserOne', 'todelete_user1', 'todelete1@example.com', '$2y$10$6BFo8Wiveqnj9iMG/GzNP.MxSw2PHy9Y/17cjxqYJm4ohhg2Q1TnO', '0600000015', '2000-01-01', NULL, NULL, 0.00, 'active', FALSE, FALSE, NULL, 'passenger');

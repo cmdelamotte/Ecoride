@@ -41,7 +41,6 @@ export function initializeRegisterForm() {
         // Listener pour la soumission du formulaire
         registerForm.addEventListener('submit', function(event) {
             event.preventDefault(); 
-            console.log("registerFormHandler: Submit intercepté (version finale).");
 
             // Réinitialisation du message d'erreur global et des customValidity de chaque champ avant une nouvelle validation
             if (errorMessageDiv) {
@@ -130,7 +129,6 @@ export function initializeRegisterForm() {
             
             if (!isFormValidOverall) {
                 registerForm.reportValidity(); // Affiche les messages des setCustomValidity et des validations HTML5
-                console.log("Validation du formulaire d'inscription échouée (JS).");
                 if (errorMessageDiv) {
                     errorMessageDiv.textContent = "Veuillez corriger les erreurs indiquées dans le formulaire.";
                     errorMessageDiv.classList.remove('d-none', 'alert-success', 'alert-info');
@@ -147,8 +145,6 @@ export function initializeRegisterForm() {
                     birthdate: birthdate, 
                     phone: phone 
                 };
-
-                console.log("Formulaire d'inscription JS valide. Envoi des données à l'API :", userData);
                 
                 const submitButton = registerForm.querySelector('button[type="submit"]');
                 if(submitButton) {
@@ -160,7 +156,7 @@ export function initializeRegisterForm() {
                     errorMessageDiv.classList.add('alert-info');
                 }
 
-                fetch('http://ecoride.local/api/register.php', {
+                fetch('/api/register.php', {
                     method: 'POST',
                     headers: { 
                         'Content-Type': 'application/json'
@@ -168,7 +164,6 @@ export function initializeRegisterForm() {
                     body: JSON.stringify(userData)
                 })
                 .then(response => {
-                    console.log("Fetch Response Status:", response.status); // Log du statut HTTP
                     // Essayer de parser en JSON. Si ce n'est pas du JSON, attraper l'erreur et lire comme texte.
                     return response.json()
                         .then(data => ({ status: response.status, body: data, ok: response.ok }))
@@ -176,7 +171,6 @@ export function initializeRegisterForm() {
                             console.error("Erreur de parsing JSON de la réponse:", jsonError);
                             // La réponse n'était pas du JSON (ex: erreur PHP affichée en HTML)
                             return response.text().then(textData => {
-                                console.log("Réponse brute non-JSON du serveur:", textData); // Affiche ce que le serveur a réellement envoyé
                                 // Forger un objet d'erreur pour le .catch() global du fetch ou le prochain .then()
                                 throw new Error(`Réponse non-JSON du serveur (statut ${response.status}): ${textData.substring(0,200)}...`);
                             });
@@ -186,7 +180,6 @@ export function initializeRegisterForm() {
                     if (submitButton) {
                         submitButton.disabled = false; // Réactiver le bouton
                     }
-                    console.log("API Response Body (JSON parsé):", body);
 
                     if (ok && body.success) { // 'ok' est vrai pour les statuts HTTP 200-299
                         if (errorMessageDiv) {
@@ -197,12 +190,11 @@ export function initializeRegisterForm() {
                         registerForm.reset(); // Vider le formulaire après succès
                         setTimeout(() => { // Redirection vers l'accueil après inscription réussie
                             if (typeof LoadContentPage === "function") {
-                                console.log("Redirection SPA vers / (Accueil)");
                                 window.history.pushState({}, "", "/");
                                 LoadContentPage();
                             } else {
                                 console.warn("LoadContentPage non disponible, redirection classique vers /.");
-                                window.location.href = "/"; // Fallback vers la racine
+                                window.location.href = "/"; // Fallback
                             }
                         }, 1000);
                     } else {

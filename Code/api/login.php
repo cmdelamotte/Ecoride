@@ -1,17 +1,16 @@
 <?php
 
+require_once 'config/database.php';
+require_once __DIR__ . '/config/settings.php';
+
 if (session_status() == PHP_SESSION_NONE) { // Vérifie si une session n'est pas déjà active
     session_start();
 }
 
-// Inclure le fichier de configuration de la base de données
-require_once 'config/database.php';
-
 // Définir le type de contenu de la réponse en JSON
 header('Content-Type: application/json');
-// Autoriser les requêtes Cross-Origin (CORS) - pour le développement
-header('Access-Control-Allow-Origin: *'); // À sécuriser en production
-header('Access-Control-Allow-Methods: POST, OPTIONS'); // Méthodes autorisées
+header('Access-Control-Allow-Origin: ' . CORS_ALLOWED_ORIGIN);
+header('Access-Control-Allow-Methods: POST, OPTIONS'); 
 header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With');
 // Important pour la gestion des sessions avec fetch et les requêtes cross-origin si besoin :
 
@@ -45,7 +44,7 @@ if (empty($password)) {
 }
 
 if (!empty($errors)) {
-    http_response_code(400); // Bad Request
+    http_response_code(400);
     echo json_encode(['success' => false, 'message' => 'Données invalides fournies.', 'errors' => $errors]);
     exit();
 }
@@ -98,7 +97,7 @@ try {
         $_SESSION['functional_role'] = $user['functional_role'];
         
         // Préparer les données utilisateur à renvoyer au frontend
-        // Il est crucial de ne PAS renvoyer le hash du mot de passe !
+        // Ne pas renvoyer le hash du mot de passe !
         $userDataForFrontend = [
             'id' => (int) $user['id'],
             'username' => $user['username'],
@@ -110,7 +109,7 @@ try {
             'roles_system' => $_SESSION['roles_system'] // Utiliser le tableau de la session
         ];
         
-        http_response_code(200); // OK
+        http_response_code(200);
         echo json_encode([
             'success' => true, 
             'message' => 'Connexion réussie !',

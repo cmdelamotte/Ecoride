@@ -1,16 +1,16 @@
 <?php
 
+require_once 'config/database.php';
+require_once __DIR__ . '/config/settings.php';
+
 if (session_status() == PHP_SESSION_NONE) {
     session_start();
 }
 
-require_once 'config/database.php';
-
 header('Content-Type: application/json');
-header('Access-Control-Allow-Origin: *'); // Pour développement
-header('Access-Control-Allow-Methods: GET, OPTIONS'); // Ce sera une requête GET
+header('Access-Control-Allow-Origin: ' . CORS_ALLOWED_ORIGIN);
+header('Access-Control-Allow-Methods: GET, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With');
-// header('Access-Control-Allow-Credentials: true'); 
 
 if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
     http_response_code(200);
@@ -19,7 +19,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
 
 // 1. Vérifier si l'utilisateur est connecté
 if (!isset($_SESSION['user_id'])) {
-    http_response_code(401); // Unauthorized
+    http_response_code(401);
     echo json_encode(['success' => false, 'message' => 'Utilisateur non authentifié.']);
     exit();
 }
