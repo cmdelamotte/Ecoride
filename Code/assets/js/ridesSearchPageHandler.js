@@ -142,6 +142,23 @@ function createRideCardElement(rideData) {
 
     if (participateButton) {
         participateButton.setAttribute('data-ride-id', rideData.ride_id);
+        participateButton.addEventListener('click', () => {
+            // Mettre à jour les infos dans la modale #confirmationModal
+            document.getElementById('modal-ride-departure-location').textContent = rideData.departure_city;
+            document.getElementById('modal-ride-arrival-location').textContent = rideData.arrival_city;
+            const depDate = new Date(rideData.departure_time.replace(' ', 'T'));
+            document.getElementById('modal-ride-date-text').textContent = depDate.toLocaleDateString('fr-FR', {day: '2-digit', month: 'long'});
+            document.getElementById('modal-ride-time-text').textContent = depDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+            
+            const creditsCostElement = document.getElementById('modal-ride-credits-cost');
+            if (creditsCostElement) {
+                creditsCostElement.textContent = rideData.price_per_seat;
+            }
+
+            document.getElementById('confirm-booking-btn').setAttribute('data-ride-id', rideData.ride_id);
+            const modalSeatsSpan = document.querySelector('#confirmationModal .ride-available-seats-modal');
+            if (modalSeatsSpan) modalSeatsSpan.textContent = rideData.seats_available;
+        });
     }
 
     (async () => {
