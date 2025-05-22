@@ -142,23 +142,6 @@ function createRideCardElement(rideData) {
 
     if (participateButton) {
         participateButton.setAttribute('data-ride-id', rideData.ride_id);
-        participateButton.addEventListener('click', () => {
-            // Mettre à jour les infos dans la modale #confirmationModal
-            document.getElementById('modal-ride-departure-location').textContent = rideData.departure_city;
-            document.getElementById('modal-ride-arrival-location').textContent = rideData.arrival_city;
-            const depDate = new Date(rideData.departure_time.replace(' ', 'T'));
-            document.getElementById('modal-ride-date-text').textContent = depDate.toLocaleDateString('fr-FR', {day: '2-digit', month: 'long'});
-            document.getElementById('modal-ride-time-text').textContent = depDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-            
-            const creditsCostElement = document.getElementById('modal-ride-credits-cost');
-            if (creditsCostElement) {
-                creditsCostElement.textContent = rideData.price_per_seat;
-            }
-
-            document.getElementById('confirm-booking-btn').setAttribute('data-ride-id', rideData.ride_id);
-            const modalSeatsSpan = document.querySelector('#confirmationModal .ride-available-seats-modal');
-            if (modalSeatsSpan) modalSeatsSpan.textContent = rideData.seats_available;
-        });
     }
 
     (async () => {
@@ -287,6 +270,7 @@ async function fetchAndDisplayRides() {
     const rideResultsContainer = document.getElementById('ride-results-container');
     const noResultsMessage = document.getElementById('no-results-message');
     const loadingIndicator = document.getElementById('loading-indicator');
+    const otherRidesBar = document.getElementById('other-rides-bar');
     const paginationNav = document.querySelector('nav[aria-label="Navigation des pages de résultats"]');
 
     if (!rideResultsContainer || !noResultsMessage || !loadingIndicator || !paginationNav) {
@@ -306,6 +290,10 @@ async function fetchAndDisplayRides() {
     // Vérifier les paramètres de recherche principaux venant de l'URL
     if (!queryParamsFromUrl.get('departure') || !queryParamsFromUrl.get('destination') || !queryParamsFromUrl.get('date')) {
         loadingIndicator.classList.add('d-none');
+        if (otherRidesBar) otherRidesBar.classList.add('d-none');
+        noResultsMessage.textContent = "Veuillez spécifier un départ, une destination et une date pour la recherche.";
+        noResultsMessage.classList.remove('d-none');
+        return;
     }
 
     // Construire les queryParams pour l'API en utilisant les noms attendus par search_rides.php
@@ -346,6 +334,7 @@ async function fetchAndDisplayRides() {
                     }
                 });
                 renderPaginationControls(data.page, data.totalPages, queryParamsFromUrl); // queryParamsFromUrl pour conserver tous les filtres dans les liens de pagination
+                if (otherRidesBar) otherRidesBar.classList.remove('d-none');
             } else {
                 // Aucun trajet pour la date actuelle
                 let messageHtml = data.message || "Aucun trajet ne correspond à vos critères pour la date sélectionnée.";
@@ -381,17 +370,20 @@ async function fetchAndDisplayRides() {
                      noResultsMessage.innerHTML = messageHtml; // Juste le message "aucun trajet"
                 }
                 noResultsMessage.classList.remove('d-none');
+                if (otherRidesBar) otherRidesBar.classList.add('d-none');
                 paginationNav.classList.add('d-none');
             }
         } else { // Si data.success est false dès le départ (erreur API)
             noResultsMessage.textContent = data.message || "Erreur lors de la recherche des trajets.";
             noResultsMessage.classList.remove('d-none');
+            if (otherRidesBar) otherRidesBar.classList.add('d-none');
             paginationNav.classList.add('d-none');
         }
     } catch (error) {
         console.error("Erreur Fetch globale (search_rides):", error);
         noResultsMessage.textContent = "Une erreur de communication est survenue. " + error.message;
         noResultsMessage.classList.remove('d-none');
+        if (otherRidesBar) otherRidesBar.classList.add('d-none');
         paginationNav.classList.add('d-none');
     } finally {
         setTimeout(() => {
