@@ -289,10 +289,6 @@ async function fetchAndDisplayRides() {
     // Vérifier les paramètres de recherche principaux venant de l'URL
     if (!queryParamsFromUrl.get('departure') || !queryParamsFromUrl.get('destination') || !queryParamsFromUrl.get('date')) {
         loadingIndicator.classList.add('d-none');
-        if (otherRidesBar) otherRidesBar.classList.add('d-none');
-        noResultsMessage.textContent = "Veuillez spécifier un départ, une destination et une date pour la recherche.";
-        noResultsMessage.classList.remove('d-none');
-        return;
     }
 
     // Construire les queryParams pour l'API en utilisant les noms attendus par search_rides.php
@@ -333,7 +329,6 @@ async function fetchAndDisplayRides() {
                     }
                 });
                 renderPaginationControls(data.page, data.totalPages, queryParamsFromUrl); // queryParamsFromUrl pour conserver tous les filtres dans les liens de pagination
-                if (otherRidesBar) otherRidesBar.classList.remove('d-none');
             } else {
                 // Aucun trajet pour la date actuelle
                 let messageHtml = data.message || "Aucun trajet ne correspond à vos critères pour la date sélectionnée.";
@@ -369,20 +364,17 @@ async function fetchAndDisplayRides() {
                      noResultsMessage.innerHTML = messageHtml; // Juste le message "aucun trajet"
                 }
                 noResultsMessage.classList.remove('d-none');
-                if (otherRidesBar) otherRidesBar.classList.add('d-none');
                 paginationNav.classList.add('d-none');
             }
         } else { // Si data.success est false dès le départ (erreur API)
             noResultsMessage.textContent = data.message || "Erreur lors de la recherche des trajets.";
             noResultsMessage.classList.remove('d-none');
-            if (otherRidesBar) otherRidesBar.classList.add('d-none');
             paginationNav.classList.add('d-none');
         }
     } catch (error) {
         console.error("Erreur Fetch globale (search_rides):", error);
         noResultsMessage.textContent = "Une erreur de communication est survenue. " + error.message;
         noResultsMessage.classList.remove('d-none');
-        if (otherRidesBar) otherRidesBar.classList.add('d-none');
         paginationNav.classList.add('d-none');
     } finally {
         setTimeout(() => {
