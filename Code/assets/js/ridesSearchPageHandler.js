@@ -97,7 +97,7 @@ function createRideCardElement(rideData) {
         driverPhotoEl.src = rideData.driver_photo;
         driverPhotoEl.alt = `Photo de ${rideData.driver_username}`;
     } else if (driverPhotoEl) {
-        driverPhotoEl.src = "././img/default-profile.png";
+        driverPhotoEl.src = "/img/default-profile.png";
         driverPhotoEl.alt = 'Photo de profil par défaut';
     }
     if (driverUsernameEl) driverUsernameEl.textContent = rideData.driver_username;

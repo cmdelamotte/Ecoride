@@ -35,6 +35,8 @@ CREATE TABLE IF NOT EXISTS `Users` (
   `driver_pref_animals` BOOLEAN NOT NULL DEFAULT FALSE,
   `driver_pref_custom` TEXT NULL,
   `functional_role` ENUM('passenger', 'driver', 'passenger_driver') NOT NULL DEFAULT 'passenger',
+  `reset_token` VARCHAR(255) NULL DEFAULT NULL,             -- NOUVELLE COLONNE
+  `reset_token_expires_at` DATETIME NULL DEFAULT NULL,      -- NOUVELLE COLONNE
   `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE = InnoDB;
