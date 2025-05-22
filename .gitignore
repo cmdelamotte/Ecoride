@@ -137,6 +137,7 @@ dist
 
 /vendor/
 /Code/api/config/settings.prod.php
+/Code/api/config/settings.local.php
 node_modules/
 vendor/
 test_mongo.php
