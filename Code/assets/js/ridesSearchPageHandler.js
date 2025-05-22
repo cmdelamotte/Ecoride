@@ -270,7 +270,6 @@ async function fetchAndDisplayRides() {
     const rideResultsContainer = document.getElementById('ride-results-container');
     const noResultsMessage = document.getElementById('no-results-message');
     const loadingIndicator = document.getElementById('loading-indicator');
-    const otherRidesBar = document.getElementById('other-rides-bar');
     const paginationNav = document.querySelector('nav[aria-label="Navigation des pages de résultats"]');
 
     if (!rideResultsContainer || !noResultsMessage || !loadingIndicator || !paginationNav) {
